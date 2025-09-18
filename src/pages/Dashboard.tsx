@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Copy, LogOut, Plus, TrendingUp, Clock, AlertTriangle } from "lucide-react";
+import { Copy, LogOut, Plus, TrendingUp, Clock, AlertTriangle, Crown, CreditCard } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface User {
   name: string;
@@ -31,6 +32,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
+  const subscription = useSubscription();
   const [novaCobranca, setNovaCobranca] = useState({
     nomeDevedor: "",
     valor: "",
@@ -45,11 +47,11 @@ const Dashboard = () => {
       navigate("/");
       return;
     }
-    
-    setUser(JSON.parse(userData));
-    
-    // Simular usuário premium - em produção isso viria do banco
-    const userWithPremium = { ...JSON.parse(userData), isPremium: false }; // Altere para true para testar premium
+    // Usar o status real da subscription
+    const userWithPremium = { 
+      ...JSON.parse(userData), 
+      isPremium: subscription.subscribed 
+    };
     setUser(userWithPremium);
     
     // Mock data for cobranças
@@ -83,7 +85,7 @@ const Dashboard = () => {
     e.preventDefault();
     
     // Verificar limite de cobranças para usuários não premium
-    if (!user?.isPremium && cobrancas.length >= 3) {
+    if (!subscription.subscribed && cobrancas.length >= 3) {
       toast({
         title: "Limite atingido!",
         description: "Usuários gratuitos podem criar apenas 3 cobranças. Upgrade para premium para criar ilimitadas.",
@@ -93,7 +95,7 @@ const Dashboard = () => {
     }
 
     const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: string, dataInicio: string) => {
-      if (!user?.isPremium || !taxa || taxa === 0) return valorInicial;
+      if (!subscription.subscribed || !taxa || taxa === 0) return valorInicial;
       
       const hoje = new Date();
       const inicio = new Date(dataInicio);
@@ -111,7 +113,7 @@ const Dashboard = () => {
     };
 
     const valorInicial = parseFloat(novaCobranca.valor);
-    const taxaJuros = user?.isPremium ? parseFloat(novaCobranca.taxaJuros) || 0 : 0;
+    const taxaJuros = subscription.subscribed ? parseFloat(novaCobranca.taxaJuros) || 0 : 0;
     const valorAtual = calcularJurosCompostos(valorInicial, taxaJuros, novaCobranca.tipoJuros, novaCobranca.dataInicio);
 
     const novaCobrancaItem: Cobranca = {
@@ -122,8 +124,8 @@ const Dashboard = () => {
       dataInicio: novaCobranca.dataInicio,
       status: new Date(novaCobranca.dataInicio) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) ? 'atrasada' : 'ativa',
       link: `${window.location.origin}/cobranca/${Date.now()}`,
-      taxaJuros: user?.isPremium ? taxaJuros : undefined,
-      tipoJuros: user?.isPremium ? novaCobranca.tipoJuros : undefined,
+      taxaJuros: subscription.subscribed ? taxaJuros : undefined,
+      tipoJuros: subscription.subscribed ? novaCobranca.tipoJuros : undefined,
     };
     
     setCobrancas([...cobrancas, novaCobrancaItem]);
@@ -154,13 +156,34 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-primary">Olá, {user.name}!</h1>
-            <p className="text-muted-foreground">Gerencie suas cobranças</p>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-primary">Olá, {user.name}!</h1>
+              {subscription.subscribed && (
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                  <Crown className="w-3 h-3 mr-1" />
+                  Premium
+                </Badge>
+              )}
+            </div>
+            <p className="text-muted-foreground">
+              Gerencie suas cobranças 
+              {!subscription.subscribed && (
+                <span className="text-amber-600"> • {cobrancas.length}/3 cobranças usadas</span>
+              )}
+            </p>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
-          </Button>
+          <div className="flex items-center gap-2">
+            {subscription.subscribed && (
+              <Button variant="outline" size="sm" onClick={subscription.openCustomerPortal}>
+                <CreditCard className="w-4 h-4 mr-2" />
+                Gerenciar Assinatura
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </div>
         </div>
 
         {/* Dashboard Cards */}
@@ -197,6 +220,46 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Upgrade para Premium Card - só aparece para usuários não premium */}
+        {!subscription.subscribed && (
+          <Card className="border-2 border-dashed border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50">
+            <CardHeader>
+              <CardTitle className="flex items-center text-amber-800">
+                <Crown className="w-5 h-5 mr-2" />
+                Upgrade para Premium
+              </CardTitle>
+              <CardDescription>
+                Desbloqueie recursos avançados e cobranças ilimitadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm">🚀 Recursos Premium:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Cobranças ilimitadas</li>
+                    <li>• Juros compostos automáticos</li>
+                    <li>• Cálculo por dia ou mês</li>
+                    <li>• Relatórios avançados</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm">💰 Preço:</h4>
+                  <p className="text-2xl font-bold text-green-600">R$ 29,90/mês</p>
+                  <Button 
+                    onClick={subscription.createCheckout}
+                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                    disabled={subscription.loading}
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    {subscription.loading ? "Carregando..." : "Assinar Premium"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Criar Nova Cobrança */}
