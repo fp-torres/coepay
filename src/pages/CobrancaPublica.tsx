@@ -28,51 +28,44 @@ const CobrancaPublica = () => {
   const [mensagemAtual, setMensagemAtual] = useState(0);
 
   useEffect(() => {
-    // Mock data - in real app would fetch from API
-    const mockData: { [key: string]: CobrancaData } = {
-      "1": {
-        id: "1",
-        nomeDevedor: "João Silva",
-        valor: 150.50,
-        dataInicio: "2024-01-15",
-        diasAtraso: 0,
-        pixCobranca: "usuario@pix.com",
-        status: "ativa"
-      },
-      "2": {
-        id: "2",
-        nomeDevedor: "Maria Santos", 
-        valor: 300.00,
-        dataInicio: "2024-01-10",
-        diasAtraso: 5,
-        pixCobranca: "usuario@pix.com",
-        status: "atrasada"
-      }
-    };
+  const storedCobrancas = localStorage.getItem("cobrancas");
+  const cobrancasObj = storedCobrancas ? JSON.parse(storedCobrancas) : [];
 
-    const cobrancaData = mockData[id || "1"];
-    if (cobrancaData) {
-      setCobranca(cobrancaData);
-    }
-  }, [id]);
+  const cobrancaData = cobrancasObj.find((c: any) => c.id === id);
+  if (cobrancaData) {
+    setCobranca({
+      id: cobrancaData.id,
+      nomeDevedor: cobrancaData.nomeDevedor,
+      valor: cobrancaData.valorAtual || cobrancaData.valor,
+      dataInicio: cobrancaData.dataInicio,
+      diasAtraso: cobrancaData.status === 'atrasada'
+        ? Math.ceil((new Date().getTime() - new Date(cobrancaData.dataInicio).getTime()) / (1000*60*60*24))
+        : 0,
+      pixCobranca: JSON.parse(localStorage.getItem("user") || "{}").pix,
+      status: cobrancaData.status
+    });
+  }
+}, [id]);
 
-  useEffect(() => {
-    // Rotacionar mensagens a cada 4 segundos
-    const interval = setInterval(() => {
-      setMensagemAtual((prev) => (prev + 1) % mensagensMotivacionais.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
 
-  const copiarPix = () => {
-    if (cobranca) {
-      navigator.clipboard.writeText(cobranca.pixCobranca);
-      toast({
-        title: "PIX copiado!",
-        description: "A chave PIX foi copiada para a área de transferência.",
-      });
-    }
-  };
+useEffect(() => {
+  const storedCobrancas = localStorage.getItem("cobrancas");
+  const cobrancasObj = storedCobrancas ? JSON.parse(storedCobrancas) : [];
+
+  const cobrancaData = cobrancasObj.find((c: any) => c.id === id);
+  if (cobrancaData) {
+    setCobranca({
+      id: cobrancaData.id,
+      nomeDevedor: cobrancaData.nomeDevedor,
+      valor: cobrancaData.valorAtual || cobrancaData.valor,
+      dataInicio: cobrancaData.dataInicio,
+      diasAtraso: cobrancaData.status === 'atrasada' ? Math.ceil((new Date().getTime() - new Date(cobrancaData.dataInicio).getTime()) / (1000*60*60*24)) : 0,
+      pixCobranca: JSON.parse(localStorage.getItem("user") || "{}").pix,
+      status: cobrancaData.status
+    });
+  }
+}, [id]);
+;
 
   const gerarQRCode = (pix: string, valor: number, nome: string) => {
     // Em um caso real, aqui seria gerado um QR Code PIX válido
@@ -170,7 +163,13 @@ const CobrancaPublica = () => {
               <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
               <div className="flex items-center justify-between bg-background p-2 rounded border">
                 <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
-                <Button size="sm" variant="outline" onClick={copiarPix}>
+                <Button size="sm" variant="outline" onClick={cobrancaData => {
+                  navigator.clipboard.writeText(cobranca.pixCobranca);
+                  toast({
+                    title: "Chave PIX copiada!",
+                    description: "Você pode colar onde precisar.",
+                  });
+                }}>
                   <Copy className="w-4 h-4" />
                 </Button>
               </div>

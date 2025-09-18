@@ -56,22 +56,7 @@ const Dashboard = () => {
     
     // Mock data for cobranças
     const mockCobrancas: Cobranca[] = [
-      {
-        id: "1",
-        nomeDevedor: "João Silva",
-        valor: 150.50,
-        dataInicio: "2024-01-15",
-        status: "ativa",
-        link: `${window.location.origin}/cobranca/1`
-      },
-      {
-        id: "2", 
-        nomeDevedor: "Maria Santos",
-        valor: 300.00,
-        dataInicio: "2024-01-10",
-        status: "atrasada",
-        link: `${window.location.origin}/cobranca/2`
-      }
+      
     ];
     setCobrancas(mockCobrancas);
   }, [navigate]);
@@ -117,24 +102,29 @@ const Dashboard = () => {
     const valorAtual = calcularJurosCompostos(valorInicial, taxaJuros, novaCobranca.tipoJuros, novaCobranca.dataInicio);
 
     const novaCobrancaItem: Cobranca = {
-      id: Date.now().toString(),
-      nomeDevedor: novaCobranca.nomeDevedor,
-      valor: valorInicial,
-      valorAtual: valorAtual,
-      dataInicio: novaCobranca.dataInicio,
-      status: new Date(novaCobranca.dataInicio) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) ? 'atrasada' : 'ativa',
-      link: `${window.location.origin}/cobranca/${Date.now()}`,
-      taxaJuros: subscription.subscribed ? taxaJuros : undefined,
-      tipoJuros: subscription.subscribed ? novaCobranca.tipoJuros : undefined,
-    };
-    
-    setCobrancas([...cobrancas, novaCobrancaItem]);
-    setNovaCobranca({ nomeDevedor: "", valor: "", dataInicio: "", taxaJuros: "", tipoJuros: "mensal" });
-    toast({
-      title: "Cobrança criada com sucesso!",
-      description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,
-    });
+    id: Date.now().toString(),
+    nomeDevedor: novaCobranca.nomeDevedor,
+    valor: valorInicial,
+    valorAtual: valorAtual,
+    dataInicio: novaCobranca.dataInicio,
+    status: new Date(novaCobranca.dataInicio) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) ? 'atrasada' : 'ativa',
+    link: `${window.location.origin}/cobranca/${Date.now()}`,
+    taxaJuros: subscription.subscribed ? taxaJuros : undefined,
+    tipoJuros: subscription.subscribed ? novaCobranca.tipoJuros : undefined,
   };
+
+  const novasCobrancas = [...cobrancas, novaCobrancaItem];
+  setCobrancas(novasCobrancas);
+
+  // **Salvar no localStorage**
+  localStorage.setItem("cobrancas", JSON.stringify(novasCobrancas));
+
+  setNovaCobranca({ nomeDevedor: "", valor: "", dataInicio: "", taxaJuros: "", tipoJuros: "mensal" });
+  toast({
+    title: "Cobrança criada com sucesso!",
+    description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,
+  });
+};
 
   const copiarLink = (link: string) => {
     navigator.clipboard.writeText(link);
