@@ -12,15 +12,19 @@ interface User {
   name: string;
   email: string;
   pix: string;
+  isPremium?: boolean;
 }
 
 interface Cobranca {
   id: string;
   nomeDevedor: string;
   valor: number;
+  valorAtual?: number;
   dataInicio: string;
   status: 'ativa' | 'atrasada';
   link: string;
+  taxaJuros?: number;
+  tipoJuros?: 'mensal' | 'diario';
 }
 
 const Dashboard = () => {
@@ -31,6 +35,8 @@ const Dashboard = () => {
     nomeDevedor: "",
     valor: "",
     dataInicio: "",
+    taxaJuros: "",
+    tipoJuros: "mensal" as "mensal" | "diario",
   });
 
   useEffect(() => {
@@ -41,6 +47,10 @@ const Dashboard = () => {
     }
     
     setUser(JSON.parse(userData));
+    
+    // Simular usuário premium - em produção isso viria do banco
+    const userWithPremium = { ...JSON.parse(userData), isPremium: false }; // Altere para true para testar premium
+    setUser(userWithPremium);
     
     // Mock data for cobranças
     const mockCobrancas: Cobranca[] = [
@@ -71,17 +81,53 @@ const Dashboard = () => {
 
   const criarCobranca = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Verificar limite de cobranças para usuários não premium
+    if (!user?.isPremium && cobrancas.length >= 3) {
+      toast({
+        title: "Limite atingido!",
+        description: "Usuários gratuitos podem criar apenas 3 cobranças. Upgrade para premium para criar ilimitadas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: string, dataInicio: string) => {
+      if (!user?.isPremium || !taxa || taxa === 0) return valorInicial;
+      
+      const hoje = new Date();
+      const inicio = new Date(dataInicio);
+      const diffTime = Math.abs(hoje.getTime() - inicio.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      let periodos = 0;
+      if (tipo === 'diario') {
+        periodos = diffDays;
+      } else {
+        periodos = diffDays / 30; // aproximadamente 30 dias por mês
+      }
+      
+      return valorInicial * Math.pow(1 + taxa / 100, periodos);
+    };
+
+    const valorInicial = parseFloat(novaCobranca.valor);
+    const taxaJuros = user?.isPremium ? parseFloat(novaCobranca.taxaJuros) || 0 : 0;
+    const valorAtual = calcularJurosCompostos(valorInicial, taxaJuros, novaCobranca.tipoJuros, novaCobranca.dataInicio);
+
     const novaCobrancaItem: Cobranca = {
       id: Date.now().toString(),
       nomeDevedor: novaCobranca.nomeDevedor,
-      valor: parseFloat(novaCobranca.valor),
+      valor: valorInicial,
+      valorAtual: valorAtual,
       dataInicio: novaCobranca.dataInicio,
       status: new Date(novaCobranca.dataInicio) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) ? 'atrasada' : 'ativa',
-      link: `${window.location.origin}/cobranca/${Date.now()}`
+      link: `${window.location.origin}/cobranca/${Date.now()}`,
+      taxaJuros: user?.isPremium ? taxaJuros : undefined,
+      tipoJuros: user?.isPremium ? novaCobranca.tipoJuros : undefined,
     };
     
     setCobrancas([...cobrancas, novaCobrancaItem]);
-    setNovaCobranca({ nomeDevedor: "", valor: "", dataInicio: "" });
+    setNovaCobranca({ nomeDevedor: "", valor: "", dataInicio: "", taxaJuros: "", tipoJuros: "mensal" });
     toast({
       title: "Cobrança criada com sucesso!",
       description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,
@@ -96,7 +142,7 @@ const Dashboard = () => {
     });
   };
 
-  const totalReceber = cobrancas.reduce((sum, c) => sum + c.valor, 0);
+  const totalReceber = cobrancas.reduce((sum, c) => sum + (c.valorAtual || c.valor), 0);
   const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa').length;
   const cobrancasAtrasadas = cobrancas.filter(c => c.status === 'atrasada').length;
 
@@ -196,8 +242,50 @@ const Dashboard = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Sua Chave PIX</Label>
-                  <Input value={user.pix} disabled />
+                  <Input 
+                    value={user.pix} 
+                    onChange={(e) => {
+                      const updatedUser = { ...user, pix: e.target.value };
+                      setUser(updatedUser);
+                      localStorage.setItem("user", JSON.stringify(updatedUser));
+                    }}
+                  />
                 </div>
+                
+                {/* Campos Premium - Juros Compostos */}
+                {user?.isPremium && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="taxa-juros">Taxa de Juros (%)</Label>
+                      <Input
+                        id="taxa-juros"
+                        type="number"
+                        step="0.01"
+                        value={novaCobranca.taxaJuros}
+                        onChange={(e) => setNovaCobranca({ ...novaCobranca, taxaJuros: e.target.value })}
+                        placeholder="Ex: 2.5"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tipo-juros">Período dos Juros</Label>
+                      <select 
+                        id="tipo-juros"
+                        value={novaCobranca.tipoJuros}
+                        onChange={(e) => setNovaCobranca({ ...novaCobranca, tipoJuros: e.target.value as 'mensal' | 'diario' })}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="mensal">Ao mês</option>
+                        <option value="diario">Ao dia</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+                
+                {!user?.isPremium && (
+                  <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                    💎 <strong>Premium:</strong> Upgrade para adicionar juros compostos às suas cobranças e criar cobranças ilimitadas!
+                  </div>
+                )}
                 <Button type="submit" className="w-full">Criar Cobrança</Button>
               </form>
             </CardContent>
@@ -220,9 +308,21 @@ const Dashboard = () => {
                           {cobranca.status}
                         </Badge>
                       </div>
-                      <p className="text-lg font-bold text-red-600">
-                        R$ {cobranca.valor.toFixed(2).replace('.', ',')}
-                      </p>
+                       <div className="flex items-center justify-between">
+                         <p className="text-lg font-bold text-red-600">
+                           R$ {((cobranca.valorAtual || cobranca.valor).toFixed(2)).replace('.', ',')}
+                         </p>
+                         {cobranca.valorAtual && cobranca.valorAtual !== cobranca.valor && (
+                           <span className="text-xs text-muted-foreground">
+                             (Original: R$ {cobranca.valor.toFixed(2).replace('.', ',')})
+                           </span>
+                         )}
+                       </div>
+                       {cobranca.taxaJuros && (
+                         <p className="text-xs text-blue-600">
+                           Juros: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
+                         </p>
+                       )}
                       <p className="text-sm text-muted-foreground">
                         {new Date(cobranca.dataInicio).toLocaleDateString('pt-BR')}
                       </p>
@@ -245,18 +345,6 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Botão para nova cobrança rápida */}
-        <div className="flex justify-center">
-          <Button 
-            size="lg" 
-            onClick={() => document.getElementById('nome-devedor')?.focus()}
-            className="px-8"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Gerar Nova Cobrança
-          </Button>
         </div>
       </div>
     </div>
