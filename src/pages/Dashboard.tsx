@@ -252,38 +252,45 @@ const Dashboard = () => {
                   />
                 </div>
                 
-                {/* Campos Premium - Juros Compostos */}
-                {user?.isPremium && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="taxa-juros">Taxa de Juros (%)</Label>
-                      <Input
-                        id="taxa-juros"
-                        type="number"
-                        step="0.01"
-                        value={novaCobranca.taxaJuros}
-                        onChange={(e) => setNovaCobranca({ ...novaCobranca, taxaJuros: e.target.value })}
-                        placeholder="Ex: 2.5"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tipo-juros">Período dos Juros</Label>
-                      <select 
-                        id="tipo-juros"
-                        value={novaCobranca.tipoJuros}
-                        onChange={(e) => setNovaCobranca({ ...novaCobranca, tipoJuros: e.target.value as 'mensal' | 'diario' })}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value="mensal">Ao mês</option>
-                        <option value="diario">Ao dia</option>
-                      </select>
-                    </div>
-                  </>
-                )}
+                {/* Campos de Juros Compostos - Premium */}
+                <div className="space-y-2">
+                  <Label htmlFor="taxa-juros" className="flex items-center gap-2">
+                    Taxa de Juros (%)
+                    {!user?.isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">💎 Premium</span>}
+                  </Label>
+                  <Input
+                    id="taxa-juros"
+                    type="number"
+                    step="0.01"
+                    value={novaCobranca.taxaJuros}
+                    onChange={(e) => setNovaCobranca({ ...novaCobranca, taxaJuros: e.target.value })}
+                    placeholder="Ex: 2.5"
+                    disabled={!user?.isPremium}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="tipo-juros" className="flex items-center gap-2">
+                    Período dos Juros
+                    {!user?.isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">💎 Premium</span>}
+                  </Label>
+                  <select 
+                    id="tipo-juros"
+                    value={novaCobranca.tipoJuros}
+                    onChange={(e) => setNovaCobranca({ ...novaCobranca, tipoJuros: e.target.value as 'mensal' | 'diario' })}
+                    disabled={!user?.isPremium}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="mensal">Ao mês</option>
+                    <option value="diario">Ao dia</option>
+                  </select>
+                </div>
                 
                 {!user?.isPremium && (
                   <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
                     💎 <strong>Premium:</strong> Upgrade para adicionar juros compostos às suas cobranças e criar cobranças ilimitadas!
+                    <br />
+                    <span className="text-xs">Exemplo: R$ 100,00 em 01/01/2025 com 2% ao mês = R$ 102,00 após 1 mês</span>
                   </div>
                 )}
                 <Button type="submit" className="w-full">Criar Cobrança</Button>
