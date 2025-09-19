@@ -28,7 +28,7 @@ app.post("/login", async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ message: "Senha incorreta" });
 
-    res.json({ name: user.name, email: user.email, pix: user.pix });
+    res.json({ id: user.id, name: user.name, email: user.email, pix: user.pix });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro no servidor" });
@@ -53,15 +53,30 @@ app.post("/signup", async (req, res) => {
 
 app.listen(5000, () => console.log("Server running on port 5000"));
 
+// BUSCAR DEVEDORES POR USUÁRIO
+app.get("/devedores", async (req, res) => {
+  const { user_id } = req.query;
+  try {
+    const result = await pool.query(
+      "SELECT * FROM devedores WHERE user_id = $1 ORDER BY created_at DESC",
+      [user_id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao buscar devedores" });
+  }
+});
+
 // DEVEDORES
 app.post("/devedores", async (req, res) => {
-  const { user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento } = req.body;
+  const { user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros } = req.body;
   try {
     const result = await pool.query(
       `INSERT INTO devedores 
-       (user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento) 
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento]
+       (user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros) 
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros]
     );
     res.json(result.rows[0]);
   } catch (err) {

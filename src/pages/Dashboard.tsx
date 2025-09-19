@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useSubscription } from "@/hooks/useSubscription";
 
 interface User {
+  id: number;
   name: string;
   email: string;
   pix: string;
@@ -41,33 +42,58 @@ const Dashboard = () => {
     tipoJuros: "mensal" as "mensal" | "diario",
   });
 
+  const carregarCobrancas = async (userId: number) => {
+    try {
+      const response = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const cobrancasFormatadas = data.map((item: any) => ({
+          id: item.id.toString(),
+          nomeDevedor: item.nome,
+          valor: parseFloat(item.valor),
+          valorAtual: item.valor_atual ? parseFloat(item.valor_atual) : parseFloat(item.valor),
+          dataInicio: item.data_vencimento,
+          status: item.status || 'ativa',
+          link: `${window.location.origin}/cobranca/${item.id}`,
+          taxaJuros: item.taxa_juros ? parseFloat(item.taxa_juros) : undefined,
+          tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
+        }));
+        setCobrancas(cobrancasFormatadas);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar cobranças:', error);
+    }
+  };
+
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (!userData) {
       navigate("/");
       return;
     }
+    const parsedUser = JSON.parse(userData);
     // Usar o status real da subscription
     const userWithPremium = { 
-      ...JSON.parse(userData), 
+      ...parsedUser, 
       isPremium: subscription.subscribed 
     };
     setUser(userWithPremium);
     
-    // Mock data for cobranças
-    const mockCobrancas: Cobranca[] = [
-      
-    ];
-    setCobrancas(mockCobrancas);
-  }, [navigate]);
+    // Carregar cobranças do usuário do backend
+    if (parsedUser.id) {
+      carregarCobrancas(parsedUser.id);
+    }
+  }, [navigate, subscription.subscribed]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
 
-  const criarCobranca = (e: React.FormEvent) => {
+  const criarCobranca = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user?.id) return;
     
     // Verificar limite de cobranças para usuários não premium
     if (!subscription.subscribed && cobrancas.length >= 3) {
@@ -79,52 +105,51 @@ const Dashboard = () => {
       return;
     }
 
-    const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: string, dataInicio: string) => {
-      if (!subscription.subscribed || !taxa || taxa === 0) return valorInicial;
-      
-      const hoje = new Date();
-      const inicio = new Date(dataInicio);
-      const diffTime = Math.abs(hoje.getTime() - inicio.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      let periodos = 0;
-      if (tipo === 'diario') {
-        periodos = diffDays;
-      } else {
-        periodos = diffDays / 30; // aproximadamente 30 dias por mês
-      }
-      
-      return valorInicial * Math.pow(1 + taxa / 100, periodos);
-    };
-
     const valorInicial = parseFloat(novaCobranca.valor);
     const taxaJuros = subscription.subscribed ? parseFloat(novaCobranca.taxaJuros) || 0 : 0;
-    const valorAtual = calcularJurosCompostos(valorInicial, taxaJuros, novaCobranca.tipoJuros, novaCobranca.dataInicio);
 
-    const novaCobrancaItem: Cobranca = {
-    id: Date.now().toString(),
-    nomeDevedor: novaCobranca.nomeDevedor,
-    valor: valorInicial,
-    valorAtual: valorAtual,
-    dataInicio: novaCobranca.dataInicio,
-    status: new Date(novaCobranca.dataInicio) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) ? 'atrasada' : 'ativa',
-    link: `${window.location.origin}/cobranca/${Date.now()}`,
-    taxaJuros: subscription.subscribed ? taxaJuros : undefined,
-    tipoJuros: subscription.subscribed ? novaCobranca.tipoJuros : undefined,
+    try {
+      const response = await fetch('http://localhost:5000/devedores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          nome: novaCobranca.nomeDevedor,
+          cpf_cnpj: '', // Campo vazio por enquanto
+          email: '', // Campo vazio por enquanto
+          telefone: '', // Campo vazio por enquanto
+          valor: valorInicial,
+          data_vencimento: novaCobranca.dataInicio,
+          taxa_juros: subscription.subscribed ? taxaJuros : null,
+          tipo_juros: subscription.subscribed ? novaCobranca.tipoJuros : null,
+        }),
+      });
+
+      if (response.ok) {
+        const novaCobrancaCriada = await response.json();
+        
+        // Recarregar cobranças do backend
+        await carregarCobrancas(user.id);
+        
+        setNovaCobranca({ nomeDevedor: "", valor: "", dataInicio: "", taxaJuros: "", tipoJuros: "mensal" });
+        toast({
+          title: "Cobrança criada com sucesso!",
+          description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,
+        });
+      } else {
+        throw new Error('Erro ao criar cobrança');
+      }
+    } catch (error) {
+      console.error('Erro ao criar cobrança:', error);
+      toast({
+        title: "Erro!",
+        description: "Não foi possível criar a cobrança. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
-
-  const novasCobrancas = [...cobrancas, novaCobrancaItem];
-  setCobrancas(novasCobrancas);
-
-  // **Salvar no localStorage**
-  localStorage.setItem("cobrancas", JSON.stringify(novasCobrancas));
-
-  setNovaCobranca({ nomeDevedor: "", valor: "", dataInicio: "", taxaJuros: "", tipoJuros: "mensal" });
-  toast({
-    title: "Cobrança criada com sucesso!",
-    description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,
-  });
-};
 
   const copiarLink = (link: string) => {
     navigator.clipboard.writeText(link);
