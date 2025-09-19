@@ -22,13 +22,35 @@ interface CobrancaData {
 const mensagensMotivacionais = [
   "💸 Que tal quitar essa e ficar livre? Sua tranquilidade vale mais!",
   "🚀 Pagamento em dia = nome limpo na praça! Bora resolver isso?",
-  "😎 Seja o herói da própria história: pague e seja admirado!"
+  "😎 Seja o herói da própria história: pague e seja admirado!",
+  "⚡ Aproveite e resolva agora! Nada como ficar sem dívidas!",
+  "💡 Quitar hoje é investir na sua paz de amanhã!",
+  "🔥 Não deixe para depois: cada dia conta para ficar tranquilo!",
+  "🏆 Pague agora e sinta a vitória de estar em dia!",
+  "💰 Dinheiro em dia é felicidade garantida!",
+  "🌟 Resolver suas cobranças é um passo para a liberdade financeira!",
+  "🎯 Foque no que importa: pagar e se livrar do estresse!",
+  "💌 Um lembrete amigável: pagar cedo é sempre melhor!",
+  "📅 Não adie! Um pequeno passo hoje evita dor de cabeça amanhã!",
+  "💎 Sua reputação agradece: pagamento em dia é sinal de responsabilidade!",
+  "🚀 Transforme essa cobrança em uma conquista pessoal!",
+  "✨ Liberte-se da preocupação e quite sua cobrança agora!"
 ];
+
 
 const CobrancaPublica = () => {
   const { id } = useParams();
   const [cobranca, setCobranca] = useState<CobrancaData | null>(null);
   const [mensagemAtual, setMensagemAtual] = useState(0);
+
+  // Faz as mensagens mudarem automaticamente
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setMensagemAtual(prev => (prev + 1) % mensagensMotivacionais.length);
+    }, 5000); // troca a cada 5 segundos
+
+    return () => clearInterval(intervalo);
+  }, []);
 
   const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: 'mensal' | 'diario', dataVencimento: string) => {
     const hoje = new Date();

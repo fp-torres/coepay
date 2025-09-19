@@ -65,35 +65,36 @@ const Dashboard = () => {
       const response = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
       if (response.ok) {
         const data = await response.json();
-        const cobrancasFormatadas = data.map((item: any) => {
-          let valorAtual = parseFloat(item.valor);
-          
-          // Calcular juros compostos se houver taxa e estiver vencido
-          if (item.taxa_juros && item.tipo_juros) {
-            valorAtual = calcularJurosCompostos(
-              parseFloat(item.valor),
-              parseFloat(item.taxa_juros),
-              item.tipo_juros,
-              item.data_vencimento
-            );
-          }
-          
-          const hoje = new Date();
-          const vencimento = new Date(item.data_vencimento);
-          const status = hoje > vencimento ? 'vencida' : 'ativa';
-          
-          return {
-            id: item.id.toString(),
-            nomeDevedor: item.nome,
-            valor: parseFloat(item.valor),
-            valorAtual: valorAtual,
-            dataVencimento: item.data_vencimento,
-            status: status,
-            link: item.link || `${window.location.origin}/cobranca/${item.id}`,
-            taxaJuros: item.taxa_juros ? parseFloat(item.taxa_juros) : undefined,
-            tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
-          };
-        });
+       const cobrancasFormatadas = data.map((item: any) => {
+        let valorAtual = parseFloat(item.valor);
+        
+        if (item.taxa_juros && item.tipo_juros) {
+          valorAtual = calcularJurosCompostos(
+            parseFloat(item.valor),
+            parseFloat(item.taxa_juros),
+            item.tipo_juros,
+            item.data_vencimento
+          );
+        }
+
+        const hoje = new Date();
+        const vencimento = new Date(item.data_vencimento);
+        const status = hoje > vencimento ? 'vencida' : 'ativa';
+
+        return {
+          id: item.id.toString(),
+          nomeDevedor: item.nome,
+          valor: parseFloat(item.valor),
+          valorAtual,
+          dataVencimento: item.data_vencimento,
+          status,
+          // usar frontend para link público
+          link: `${window.location.origin}/cobranca/${item.id}`,
+          taxaJuros: item.taxa_juros ? parseFloat(item.taxa_juros) : undefined,
+          tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
+        };
+      });
+
         setCobrancas(cobrancasFormatadas);
       }
     } catch (error) {
@@ -152,15 +153,15 @@ const Dashboard = () => {
         },
         body: JSON.stringify({
           user_id: user.id,
-          nome: novaCobranca.nomeDevedor,
-          cpf_cnpj: '', // Campo vazio por enquanto
-          email: '', // Campo vazio por enquanto
-          telefone: '', // Campo vazio por enquanto
-          valor: valorInicial,
-          data_vencimento: novaCobranca.dataVencimento,
-          taxa_juros: subscription.subscribed ? taxaJuros : null,
+          nome: novaCobranca.nomeDevedor || "Sem Nome",
+          cpf_cnpj: null,
+          email: null,
+          telefone: null,
+          valor: isNaN(valorInicial) ? 0 : valorInicial,
+          data_vencimento: novaCobranca.dataVencimento || new Date().toISOString().split('T')[0],
+          taxa_juros: subscription.subscribed ? (isNaN(taxaJuros) ? 0 : taxaJuros) : null,
           tipo_juros: subscription.subscribed ? novaCobranca.tipoJuros : null,
-        }),
+        })
       });
 
       if (response.ok) {
@@ -423,44 +424,65 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {cobrancas.map((cobranca) => (
-                  <div key={cobranca.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{cobranca.nomeDevedor}</h3>
-                        <Badge variant={cobranca.status === 'ativa' ? 'default' : 'destructive'}>
-                          {cobranca.status === 'ativa' ? 'No prazo' : 'Vencida'}
-                        </Badge>
+                {cobrancas.map((cobranca) => {
+                  const vencimento = new Date(cobranca.dataVencimento);
+                  const hoje = new Date();
+                  const estaVencida = hoje > vencimento;
+                  const dataFormatada = vencimento.toLocaleDateString('pt-BR');
+
+                  return (
+                    <div key={cobranca.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{cobranca.nomeDevedor}</h3>
+                          <Badge variant={cobranca.status === 'ativa' ? 'default' : 'destructive'}>
+                            {cobranca.status === 'ativa' ? 'No prazo' : 'Vencida'}
+                          </Badge>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <p className="text-lg font-bold text-red-600">
+                            R$ {((cobranca.valorAtual || cobranca.valor).toFixed(2)).replace('.', ',')}
+                          </p>
+                          {cobranca.valorAtual && cobranca.valorAtual !== cobranca.valor && (
+                            <span className="text-xs text-muted-foreground">
+                              (Original: R$ {cobranca.valor.toFixed(2).replace('.', ',')})
+                            </span>
+                          )}
+                        </div>
+
+                        {cobranca.taxaJuros && (
+                          <p className="text-xs text-blue-600">
+                            Juros: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
+                          </p>
+                        )}
+
+                        <p className="text-sm text-muted-foreground">
+                          {estaVencida ? `Vencida em: ${dataFormatada}` : `Vence em: ${dataFormatada}`}
+                        </p>
                       </div>
-                       <div className="flex items-center justify-between">
-                         <p className="text-lg font-bold text-red-600">
-                           R$ {((cobranca.valorAtual || cobranca.valor).toFixed(2)).replace('.', ',')}
-                         </p>
-                         {cobranca.valorAtual && cobranca.valorAtual !== cobranca.valor && (
-                           <span className="text-xs text-muted-foreground">
-                             (Original: R$ {cobranca.valor.toFixed(2).replace('.', ',')})
-                           </span>
-                         )}
-                       </div>
-                       {cobranca.taxaJuros && (
-                         <p className="text-xs text-blue-600">
-                           Juros: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
-                         </p>
-                       )}
-                       <p className="text-sm text-muted-foreground">
-                         Vence em: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
-                       </p>
+
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(cobranca.link, "_blank")}
+                        >
+                          Abrir Cobrança
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copiarLink(cobranca.link)}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copiar Link
+                        </Button>
+                      </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copiarLink(cobranca.link)}
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copiar Link
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
                 {cobrancas.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Nenhuma cobrança cadastrada ainda
@@ -469,6 +491,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+
         </div>
       </div>
     </div>
