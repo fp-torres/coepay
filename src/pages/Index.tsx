@@ -4,9 +4,9 @@ const Index = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/20">
       <div className="text-center space-y-6 p-8">
-        <h1 className="mb-4 text-5xl font-bold text-primary">CobrançaPag</h1>
+        <h1 className="mb-4 text-5xl font-bold text-primary">FlowPay</h1>
         <p className="text-xl text-muted-foreground mb-8">
-          Sistema inteligente de cobrança de pagamentos
+          Pagamentos fluídos e modernos para suas cobranças
         </p>
         <div className="space-y-4">
           <p className="text-muted-foreground">

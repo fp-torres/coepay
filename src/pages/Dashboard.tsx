@@ -22,8 +22,8 @@ interface Cobranca {
   nomeDevedor: string;
   valor: number;
   valorAtual?: number;
-  dataInicio: string;
-  status: 'ativa' | 'atrasada';
+  dataVencimento: string;
+  status: 'ativa' | 'vencida';
   link: string;
   taxaJuros?: number;
   tipoJuros?: 'mensal' | 'diario';
@@ -37,27 +37,63 @@ const Dashboard = () => {
   const [novaCobranca, setNovaCobranca] = useState({
     nomeDevedor: "",
     valor: "",
-    dataInicio: "",
+    dataVencimento: "",
     taxaJuros: "",
     tipoJuros: "mensal" as "mensal" | "diario",
   });
+
+  const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: 'mensal' | 'diario', dataVencimento: string) => {
+    const hoje = new Date();
+    const vencimento = new Date(dataVencimento);
+    
+    if (hoje <= vencimento) return valorInicial;
+    
+    const diffTime = hoje.getTime() - vencimento.getTime();
+    let periodos: number;
+    
+    if (tipo === 'diario') {
+      periodos = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    } else {
+      periodos = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Média de dias por mês
+    }
+    
+    return valorInicial * Math.pow(1 + (taxa / 100), periodos);
+  };
 
   const carregarCobrancas = async (userId: number) => {
     try {
       const response = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
       if (response.ok) {
         const data = await response.json();
-        const cobrancasFormatadas = data.map((item: any) => ({
-          id: item.id.toString(),
-          nomeDevedor: item.nome,
-          valor: parseFloat(item.valor),
-          valorAtual: item.valor_atual ? parseFloat(item.valor_atual) : parseFloat(item.valor),
-          dataInicio: item.data_vencimento,
-          status: item.status || 'ativa',
-          link: `${window.location.origin}/cobranca/${item.id}`,
-          taxaJuros: item.taxa_juros ? parseFloat(item.taxa_juros) : undefined,
-          tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
-        }));
+        const cobrancasFormatadas = data.map((item: any) => {
+          let valorAtual = parseFloat(item.valor);
+          
+          // Calcular juros compostos se houver taxa e estiver vencido
+          if (item.taxa_juros && item.tipo_juros) {
+            valorAtual = calcularJurosCompostos(
+              parseFloat(item.valor),
+              parseFloat(item.taxa_juros),
+              item.tipo_juros,
+              item.data_vencimento
+            );
+          }
+          
+          const hoje = new Date();
+          const vencimento = new Date(item.data_vencimento);
+          const status = hoje > vencimento ? 'vencida' : 'ativa';
+          
+          return {
+            id: item.id.toString(),
+            nomeDevedor: item.nome,
+            valor: parseFloat(item.valor),
+            valorAtual: valorAtual,
+            dataVencimento: item.data_vencimento,
+            status: status,
+            link: item.link || `${window.location.origin}/cobranca/${item.id}`,
+            taxaJuros: item.taxa_juros ? parseFloat(item.taxa_juros) : undefined,
+            tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
+          };
+        });
         setCobrancas(cobrancasFormatadas);
       }
     } catch (error) {
@@ -121,7 +157,7 @@ const Dashboard = () => {
           email: '', // Campo vazio por enquanto
           telefone: '', // Campo vazio por enquanto
           valor: valorInicial,
-          data_vencimento: novaCobranca.dataInicio,
+          data_vencimento: novaCobranca.dataVencimento,
           taxa_juros: subscription.subscribed ? taxaJuros : null,
           tipo_juros: subscription.subscribed ? novaCobranca.tipoJuros : null,
         }),
@@ -133,7 +169,7 @@ const Dashboard = () => {
         // Recarregar cobranças do backend
         await carregarCobrancas(user.id);
         
-        setNovaCobranca({ nomeDevedor: "", valor: "", dataInicio: "", taxaJuros: "", tipoJuros: "mensal" });
+        setNovaCobranca({ nomeDevedor: "", valor: "", dataVencimento: "", taxaJuros: "", tipoJuros: "mensal" });
         toast({
           title: "Cobrança criada com sucesso!",
           description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,
@@ -161,7 +197,7 @@ const Dashboard = () => {
 
   const totalReceber = cobrancas.reduce((sum, c) => sum + (c.valorAtual || c.valor), 0);
   const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa').length;
-  const cobrancasAtrasadas = cobrancas.filter(c => c.status === 'atrasada').length;
+  const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida').length;
 
   if (!user) return null;
 
@@ -227,11 +263,11 @@ const Dashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cobranças Atrasadas</CardTitle>
+              <CardTitle className="text-sm font-medium">Cobranças Vencidas</CardTitle>
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{cobrancasAtrasadas}</div>
+              <div className="text-2xl font-bold text-red-600">{cobrancasVencidas}</div>
             </CardContent>
           </Card>
         </div>
@@ -309,14 +345,17 @@ const Dashboard = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="data-inicio">Data de Início</Label>
+                  <Label htmlFor="data-vencimento">Data de Vencimento</Label>
                   <Input
-                    id="data-inicio"
+                    id="data-vencimento"
                     type="date"
-                    value={novaCobranca.dataInicio}
-                    onChange={(e) => setNovaCobranca({ ...novaCobranca, dataInicio: e.target.value })}
+                    value={novaCobranca.dataVencimento}
+                    onChange={(e) => setNovaCobranca({ ...novaCobranca, dataVencimento: e.target.value })}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    A partir desta data os juros começam a contar
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label>Sua Chave PIX</Label>
@@ -390,7 +429,7 @@ const Dashboard = () => {
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold">{cobranca.nomeDevedor}</h3>
                         <Badge variant={cobranca.status === 'ativa' ? 'default' : 'destructive'}>
-                          {cobranca.status}
+                          {cobranca.status === 'ativa' ? 'No prazo' : 'Vencida'}
                         </Badge>
                       </div>
                        <div className="flex items-center justify-between">
@@ -408,9 +447,9 @@ const Dashboard = () => {
                            Juros: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
                          </p>
                        )}
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(cobranca.dataInicio).toLocaleDateString('pt-BR')}
-                      </p>
+                       <p className="text-sm text-muted-foreground">
+                         Vence em: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
+                       </p>
                     </div>
                     <Button
                       variant="outline"

@@ -51,6 +51,42 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+// BUSCAR DEVEDOR POR ID (para página pública de cobrança)
+app.get("/devedores/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT * FROM devedores WHERE id = $1",
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Cobrança não encontrada" });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao buscar cobrança" });
+  }
+});
+
+// BUSCAR USUÁRIO POR ID (para pegar PIX na página pública)
+app.get("/users/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT id, name, email, pix FROM users WHERE id = $1",
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao buscar usuário" });
+  }
+});
+
 app.listen(5000, () => console.log("Server running on port 5000"));
 
 // BUSCAR DEVEDORES POR USUÁRIO
@@ -72,12 +108,24 @@ app.get("/devedores", async (req, res) => {
 app.post("/devedores", async (req, res) => {
   const { user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros } = req.body;
   try {
+    // Gerar link da cobrança
+    const link = `${req.protocol}://${req.get('host')}/cobranca/TEMP_ID`;
+    
     const result = await pool.query(
       `INSERT INTO devedores 
-       (user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros) 
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-      [user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros]
+       (user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, status, link) 
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+      [user_id, nome, cpf_cnpj, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, 'ativa', link]
     );
+    
+    // Atualizar o link com o ID real
+    const linkAtualizado = link.replace('TEMP_ID', result.rows[0].id);
+    await pool.query(
+      "UPDATE devedores SET link = $1 WHERE id = $2",
+      [linkAtualizado, result.rows[0].id]
+    );
+    
+    result.rows[0].link = linkAtualizado;
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);

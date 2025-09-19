@@ -10,10 +10,13 @@ interface CobrancaData {
   id: string;
   nomeDevedor: string;
   valor: number;
-  dataInicio: string;
-  diasAtraso: number;
+  valorAtual: number;
+  dataVencimento: string;
+  diasVencido: number;
   pixCobranca: string;
-  status: 'ativa' | 'atrasada';
+  status: 'ativa' | 'vencida';
+  taxaJuros?: number;
+  tipoJuros?: string;
 }
 
 const mensagensMotivacionais = [
@@ -27,45 +30,74 @@ const CobrancaPublica = () => {
   const [cobranca, setCobranca] = useState<CobrancaData | null>(null);
   const [mensagemAtual, setMensagemAtual] = useState(0);
 
+  const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: 'mensal' | 'diario', dataVencimento: string) => {
+    const hoje = new Date();
+    const vencimento = new Date(dataVencimento);
+    
+    if (hoje <= vencimento) return valorInicial;
+    
+    const diffTime = hoje.getTime() - vencimento.getTime();
+    let periodos: number;
+    
+    if (tipo === 'diario') {
+      periodos = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    } else {
+      periodos = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Média de dias por mês
+    }
+    
+    return valorInicial * Math.pow(1 + (taxa / 100), periodos);
+  };
+
   useEffect(() => {
-  const storedCobrancas = localStorage.getItem("cobrancas");
-  const cobrancasObj = storedCobrancas ? JSON.parse(storedCobrancas) : [];
+    const carregarCobranca = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/devedores/${id}`);
+        if (response.ok) {
+          const cobrancaData = await response.json();
+          
+          let valorAtual = parseFloat(cobrancaData.valor);
+          
+          // Calcular juros compostos se houver taxa e estiver vencido
+          if (cobrancaData.taxa_juros && cobrancaData.tipo_juros) {
+            valorAtual = calcularJurosCompostos(
+              parseFloat(cobrancaData.valor),
+              parseFloat(cobrancaData.taxa_juros),
+              cobrancaData.tipo_juros,
+              cobrancaData.data_vencimento
+            );
+          }
+          
+          const hoje = new Date();
+          const vencimento = new Date(cobrancaData.data_vencimento);
+          const status = hoje > vencimento ? 'vencida' : 'ativa';
+          const diasVencido = hoje > vencimento ? Math.ceil((hoje.getTime() - vencimento.getTime()) / (1000*60*60*24)) : 0;
+          
+          // Buscar dados do usuário para pegar o PIX
+          const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
+          const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
+          
+          setCobranca({
+            id: cobrancaData.id.toString(),
+            nomeDevedor: cobrancaData.nome,
+            valor: parseFloat(cobrancaData.valor),
+            valorAtual: valorAtual,
+            dataVencimento: cobrancaData.data_vencimento,
+            diasVencido: diasVencido,
+            pixCobranca: userData.pix || '',
+            status: status,
+            taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,
+            tipoJuros: cobrancaData.tipo_juros
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao carregar cobrança:', error);
+      }
+    };
 
-  const cobrancaData = cobrancasObj.find((c: any) => c.id === id);
-  if (cobrancaData) {
-    setCobranca({
-      id: cobrancaData.id,
-      nomeDevedor: cobrancaData.nomeDevedor,
-      valor: cobrancaData.valorAtual || cobrancaData.valor,
-      dataInicio: cobrancaData.dataInicio,
-      diasAtraso: cobrancaData.status === 'atrasada'
-        ? Math.ceil((new Date().getTime() - new Date(cobrancaData.dataInicio).getTime()) / (1000*60*60*24))
-        : 0,
-      pixCobranca: JSON.parse(localStorage.getItem("user") || "{}").pix,
-      status: cobrancaData.status
-    });
-  }
-}, [id]);
-
-
-useEffect(() => {
-  const storedCobrancas = localStorage.getItem("cobrancas");
-  const cobrancasObj = storedCobrancas ? JSON.parse(storedCobrancas) : [];
-
-  const cobrancaData = cobrancasObj.find((c: any) => c.id === id);
-  if (cobrancaData) {
-    setCobranca({
-      id: cobrancaData.id,
-      nomeDevedor: cobrancaData.nomeDevedor,
-      valor: cobrancaData.valorAtual || cobrancaData.valor,
-      dataInicio: cobrancaData.dataInicio,
-      diasAtraso: cobrancaData.status === 'atrasada' ? Math.ceil((new Date().getTime() - new Date(cobrancaData.dataInicio).getTime()) / (1000*60*60*24)) : 0,
-      pixCobranca: JSON.parse(localStorage.getItem("user") || "{}").pix,
-      status: cobrancaData.status
-    });
-  }
-}, [id]);
-;
+    if (id) {
+      carregarCobranca();
+    }
+  }, [id]);
 
   const gerarQRCode = (pix: string, valor: number, nome: string) => {
     // Em um caso real, aqui seria gerado um QR Code PIX válido
@@ -105,7 +137,7 @@ useEffect(() => {
         <Card className="mb-6 border-l-4 border-l-orange-500">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2">
-              {cobranca.status === 'atrasada' ? (
+              {cobranca.status === 'vencida' ? (
                 <AlertTriangle className="w-5 h-5 text-red-500" />
               ) : (
                 <Clock className="w-5 h-5 text-orange-500" />
@@ -115,19 +147,31 @@ useEffect(() => {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <div className="text-4xl font-bold text-red-600">
-              R$ {cobranca.valor.toFixed(2).replace('.', ',')}
+              R$ {cobranca.valorAtual.toFixed(2).replace('.', ',')}
             </div>
             
-            {cobranca.status === 'atrasada' && (
+            {cobranca.valorAtual !== cobranca.valor && (
+              <div className="text-sm text-muted-foreground">
+                Valor original: R$ {cobranca.valor.toFixed(2).replace('.', ',')}
+              </div>
+            )}
+            
+            {cobranca.taxaJuros && cobranca.status === 'vencida' && (
+              <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                Juros aplicados: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
+              </div>
+            )}
+            
+            {cobranca.status === 'vencida' && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <Badge variant="destructive" className="mb-2">
-                  Cobrança Atrasada
+                  Cobrança Vencida
                 </Badge>
                 <p className="text-sm text-red-700">
-                  Data de vencimento: {new Date(cobranca.dataInicio).toLocaleDateString('pt-BR')}
+                  Data de vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
                 </p>
                 <p className="text-sm font-semibold text-red-700">
-                  {cobranca.diasAtraso} dia(s) em atraso
+                  {cobranca.diasVencido} dia(s) vencido(s)
                 </p>
               </div>
             )}
@@ -135,10 +179,10 @@ useEffect(() => {
             {cobranca.status === 'ativa' && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <Badge variant="default" className="mb-2">
-                  Cobrança Ativa
+                  No Prazo
                 </Badge>
                 <p className="text-sm text-blue-700">
-                  Data de vencimento: {new Date(cobranca.dataInicio).toLocaleDateString('pt-BR')}
+                  Data de vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
                 </p>
               </div>
             )}
@@ -153,7 +197,7 @@ useEffect(() => {
           <CardContent className="text-center space-y-4">
             <div className="flex justify-center">
               <img
-                src={gerarQRCode(cobranca.pixCobranca, cobranca.valor, cobranca.nomeDevedor)}
+                src={gerarQRCode(cobranca.pixCobranca, cobranca.valorAtual, cobranca.nomeDevedor)}
                 alt="QR Code PIX"
                 className="w-48 h-48 border rounded-lg"
               />
@@ -163,7 +207,7 @@ useEffect(() => {
               <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
               <div className="flex items-center justify-between bg-background p-2 rounded border">
                 <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
-                <Button size="sm" variant="outline" onClick={cobrancaData => {
+                <Button size="sm" variant="outline" onClick={() => {
                   navigator.clipboard.writeText(cobranca.pixCobranca);
                   toast({
                     title: "Chave PIX copiada!",

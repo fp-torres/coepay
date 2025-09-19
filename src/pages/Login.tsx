@@ -52,8 +52,8 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/10 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">CobrançaPag</CardTitle>
-          <CardDescription>Sistema de cobrança de pagamentos</CardDescription>
+          <CardTitle className="text-2xl font-bold text-primary">FlowPay</CardTitle>
+          <CardDescription>Pagamentos fluídos e modernos</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
