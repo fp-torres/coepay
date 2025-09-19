@@ -442,15 +442,17 @@ const Dashboard = () => {
                           </Badge>
                         </div>
 
-                        <div className="flex items-center justify-between">
-                          <p className="text-lg font-bold text-red-600">
-                            R$ {((cobranca.valorAtual || cobranca.valor).toFixed(2)).replace('.', ',')}
+                        {/* Valores originais*/}
+                        <div className="flex items-end gap-2">
+                          <p className="text-xl font-bold text-red-600">
+                            R$ {(cobranca.valorAtual || cobranca.valor).toFixed(2).replace(".", ",")}
                           </p>
-                          {cobranca.valorAtual && cobranca.valorAtual !== cobranca.valor && (
-                            <span className="text-xs text-muted-foreground">
-                              (Original: R$ {cobranca.valor.toFixed(2).replace('.', ',')})
-                            </span>
-                          )}
+                          {cobranca.valorAtual &&
+                            cobranca.valorAtual !== cobranca.valor && (
+                              <p className="text-sm text-muted-foreground line-through">
+                                R$ {cobranca.valor.toFixed(2).replace(".", ",")}
+                              </p>
+                            )}
                         </div>
 
                         {cobranca.taxaJuros && (
