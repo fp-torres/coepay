@@ -154,13 +154,12 @@ const Dashboard = () => {
         body: JSON.stringify({
           user_id: user.id,
           nome: novaCobranca.nomeDevedor || "Sem Nome",
-          cpf_cnpj: null,
           email: null,
           telefone: null,
           valor: isNaN(valorInicial) ? 0 : valorInicial,
           data_vencimento: novaCobranca.dataVencimento || new Date().toISOString().split('T')[0],
-          taxa_juros: subscription.subscribed ? (isNaN(taxaJuros) ? 0 : taxaJuros) : null,
-          tipo_juros: subscription.subscribed ? novaCobranca.tipoJuros : null,
+          taxa_juros: novaCobranca.taxaJuros,  
+          tipo_juros: novaCobranca.tipoJuros, 
         })
       });
 
@@ -383,7 +382,8 @@ const Dashboard = () => {
                     value={novaCobranca.taxaJuros}
                     onChange={(e) => setNovaCobranca({ ...novaCobranca, taxaJuros: e.target.value })}
                     placeholder="Ex: 2.5"
-                    disabled={!user?.isPremium}
+                    // disabled={!user?.isPremium}
+                    disabled={false}
                   />
                 </div>
                 
@@ -396,7 +396,9 @@ const Dashboard = () => {
                     id="tipo-juros"
                     value={novaCobranca.tipoJuros}
                     onChange={(e) => setNovaCobranca({ ...novaCobranca, tipoJuros: e.target.value as 'mensal' | 'diario' })}
-                    disabled={!user?.isPremium}
+                    // disabled={!user?.isPremium}
+                    disabled={false}
+
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="mensal">Ao mês</option>
