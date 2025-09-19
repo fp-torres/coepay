@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cobrancas: {
+        Row: {
+          created_at: string | null
+          data_inicio: string
+          id: number
+          link_cobranca: string | null
+          nome_devedor: string
+          status: string | null
+          taxa_juros: number | null
+          tipo_juros: string | null
+          updated_at: string | null
+          user_id: number
+          valor: number
+          valor_atual: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_inicio: string
+          id?: number
+          link_cobranca?: string | null
+          nome_devedor: string
+          status?: string | null
+          taxa_juros?: number | null
+          tipo_juros?: string | null
+          updated_at?: string | null
+          user_id: number
+          valor: number
+          valor_atual?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          data_inicio?: string
+          id?: number
+          link_cobranca?: string | null
+          nome_devedor?: string
+          status?: string | null
+          taxa_juros?: number | null
+          tipo_juros?: string | null
+          updated_at?: string | null
+          user_id?: number
+          valor?: number
+          valor_atual?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cobrancas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: number
+          name: string
+          password: string
+          pix: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: number
+          name: string
+          password: string
+          pix?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: number
+          name?: string
+          password?: string
+          pix?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
