@@ -142,7 +142,7 @@ const Dashboard = () => {
       return;
     }
 
-    const valorInicial = parseFloat(novaCobranca.valor);
+const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replace(',', '.'));
     const taxaJuros = subscription.subscribed ? parseFloat(novaCobranca.taxaJuros) || 0 : 0;
 
     try {
@@ -200,6 +200,19 @@ const Dashboard = () => {
   const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida').length;
 
   if (!user) return null;
+
+  // Formatar input como moeda (R$)
+  const formatarMoeda = (valor: string) => {
+    const apenasNumeros = valor.replace(/\D/g, '');
+    const numero = parseFloat(apenasNumeros) / 100;
+
+    if (isNaN(numero)) return '';
+    
+    return numero.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -337,12 +350,16 @@ const Dashboard = () => {
                   <Label htmlFor="valor">Valor da Dívida (R$)</Label>
                   <Input
                     id="valor"
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="numeric"
                     value={novaCobranca.valor}
-                    onChange={(e) => setNovaCobranca({ ...novaCobranca, valor: e.target.value })}
+                    onChange={(e) => {
+                      const valorFormatado = formatarMoeda(e.target.value);
+                      setNovaCobranca({ ...novaCobranca, valor: valorFormatado });
+                    }}
                     required
                   />
+
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="data-vencimento">Data de Vencimento</Label>
