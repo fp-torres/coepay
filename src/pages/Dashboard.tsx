@@ -342,7 +342,10 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
                   <Input
                     id="nome-devedor"
                     value={novaCobranca.nomeDevedor}
-                    onChange={(e) => setNovaCobranca({ ...novaCobranca, nomeDevedor: e.target.value })}
+                    onChange={(e) => {
+                      const apenasLetras = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
+                      setNovaCobranca({ ...novaCobranca, nomeDevedor: apenasLetras });
+                    }}
                     required
                   />
                 </div>
