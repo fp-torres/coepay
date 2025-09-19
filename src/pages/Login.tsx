@@ -12,35 +12,41 @@ const Login = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "", pix: "" });
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Mock login - store user data in localStorage
-    localStorage.setItem("user", JSON.stringify({
-      name: "Usuario Demo",
-      email: loginData.email,
-      pix: "usuario@pix.com"
-    }));
-    toast({
-      title: "Login realizado com sucesso!",
-      description: "Bem-vindo ao sistema de cobranças",
+  const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const res = await fetch("http://localhost:5000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loginData),
     });
+    if (!res.ok) throw new Error("Login inválido");
+    const data = await res.json();
+    localStorage.setItem("user", JSON.stringify(data));
+    toast({ title: "Login realizado com sucesso!" });
     navigate("/dashboard");
+  } catch (err: any) {
+    toast({ title: "Erro", description: err.message });
+  }
+};
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:5000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(signupData),
+      });
+      if (!res.ok) throw new Error("Erro ao cadastrar");
+      const data = await res.json();
+      toast({ title: data.message });
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message });
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Mock signup - store user data in localStorage
-    localStorage.setItem("user", JSON.stringify({
-      name: signupData.name,
-      email: signupData.email,
-      pix: signupData.pix
-    }));
-    toast({
-      title: "Cadastro realizado com sucesso!",
-      description: `Bem-vindo, ${signupData.name}!`,
-    });
-    navigate("/dashboard");
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/10 p-4">
