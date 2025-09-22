@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Copy, LogOut, Plus, TrendingUp, Clock, AlertTriangle, Crown, CreditCard } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useSubscription } from "@/hooks/useSubscription";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardCards } from "@/components/dashboard/DashboardCards";
+import { UpgradePremiumCard } from "@/components/dashboard/UpgradePremiumCard";
+import { NovaCobrancaForm } from "@/components/dashboard/NovaCobrancaForm";
+import { CobrancasList } from "@/components/dashboard/CobrancasList";
 
 interface User {
   id: number;
@@ -243,340 +243,40 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
 
   if (!user) return null;
 
-  // Formatar input como moeda (R$)
-  const formatarMoeda = (valor: string) => {
-    const apenasNumeros = valor.replace(/\D/g, '');
-    const numero = parseFloat(apenasNumeros) / 100;
-
-    if (isNaN(numero)) return '';
-    
-    return numero.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
-  };
-
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-primary">Olá, {user.name}!</h1>
-              {subscription.subscribed && (
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-                  <Crown className="w-3 h-3 mr-1" />
-                  Premium
-                </Badge>
-              )}
-            </div>
-            <p className="text-muted-foreground">
-              Gerencie suas cobranças 
-              {!subscription.subscribed && (
-                <span className="text-amber-600"> • {cobrancas.length}/3 cobranças usadas</span>
-              )}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {subscription.subscribed && (
-              <Button variant="outline" size="sm" onClick={subscription.openCustomerPortal}>
-                <CreditCard className="w-4 h-4 mr-2" />
-                Gerenciar Assinatura
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </div>
+        <DashboardHeader 
+          user={user} 
+          subscription={subscription} 
+          cobrancasCount={cobrancas.length}
+          onLogout={handleLogout} 
+        />
 
-        {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total a Receber</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                R$ {totalReceber.toFixed(2).replace('.', ',')}
-              </div>
-            </CardContent>
-          </Card>
+        <DashboardCards 
+          totalReceber={totalReceber}
+          cobrancasAtivas={cobrancasAtivas}
+          cobrancasVencidas={cobrancasVencidas}
+        />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cobranças Ativas</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{cobrancasAtivas}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cobranças Vencidas</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{cobrancasVencidas}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Upgrade para Premium Card - só aparece para usuários não premium */}
         {!subscription.subscribed && (
-          <Card className="border-2 border-dashed border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50">
-            <CardHeader>
-              <CardTitle className="flex items-center text-amber-800">
-                <Crown className="w-5 h-5 mr-2" />
-                Upgrade para Premium
-              </CardTitle>
-              <CardDescription>
-                Desbloqueie recursos avançados e cobranças ilimitadas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">🚀 Recursos Premium:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Cobranças ilimitadas</li>
-                    <li>• Juros compostos automáticos</li>
-                    <li>• Cálculo por dia ou mês</li>
-                    <li>• Relatórios avançados</li>
-                  </ul>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">💰 Preço:</h4>
-                  <p className="text-2xl font-bold text-green-600">R$ 29,90/mês</p>
-                  <Button 
-                    onClick={subscription.createCheckout}
-                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-                    disabled={subscription.loading}
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    {subscription.loading ? "Carregando..." : "Assinar Premium"}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <UpgradePremiumCard subscription={subscription} />
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Criar Nova Cobrança */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Plus className="w-5 h-5 mr-2" />
-                Nova Cobrança
-              </CardTitle>
-              <CardDescription>Preencha os dados do devedor</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={criarCobranca} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome-devedor">Nome do Devedor</Label>
-                  <Input
-                    id="nome-devedor"
-                    value={novaCobranca.nomeDevedor}
-                    onChange={(e) => {
-                      const apenasLetras = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
-                      setNovaCobranca({ ...novaCobranca, nomeDevedor: apenasLetras });
-                    }}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="valor">Valor da Dívida (R$)</Label>
-                  <Input
-                    id="valor"
-                    type="text"
-                    inputMode="numeric"
-                    value={novaCobranca.valor}
-                    onChange={(e) => {
-                      const valorFormatado = formatarMoeda(e.target.value);
-                      setNovaCobranca({ ...novaCobranca, valor: valorFormatado });
-                    }}
-                    required
-                  />
+          <NovaCobrancaForm 
+            user={user}
+            novaCobranca={novaCobranca}
+            setNovaCobranca={setNovaCobranca}
+            setUser={setUser}
+            onSubmit={criarCobranca}
+          />
 
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="data-vencimento">Data de Vencimento</Label>
-                  <Input
-                    id="data-vencimento"
-                    type="date"
-                    value={novaCobranca.dataVencimento}
-                    onChange={(e) => setNovaCobranca({ ...novaCobranca, dataVencimento: e.target.value })}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    A partir desta data os juros começam a contar
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Sua Chave PIX</Label>
-                  <Input 
-                    value={user.pix} 
-                    onChange={(e) => {
-                      const updatedUser = { ...user, pix: e.target.value };
-                      setUser(updatedUser);
-                      localStorage.setItem("user", JSON.stringify(updatedUser));
-                    }}
-                  />
-                </div>
-                
-                {/* Campos de Juros Compostos - Premium */}
-                <div className="space-y-2">
-                  <Label htmlFor="taxa-juros" className="flex items-center gap-2">
-                    Taxa de Juros
-                    {!user?.isPremium && (
-                      <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">💎 Premium</span>
-                    )}
-                  </Label>
-
-                  <div className="relative">
-                    <Input
-                      id="taxa-juros"
-                      type="text"
-                      value={novaCobranca.taxaJuros}
-                      onChange={(e) => {
-                        const somenteNumeros = e.target.value.replace(/\D/g, '');
-                        const formatado = somenteNumeros ? (parseInt(somenteNumeros) / 10).toFixed(1) : '';
-                        setNovaCobranca({ ...novaCobranca, taxaJuros: formatado });
-                      }}
-                      placeholder="Ex: 2.5"
-                      className="pr-8" // espaço para o %
-                      disabled={false}
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
-                      %
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tipo-juros" className="flex items-center gap-2">
-                    Período dos Juros
-                    {!user?.isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">💎 Premium</span>}
-                  </Label>
-                  <select 
-                    id="tipo-juros"
-                    value={novaCobranca.tipoJuros}
-                    onChange={(e) => setNovaCobranca({ ...novaCobranca, tipoJuros: e.target.value as 'mensal' | 'diario' })}
-                    // disabled={!user?.isPremium}
-                    disabled={false}
-
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="mensal">Ao mês</option>
-                    <option value="diario">Ao dia</option>
-                  </select>
-                </div>
-                
-                {!user?.isPremium && (
-                  <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                    💎 <strong>Premium:</strong> Upgrade para adicionar juros compostos às suas cobranças e criar cobranças ilimitadas!
-                    <br />
-                    <span className="text-xs">Exemplo: R$ 100,00 em 01/01/2025 com 2% ao mês = R$ 102,00 após 1 mês</span>
-                  </div>
-                )}
-                <Button type="submit" className="w-full">Criar Cobrança</Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Suas Cobranças */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Suas Cobranças</CardTitle>
-              <CardDescription>{cobrancas.length} cobrança(s) cadastrada(s)</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {cobrancas.map((cobranca) => {
-                  const vencimento = new Date(cobranca.dataVencimento);
-                  const hoje = new Date();
-                  const estaVencida = hoje > vencimento;
-                  const dataFormatada = vencimento.toLocaleDateString('pt-BR');
-
-                  return (
-                    <div key={cobranca.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{cobranca.nomeDevedor}</h3>
-                          <Badge variant={cobranca.status === 'ativa' ? 'default' : 'destructive'}>
-                            {cobranca.status === 'ativa' ? 'No prazo' : 'Vencida'}
-                          </Badge>
-                        </div>
-
-                        {/* Valores originais*/}
-                        <div className="flex items-end gap-2">
-                          <p className="text-xl font-bold text-red-600">
-                            R$ {(cobranca.valorAtual || cobranca.valor).toFixed(2).replace(".", ",")}
-                          </p>
-                          {cobranca.valorAtual &&
-                            cobranca.valorAtual !== cobranca.valor && (
-                              <p className="text-sm text-muted-foreground line-through">
-                                R$ {cobranca.valor.toFixed(2).replace(".", ",")}
-                              </p>
-                            )}
-                        </div>
-
-                        {cobranca.taxaJuros && (
-                          <p className="text-xs text-blue-600">
-                            Juros: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
-                          </p>
-                        )}
-
-                        <p className="text-sm text-muted-foreground">
-                          {estaVencida ? `Vencida em: ${dataFormatada}` : `Vence em: ${dataFormatada}`}
-                        </p>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(cobranca.link, "_blank")}
-                        >
-                          Abrir Cobrança
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copiarLink(cobranca.link)}
-                        >
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copiar Link
-                        </Button>
-
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => excluirCobranca(cobranca.id)}
-                        className="bg-red-700 hover:bg-red-800"
-                      >
-                        Excluir
-                      </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-                {cobrancas.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">
-                    Nenhuma cobrança cadastrada ainda
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
+          <CobrancasList 
+            cobrancas={cobrancas}
+            onCopiarLink={copiarLink}
+            onExcluirCobranca={excluirCobranca}
+          />
         </div>
       </div>
     </div>
