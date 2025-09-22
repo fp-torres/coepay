@@ -159,3 +159,22 @@ app.get("/cobranca/:id", async (req, res) => {
     res.status(500).json({ message: "Erro ao buscar cobrança" });
   }
 });
+
+// EXCLUIR COBRANÇA (DEVEDOR)
+app.delete("/devedores/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query("DELETE FROM devedores WHERE id = $1", [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Cobrança não encontrada" });
+    }
+
+    res.json({ message: "Cobrança excluída com sucesso" });
+  } catch (err) {
+    console.error("Erro ao excluir cobrança:", err);
+    res.status(500).json({ message: "Erro ao excluir cobrança" });
+  }
+});
+

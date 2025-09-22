@@ -194,6 +194,48 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
       description: "O link da cobrança foi copiado para a área de transferência.",
     });
   };
+  const excluirCobranca = (id: string) => {
+    toast({
+      title: "Confirmar exclusão?",
+      description: "Você tem certeza que deseja excluir esta cobrança?",
+      action: (
+        <Button
+          variant="destructive"
+          onClick={async () => {
+            try {
+              const response = await fetch(`http://localhost:5000/devedores/${id}`, {
+                method: "DELETE",
+              });
+
+              if (!response.ok) {
+                throw new Error("Erro ao excluir");
+              }
+
+              toast({
+                title: "Cobrança excluída",
+                description: "A cobrança foi removida com sucesso.",
+              });
+
+              // Recarrega a lista
+              if (user?.id) {
+                carregarCobrancas(user.id);
+              }
+            } catch (err) {
+              console.error(err);
+              toast({
+                title: "Erro ao excluir",
+                description: "Não foi possível excluir a cobrança.",
+                variant: "destructive",
+              });
+            }
+          }}
+        >
+          Confirmar
+        </Button>
+      ),
+    });
+  };
+
 
   const totalReceber = cobrancas.reduce((sum, c) => sum + (c.valorAtual || c.valor), 0);
   const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa').length;
@@ -485,7 +527,6 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
                           {estaVencida ? `Vencida em: ${dataFormatada}` : `Vence em: ${dataFormatada}`}
                         </p>
                       </div>
-
                       <div className="flex flex-col gap-2">
                         <Button
                           variant="outline"
@@ -503,6 +544,15 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
                           <Copy className="w-4 h-4 mr-2" />
                           Copiar Link
                         </Button>
+
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => excluirCobranca(cobranca.id)}
+                        className="bg-red-700 hover:bg-red-800"
+                      >
+                        Excluir
+                      </Button>
                       </div>
                     </div>
                   );
