@@ -434,21 +434,32 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
                 {/* Campos de Juros Compostos - Premium */}
                 <div className="space-y-2">
                   <Label htmlFor="taxa-juros" className="flex items-center gap-2">
-                    Taxa de Juros (%)
-                    {!user?.isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">💎 Premium</span>}
+                    Taxa de Juros
+                    {!user?.isPremium && (
+                      <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">💎 Premium</span>
+                    )}
                   </Label>
-                  <Input
-                    id="taxa-juros"
-                    type="number"
-                    step="0.01"
-                    value={novaCobranca.taxaJuros}
-                    onChange={(e) => setNovaCobranca({ ...novaCobranca, taxaJuros: e.target.value })}
-                    placeholder="Ex: 2.5"
-                    // disabled={!user?.isPremium}
-                    disabled={false}
-                  />
+
+                  <div className="relative">
+                    <Input
+                      id="taxa-juros"
+                      type="text"
+                      value={novaCobranca.taxaJuros}
+                      onChange={(e) => {
+                        const somenteNumeros = e.target.value.replace(/\D/g, '');
+                        const formatado = somenteNumeros ? (parseInt(somenteNumeros) / 10).toFixed(1) : '';
+                        setNovaCobranca({ ...novaCobranca, taxaJuros: formatado });
+                      }}
+                      placeholder="Ex: 2.5"
+                      className="pr-8" // espaço para o %
+                      disabled={false}
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                      %
+                    </div>
+                  </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="tipo-juros" className="flex items-center gap-2">
                     Período dos Juros
