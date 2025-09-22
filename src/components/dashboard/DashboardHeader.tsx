@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Crown, CreditCard } from "lucide-react";
+import { RelatoriosAvancados } from "./RelatoriosAvancados";
 
 interface User {
   id: number;
@@ -10,6 +11,18 @@ interface User {
   isPremium?: boolean;
 }
 
+interface Cobranca {
+  id: string;
+  nomeDevedor: string;
+  valor: number;
+  valorAtual?: number;
+  dataVencimento: string;
+  status: 'ativa' | 'vencida';
+  link: string;
+  taxaJuros?: number;
+  tipoJuros?: 'mensal' | 'diario';
+}
+
 interface DashboardHeaderProps {
   user: User;
   subscription: {
@@ -17,10 +30,11 @@ interface DashboardHeaderProps {
     openCustomerPortal: () => void;
   };
   cobrancasCount: number;
+  cobrancas: Cobranca[];
   onLogout: () => void;
 }
 
-export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ user, subscription, cobrancasCount, cobrancas, onLogout }: DashboardHeaderProps) => {
   return (
     <div className="flex justify-between items-center">
       <div>
@@ -41,6 +55,7 @@ export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }
         </p>
       </div>
       <div className="flex items-center gap-2">
+        <RelatoriosAvancados cobrancas={cobrancas} subscription={subscription} />
         {subscription.subscribed && (
           <Button variant="outline" size="sm" onClick={subscription.openCustomerPortal}>
             <CreditCard className="w-4 h-4 mr-2" />
