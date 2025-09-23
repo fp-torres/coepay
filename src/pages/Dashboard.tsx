@@ -250,7 +250,6 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
           user={user} 
           subscription={subscription} 
           cobrancasCount={cobrancas.length}
-          cobrancas={cobrancas}
           onLogout={handleLogout} 
         />
 
