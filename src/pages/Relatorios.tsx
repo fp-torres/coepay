@@ -72,9 +72,11 @@ export default function Relatorios() {
         const data = await response.json();
         
         const cobrancasProcessadas = data.map((cobranca: any) => {
-          const valorAtual = cobranca.taxa_juros && cobranca.tipo_juros
-            ? calcularJurosCompostos(cobranca.valor, cobranca.taxa_juros, cobranca.tipo_juros, cobranca.data_vencimento)
-            : cobranca.valor;
+          const valorNum = Number(cobranca.valor);
+          const taxaJurosNum = Number(cobranca.taxa_juros);
+          const valorAtual = (taxaJurosNum && cobranca.tipo_juros)
+            ? calcularJurosCompostos(valorNum, taxaJurosNum, cobranca.tipo_juros, cobranca.data_vencimento)
+            : valorNum;
           
           const hoje = new Date();
           const vencimento = new Date(cobranca.data_vencimento);
@@ -83,15 +85,16 @@ export default function Relatorios() {
           return {
             id: cobranca.id,
             nomeDevedor: cobranca.nome,
-            valor: cobranca.valor,
+            valor: valorNum,
             valorAtual,
             dataVencimento: cobranca.data_vencimento,
             status,
             link: cobranca.link,
-            taxaJuros: cobranca.taxa_juros,
+            taxaJuros: taxaJurosNum,
             tipoJuros: cobranca.tipo_juros
           };
         });
+
         
         setCobrancas(cobrancasProcessadas);
       } catch (error) {
