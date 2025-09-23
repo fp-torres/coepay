@@ -57,6 +57,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        flowpay: {
+          primary: "hsl(var(--flow-primary))",
+          secondary: "hsl(var(--flow-secondary))",
+          success: "hsl(var(--flow-success))",
+          warning: "hsl(var(--flow-warning))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

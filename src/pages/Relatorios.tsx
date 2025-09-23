@@ -61,10 +61,11 @@ export default function Relatorios() {
       const usuario = JSON.parse(userData);
 
       try {
-        if (!subscription.subscribed) {
-          navigate('/dashboard');
-          return;
-        }
+        // Temporariamente desabilitado - funcionalidade premium
+        // if (!subscription.subscribed) {
+        //   navigate('/dashboard');
+        //   return;
+        // }
 
         // Carregar cobranças
         const response = await fetch(`http://localhost:5000/devedores?user_id=${usuario.id}`);
@@ -114,29 +115,30 @@ export default function Relatorios() {
     );
   }
 
-  if (!subscription.subscribed) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-flowpay-primary/5 to-flowpay-secondary/5 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <Crown className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-            <CardTitle>Recurso Premium</CardTitle>
-            <CardDescription>
-              Os relatórios avançados estão disponíveis apenas para usuários Premium.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <Button onClick={() => navigate('/dashboard')} className="w-full">
-              Voltar ao Dashboard
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Temporariamente desabilitado - restrição premium
+  // if (!subscription.subscribed) {
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-flowpay-primary/5 to-flowpay-secondary/5 flex items-center justify-center">
+  //       <Card className="w-full max-w-md">
+  //         <CardHeader className="text-center">
+  //           <Crown className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+  //           <CardTitle>Recurso Premium</CardTitle>
+  //           <CardDescription>
+  //             Os relatórios avançados estão disponíveis apenas para usuários Premium.
+  //           </CardDescription>
+  //         </CardHeader>
+  //         <CardContent className="text-center space-y-4">
+  //           <Button onClick={() => navigate('/dashboard')} className="w-full">
+  //             Voltar ao Dashboard
+  //           </Button>
+  //         </CardContent>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-flowpay-primary/5 to-flowpay-secondary/5">
+    <div className="min-h-screen bg-gradient-to-br from-flowpay-primary/5 via-background to-flowpay-secondary/5">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -145,27 +147,48 @@ export default function Relatorios() {
               variant="outline"
               size="sm"
               onClick={() => navigate('/dashboard')}
+              className="hover:bg-flowpay-primary/10 hover:border-flowpay-primary/20"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
             <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <Crown className="w-8 h-8 text-amber-500" />
+              <h1 className="text-4xl font-bold flex items-center gap-3 bg-gradient-to-r from-flowpay-primary to-flowpay-secondary bg-clip-text text-transparent">
+                <Crown className="w-10 h-10 text-amber-500 drop-shadow-lg" />
                 Relatórios Avançados
               </h1>
-              <p className="text-muted-foreground">FlowPay Premium - Análise completa do seu portfólio</p>
+              <p className="text-muted-foreground text-lg mt-1">FlowPay - Análise completa do seu portfólio</p>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
         <Tabs defaultValue="visao-geral" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="visao-geral">Visão Geral</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="juros">Análise de Juros</TabsTrigger>
-            <TabsTrigger value="temporal">Análise Temporal</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 mb-8 bg-card/50 backdrop-blur-sm border shadow-lg">
+            <TabsTrigger 
+              value="visao-geral" 
+              className="data-[state=active]:bg-flowpay-primary data-[state=active]:text-white"
+            >
+              Visão Geral
+            </TabsTrigger>
+            <TabsTrigger 
+              value="performance"
+              className="data-[state=active]:bg-flowpay-primary data-[state=active]:text-white"
+            >
+              Performance
+            </TabsTrigger>
+            <TabsTrigger 
+              value="juros"
+              className="data-[state=active]:bg-flowpay-primary data-[state=active]:text-white"
+            >
+              Análise de Juros
+            </TabsTrigger>
+            <TabsTrigger 
+              value="temporal"
+              className="data-[state=active]:bg-flowpay-primary data-[state=active]:text-white"
+            >
+              Análise Temporal
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="visao-geral">

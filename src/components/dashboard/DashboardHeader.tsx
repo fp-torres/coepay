@@ -59,7 +59,8 @@ export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }
           variant="outline" 
           size="sm"
           onClick={() => navigate('/relatorios')}
-          disabled={!subscription.subscribed}
+          // Temporariamente desabilitado - restrição premium
+          // disabled={!subscription.subscribed}
         >
           <BarChart3 className="w-4 h-4 mr-2" />
           Relatórios Avançados
