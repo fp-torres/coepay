@@ -51,15 +51,15 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-flowpay-primary/5 via-background to-flowpay-secondary/10">
+    <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/10">
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center p-6 lg:p-8">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-flowpay-primary to-flowpay-secondary rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-coepay-primary to-coepay-secondary rounded-lg flex items-center justify-center">
             <Zap className="w-5 h-5 text-white" />
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-flowpay-primary to-flowpay-secondary bg-clip-text text-transparent">
-            FlowPay
+          <span className="text-2xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
+            CoéPay
           </span>
         </div>
         
@@ -70,7 +70,7 @@ const Index = () => {
               setActiveTab("login");
               setShowAuth(true);
             }}
-            className="border-flowpay-primary/20 text-flowpay-primary hover:bg-flowpay-primary/10"
+            className="border-coepay-primary/20 text-coepay-primary hover:bg-coepay-primary/10"
           >
             Entrar
           </Button>
@@ -83,7 +83,7 @@ const Index = () => {
           <div className="space-y-8">
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                <span className="bg-gradient-to-r from-flowpay-primary to-flowpay-secondary bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
                   Pagamentos
                 </span>
                 <br />
@@ -98,8 +98,8 @@ const Index = () => {
             {/* Features */}
             <div className="grid gap-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-flowpay-success/10 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-flowpay-success" />
+                <div className="w-10 h-10 bg-coepay-success/10 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-coepay-success" />
                 </div>
                 <div>
                   <h3 className="font-semibold">Relatórios Avançados</h3>
@@ -108,8 +108,8 @@ const Index = () => {
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-flowpay-primary/10 rounded-lg flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-flowpay-primary" />
+                <div className="w-10 h-10 bg-coepay-primary/10 rounded-lg flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-coepay-primary" />
                 </div>
                 <div>
                   <h3 className="font-semibold">Segurança Total</h3>
@@ -118,8 +118,8 @@ const Index = () => {
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-flowpay-secondary/10 rounded-lg flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-flowpay-secondary" />
+                <div className="w-10 h-10 bg-coepay-secondary/10 rounded-lg flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-coepay-secondary" />
                 </div>
                 <div>
                   <h3 className="font-semibold">PIX Instantâneo</h3>
@@ -135,7 +135,7 @@ const Index = () => {
                   setActiveTab("signup");
                   setShowAuth(true);
                 }}
-                className="bg-gradient-to-r from-flowpay-primary to-flowpay-secondary hover:from-flowpay-primary/90 hover:to-flowpay-secondary/90 text-white group"
+                className="bg-gradient-to-r from-coepay-primary to-coepay-secondary hover:from-coepay-primary/90 hover:to-coepay-secondary/90 text-white group"
               >
                 Começar Agora
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -148,8 +148,8 @@ const Index = () => {
             {showAuth ? (
               <Card className="w-full max-w-md shadow-2xl border-0 bg-card/60 backdrop-blur-sm">
                 <CardHeader className="text-center space-y-2">
-                  <CardTitle className="text-2xl font-bold bg-gradient-to-r from-flowpay-primary to-flowpay-secondary bg-clip-text text-transparent">
-                    Bem-vindo ao FlowPay
+                  <CardTitle className="text-2xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
+                    Bem-vindo ao CoéPay
                   </CardTitle>
                   <CardDescription>
                     Entre ou cadastre-se para começar
@@ -172,7 +172,7 @@ const Index = () => {
                             value={loginData.email}
                             onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                             required
-                            className="border-flowpay-primary/20 focus:border-flowpay-primary"
+                            className="border-coepay-primary/20 focus:border-coepay-primary"
                           />
                         </div>
                         <div className="space-y-2">
@@ -183,12 +183,12 @@ const Index = () => {
                             value={loginData.password}
                             onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                             required
-                            className="border-flowpay-primary/20 focus:border-flowpay-primary"
+                            className="border-coepay-primary/20 focus:border-coepay-primary"
                           />
                         </div>
                         <Button 
                           type="submit" 
-                          className="w-full bg-gradient-to-r from-flowpay-primary to-flowpay-secondary hover:from-flowpay-primary/90 hover:to-flowpay-secondary/90"
+                          className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary hover:from-coepay-primary/90 hover:to-coepay-secondary/90"
                         >
                           Entrar
                         </Button>
@@ -204,7 +204,7 @@ const Index = () => {
                             value={signupData.name}
                             onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                             required
-                            className="border-flowpay-primary/20 focus:border-flowpay-primary"
+                            className="border-coepay-primary/20 focus:border-coepay-primary"
                           />
                         </div>
                         <div className="space-y-2">
@@ -215,7 +215,7 @@ const Index = () => {
                             value={signupData.email}
                             onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                             required
-                            className="border-flowpay-primary/20 focus:border-flowpay-primary"
+                            className="border-coepay-primary/20 focus:border-coepay-primary"
                           />
                         </div>
                         <div className="space-y-2">
@@ -226,7 +226,7 @@ const Index = () => {
                             value={signupData.password}
                             onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                             required
-                            className="border-flowpay-primary/20 focus:border-flowpay-primary"
+                            className="border-coepay-primary/20 focus:border-coepay-primary"
                           />
                         </div>
                         <div className="space-y-2">
@@ -237,12 +237,12 @@ const Index = () => {
                             onChange={(e) => setSignupData({ ...signupData, pix: e.target.value })}
                             placeholder="Sua chave PIX"
                             required
-                            className="border-flowpay-primary/20 focus:border-flowpay-primary"
+                            className="border-coepay-primary/20 focus:border-coepay-primary"
                           />
                         </div>
                         <Button 
                           type="submit" 
-                          className="w-full bg-gradient-to-r from-flowpay-primary to-flowpay-secondary hover:from-flowpay-primary/90 hover:to-flowpay-secondary/90"
+                          className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary hover:from-coepay-primary/90 hover:to-coepay-secondary/90"
                         >
                           Cadastrar
                         </Button>
@@ -254,15 +254,15 @@ const Index = () => {
             ) : (
               <div className="hidden lg:block w-full max-w-md">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-flowpay-primary/20 to-flowpay-secondary/20 rounded-3xl blur-3xl"></div>
-                  <div className="relative bg-card/60 backdrop-blur-sm rounded-3xl p-8 border border-flowpay-primary/10">
+                  <div className="absolute inset-0 bg-gradient-to-r from-coepay-primary/20 to-coepay-secondary/20 rounded-3xl blur-3xl"></div>
+                  <div className="relative bg-card/60 backdrop-blur-sm rounded-3xl p-8 border border-coepay-primary/10">
                     <div className="text-center space-y-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-flowpay-primary to-flowpay-secondary rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <div className="w-16 h-16 bg-gradient-to-br from-coepay-primary to-coepay-secondary rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <Zap className="w-8 h-8 text-white" />
                       </div>
                       <h3 className="text-xl font-semibold">Pronto para começar?</h3>
                       <p className="text-muted-foreground">
-                        Junte-se a milhares de usuários que já confiam no FlowPay
+                        Junte-se a milhares de usuários que já confiam no CoéPay
                       </p>
                       <div className="pt-4">
                         <Button 
@@ -270,7 +270,7 @@ const Index = () => {
                             setActiveTab("signup");
                             setShowAuth(true);
                           }}
-                          className="w-full bg-gradient-to-r from-flowpay-primary to-flowpay-secondary hover:from-flowpay-primary/90 hover:to-flowpay-secondary/90 text-white"
+                          className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary hover:from-coepay-primary/90 hover:to-coepay-secondary/90 text-white"
                         >
                           Criar Conta Grátis
                         </Button>

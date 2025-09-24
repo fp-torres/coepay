@@ -44,13 +44,13 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total de Cobranças */}
-          <Card className="border-flowpay-primary hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <Card className="border-coepay-primary hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
-            <TrendingUp className="w-5 h-5 text-flowpay-primary" />
+            <TrendingUp className="w-5 h-5 text-coepay-primary" />
         <CardTitle className="text-sm font-medium">Total de Cobranças</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-flowpay-primary">{totalCobrancas}</div>
+            <div className="text-2xl font-bold text-coepay-primary">{totalCobrancas}</div>
             <CardDescription>
               {cobrancasAtivas.length} ativas • {cobrancasVencidas.length} vencidas
             </CardDescription>
@@ -61,13 +61,13 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
         </Card>
 
         {/* Valor Total */}
-          <Card className="border-flowpay-success hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <Card className="border-coepay-success hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
-            <DollarSign className="w-5 h-5 text-flowpay-success" />
+            <DollarSign className="w-5 h-5 text-coepay-success" />
           <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-flowpay-success">
+            <div className="text-2xl font-bold text-coepay-success">
               R$ {Number(valorTotalAtual).toFixed(2)}
             </div>
             <CardDescription>
@@ -80,13 +80,13 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
         </Card>
 
         {/* Ticket Médio */}
-          <Card className="border-flowpay-secondary hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <Card className="border-coepay-secondary hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
-            <BarChart3 className="w-5 h-5 text-flowpay-secondary" />
+            <BarChart3 className="w-5 h-5 text-coepay-secondary" />
           <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-flowpay-secondary">
+            <div className="text-2xl font-bold text-coepay-secondary">
               R$ {Number(ticketMedio).toFixed(2)}
             </div>
             <CardDescription>
@@ -99,13 +99,13 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
         </Card>
 
         {/* Taxa de Recuperação */}
-          <Card className="border-flowpay-warning hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <Card className="border-coepay-warning hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
-            <PieChart className="w-5 h-5 text-flowpay-warning" />
+            <PieChart className="w-5 h-5 text-coepay-warning" />
           <CardTitle className="text-sm font-medium">Taxa de Recuperação</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-flowpay-warning">
+            <div className="text-2xl font-bold text-coepay-warning">
               {percentualRecuperacao.toFixed(1)}%
             </div>
             <CardDescription>
@@ -120,8 +120,8 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
 
       {/* Distribuição por Faixas de Valor */}
       <Card className="shadow-lg border-0 bg-gradient-to-br from-card to-muted/20">
-        <CardHeader className="bg-gradient-to-r from-flowpay-primary/5 to-flowpay-secondary/5 rounded-t-lg">
-          <CardTitle className="text-xl font-bold text-flowpay-primary">Distribuição por Faixas de Valor</CardTitle>
+        <CardHeader className="bg-gradient-to-r from-coepay-primary/5 to-coepay-secondary/5 rounded-t-lg">
+          <CardTitle className="text-xl font-bold text-coepay-primary">Distribuição por Faixas de Valor</CardTitle>
           <CardDescription className="text-base">Análise das cobranças por valor</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">

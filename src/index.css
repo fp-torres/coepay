@@ -47,13 +47,13 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* FlowPay specific tokens */
-    --flow-gradient: linear-gradient(135deg, hsl(217, 91%, 60%), hsl(191, 91%, 55%));
-    --flow-primary: 217 91% 60%;
-    --flow-secondary: 191 91% 55%;
-    --flow-success: 142 76% 36%;
-    --flow-warning: 38 92% 50%;
-    --flow-shadow: 0 10px 30px -10px hsl(217 91% 60% / 0.3);
+    /* CoéPay specific tokens */
+    --coepay-gradient: linear-gradient(135deg, hsl(217, 91%, 60%), hsl(191, 91%, 55%));
+    --coepay-primary: 217 91% 60%;
+    --coepay-secondary: 191 91% 55%;
+    --coepay-success: 142 76% 36%;
+    --coepay-warning: 38 92% 50%;
+    --coepay-shadow: 0 10px 30px -10px hsl(217 91% 60% / 0.3);
   }
 
   .dark {

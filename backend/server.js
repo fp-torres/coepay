@@ -8,7 +8,7 @@ const { Pool } = pg;
 const pool = new Pool({
   user: "postgres",
   host: "1.0.90.90",
-  database: "flowPay",
+  database: "coepay",
   password: "postgres",
   port: 5432,
 });

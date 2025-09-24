@@ -46,11 +46,11 @@ export const RelatoriosTemporal = ({ cobrancas }: RelatoriosTemporalProps) => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-flowpay-primary">{cobrancasRecentes.length}</div>
+              <div className="text-3xl font-bold text-coepay-primary">{cobrancasRecentes.length}</div>
               <p className="text-sm text-muted-foreground">Cobranças no período</p>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-flowpay-secondary">
+              <div className="text-3xl font-bold text-coepay-secondary">
                 R$ {cobrancasRecentes.reduce((sum, c) => sum + c.valor, 0).toFixed(2)}
               </div>
               <p className="text-sm text-muted-foreground">Valor total</p>
