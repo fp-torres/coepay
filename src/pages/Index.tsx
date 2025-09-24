@@ -13,6 +13,7 @@ const Index = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "", pix: "" });
   const [showAuth, setShowAuth] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +66,10 @@ const Index = () => {
         {!showAuth && (
           <Button 
             variant="outline" 
-            onClick={() => setShowAuth(true)}
+            onClick={() => {
+              setActiveTab("login");
+              setShowAuth(true);
+            }}
             className="border-flowpay-primary/20 text-flowpay-primary hover:bg-flowpay-primary/10"
           >
             Entrar
@@ -127,7 +131,10 @@ const Index = () => {
             {!showAuth && (
               <Button 
                 size="lg" 
-                onClick={() => setShowAuth(true)}
+                onClick={() => {
+                  setActiveTab("signup");
+                  setShowAuth(true);
+                }}
                 className="bg-gradient-to-r from-flowpay-primary to-flowpay-secondary hover:from-flowpay-primary/90 hover:to-flowpay-secondary/90 text-white group"
               >
                 Começar Agora
@@ -149,7 +156,7 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Tabs defaultValue="login" className="w-full">
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-6">
                       <TabsTrigger value="login">Entrar</TabsTrigger>
                       <TabsTrigger value="signup">Cadastrar</TabsTrigger>
@@ -259,7 +266,10 @@ const Index = () => {
                       </p>
                       <div className="pt-4">
                         <Button 
-                          onClick={() => setShowAuth(true)}
+                          onClick={() => {
+                            setActiveTab("signup");
+                            setShowAuth(true);
+                          }}
                           className="w-full bg-gradient-to-r from-flowpay-primary to-flowpay-secondary hover:from-flowpay-primary/90 hover:to-flowpay-secondary/90 text-white"
                         >
                           Criar Conta Grátis
