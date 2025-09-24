@@ -160,7 +160,7 @@ export default function Relatorios() {
                 <Crown className="w-10 h-10 text-amber-500 drop-shadow-lg" />
                 Relatórios Avançados
               </h1>
-              <p className="text-muted-foreground text-lg mt-1">FlowPay - Análise completa do seu portfólio</p>
+              <p className="text-muted-foreground text-lg mt-1">FlowPay - Análise completa das suas Contas a Receber</p>
             </div>
           </div>
         </div>

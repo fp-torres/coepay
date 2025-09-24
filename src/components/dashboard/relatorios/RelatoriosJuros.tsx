@@ -1,4 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, DollarSign, TrendingUp } from "lucide-react";
 
 interface Cobranca {
   id: string;
@@ -21,87 +23,220 @@ export const RelatoriosJuros = ({ cobrancas }: RelatoriosJurosProps) => {
 
   return (
     <div className="space-y-6">
-      <Card>
+      {/* Detalhamento das Cobranças */}
+        <Card className="bg-white shadow-lg border-0">
         <CardHeader>
-          <CardTitle>Detalhamento dos Juros Aplicados</CardTitle>
+          <CardTitle className="text-xl font-bold">Detalhamento dos Juros Aplicados</CardTitle>
           <CardDescription>Análise detalhada do impacto dos juros compostos</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {cobrancasVencidas.map((cobranca) => {
+        <CardContent className="space-y-4">
+          {cobrancasVencidas.length > 0 ? (
+            cobrancasVencidas.map((cobranca) => {
               const diasVencido = Math.floor((new Date().getTime() - new Date(cobranca.dataVencimento).getTime()) / (1000 * 60 * 60 * 24));
               const jurosPorCobranca = (cobranca.valorAtual || cobranca.valor) - cobranca.valor;
               
               return (
-                <div key={cobranca.id} className="flex justify-between items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                <div key={cobranca.id} className="flex justify-between items-center p-4 border rounded-lg hover:shadow-lg transition-shadow bg-white">
                   <div className="flex-1">
                     <div className="font-medium text-lg">{cobranca.nomeDevedor}</div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                    {diasVencido} dias vencido •{" "}
-                    {cobranca.taxaJuros
-                      ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros}`
-                      : "Sem juros"}
-                  </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                      <Clock className="w-4 h-4" /> {diasVencido} dias vencido
+                      <Badge
+                        className={
+                          cobranca.taxaJuros
+                            ? "border border-red-500 text-red-600 bg-red-100"
+                            : "border border-blue-500 text-blue-600 bg-blue-100"
+                        }
+                      >
+                        {cobranca.taxaJuros ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros}` : "Sem juros"}
+                      </Badge>
+                    </div>
                     <div className="text-xs text-muted-foreground mt-1">
                       Vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-lg">R$ {(cobranca.valorAtual || cobranca.valor).toFixed(2)}</div>
-                   {cobranca.taxaJuros ? (
-                    <div className="text-sm text-green-600 font-medium">
-                      +R$ {jurosPorCobranca.toFixed(2)} em juros
+                    {cobranca.taxaJuros ? (
+                      <div className="text-sm text-green-600 font-medium flex items-center gap-1">
+                        <TrendingUp className="w-4 h-4" /> +R$ {jurosPorCobranca.toFixed(2)} em juros
                       </div>
                     ) : (
-                      <div className="text-sm text-gray-500 italic">
-                        Sem juros
-                      </div>
+                      <div className="text-sm text-gray-500 italic">Sem juros</div>
                     )}
-                    <div className="text-xs text-muted-foreground">
-                      Valor original: R$ {cobranca.valor.toFixed(2)}
-                    </div>
+                    <div className="text-xs text-muted-foreground">Valor original: R$ {cobranca.valor.toFixed(2)}</div>
                   </div>
                 </div>
               );
-            })}
-            {cobrancasVencidas.length === 0 && (
-              <div className="text-center text-muted-foreground py-12">
-                <div className="text-6xl mb-4">🎉</div>
-                <h3 className="text-lg font-medium mb-2">Parabéns!</h3>
-                <p>Nenhuma cobrança vencida com juros aplicados</p>
-              </div>
-            )}
+            })
+          ) : (
+          <div className="text-center text-muted-foreground py-12">
+            <div className="text-6xl mb-4">💰</div>
+            <h3 className="text-lg font-medium mb-2">Nenhum atraso!</h3>
+            <p>Atualmente, não há juros a receber de cobranças vencidas.</p>
           </div>
+          )}
         </CardContent>
       </Card>
-
+      
+      {/* Resumo de Juros */}
       {cobrancasVencidas.length > 0 && (
-        <Card>
+        <Card className="bg-white border-0 rounded-xl shadow-2xl hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300">
           <CardHeader>
-            <CardTitle>Resumo dos Juros</CardTitle>
-            <CardDescription>Impacto total dos juros no portfólio</CardDescription>
+            {/* Título e descrição do card */}
+            <CardTitle className="text-2xl md:text-2xl font-extrabold text-gray-900">
+              Resumo dos Juros
+            </CardTitle>
+            <CardDescription className="text-md text-gray-600">
+              Impacto total dos juros nas Contas a Receber
+            </CardDescription>
           </CardHeader>
+
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{cobrancasVencidas.length}</div>
-                <p className="text-sm text-muted-foreground">Cobranças vencidas</p>
+            {/* Alterado para 4 colunas no desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+              {/* 1. Quantidade de cobranças vencidas */}
+              <div className="text-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                <div className="text-2xl font-bold text-red-600">
+                  {cobrancasVencidas.length}
+                </div>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                  <Clock className="w-4 h-4" /> Cobranças vencidas
+                </p>
               </div>
-              <div className="text-center">
+
+              {/* 2. Total original das cobranças */}
+              <div className="text-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                <div className="text-2xl font-bold text-gray-800">
+                  R$ {cobrancasVencidas.reduce((sum, c) => sum + c.valor, 0).toFixed(2)}
+                </div>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                  <DollarSign className="w-4 h-4" /> Total original
+                </p>
+              </div>
+
+              {/* 3. Total acumulado em juros */}
+              <div className="text-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
                 <div className="text-2xl font-bold text-green-600">
-                  R$ {cobrancasVencidas.reduce((sum, c) => sum + ((c.valorAtual || c.valor) - c.valor), 0).toFixed(2)}
+                  R$ {cobrancasVencidas
+                    .reduce((sum, c) => sum + ((c.valorAtual || c.valor) - c.valor), 0)
+                    .toFixed(2)}
                 </div>
-                <p className="text-sm text-muted-foreground">Total em juros</p>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                  <DollarSign className="w-4 h-4" /> Total em juros
+                </p>
               </div>
-              <div className="text-center">
+
+              {/* 4. Dias médios de atraso */}
+              <div className="text-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
                 <div className="text-2xl font-bold">
-                  {cobrancasVencidas.length > 0 
-                    ? (cobrancasVencidas.reduce((sum, c) => sum + Math.floor((new Date().getTime() - new Date(c.dataVencimento).getTime()) / (1000 * 60 * 60 * 24)), 0) / cobrancasVencidas.length).toFixed(0)
-                    : 0
-                  }
+                  {(
+                    cobrancasVencidas.reduce(
+                      (sum, c) =>
+                        sum +
+                        Math.floor(
+                          (new Date().getTime() - new Date(c.dataVencimento).getTime()) /
+                          (1000 * 60 * 60 * 24)
+                        ),
+                      0
+                    ) / cobrancasVencidas.length
+                  ).toFixed(0)}
                 </div>
-                <p className="text-sm text-muted-foreground">Dias médios de atraso</p>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                  <Clock className="w-4 h-4" /> Dias médios de atraso
+                </p>
               </div>
+
+              {/* 5. Maior atraso em dias */}
+              <div className="text-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                {(() => {
+                  const maiorAtraso = Math.max(
+                    ...cobrancasVencidas.map(c =>
+                      Math.floor(
+                        (new Date().getTime() - new Date(c.dataVencimento).getTime()) /
+                        (1000 * 60 * 60 * 24)
+                      )
+                    )
+                  );
+                  const cobrancaMaiorAtraso = cobrancasVencidas.find(c =>
+                    Math.floor(
+                      (new Date().getTime() - new Date(c.dataVencimento).getTime()) /
+                      (1000 * 60 * 60 * 24)
+                    ) === maiorAtraso
+                  );
+                  return (
+                    <>
+                      <div className="text-3xl font-bold text-gray-800">{maiorAtraso}</div>
+                      <p className="text-sm text-muted-foreground flex flex-col items-center justify-center gap-1">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" /> Maior atraso (dias)
+                        </span>
+                        <span className="italic text-gray-600 text-xs">
+                          {cobrancaMaiorAtraso?.nomeDevedor}
+                        </span>
+                      </p>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* 6. Cobranças com juros aplicados */}
+              <div className="text-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                <div className="text-2xl font-bold text-green-600">
+                  {cobrancasVencidas.filter(c => c.taxaJuros).length}
+                </div>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                  <DollarSign className="w-4 h-4" /> Cobranças com juros
+                </p>
+              </div>
+
+              {/* 7. Média de juros por cobrança */}
+              <div className="text-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                {(() => {
+                  const cobrancasComJuros = cobrancasVencidas.filter(c => c.taxaJuros);
+                  const mediaJuros = cobrancasComJuros.reduce(
+                    (sum, c) => sum + ((c.valorAtual || c.valor) - c.valor),
+                    0
+                  ) / (cobrancasComJuros.length || 1);
+                  return (
+                    <>
+                      <div className="text-2xl font-bold text-green-600">
+                        R$ {mediaJuros.toFixed(2)}
+                      </div>
+                      <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                        <DollarSign className="w-4 h-4" /> Média de juros
+                      </p>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* 8. Maior valor individual de juros */}
+              <div className="text-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                {(() => {
+                  const maiorJuros = Math.max(
+                    ...cobrancasVencidas.map(c => (c.valorAtual || c.valor) - c.valor)
+                  );
+                  const cobrancaMaiorJuros = cobrancasVencidas.find(c =>
+                    ((c.valorAtual || c.valor) - c.valor) === maiorJuros
+                  );
+                  return (
+                    <>
+                      <div className="text-3xl font-bold text-green-600">R$ {maiorJuros.toFixed(2)}</div>
+                      <p className="text-sm text-muted-foreground flex flex-col items-center justify-center gap-1">
+                        <span className="flex items-center gap-1">
+                          <TrendingUp className="w-4 h-4" /> Maior juros
+                        </span>
+                        <span className="italic text-gray-600 text-xs">
+                          {cobrancaMaiorJuros?.nomeDevedor}
+                        </span>
+                      </p>
+                    </>
+                  );
+                })()}
+              </div>
+
             </div>
           </CardContent>
         </Card>
