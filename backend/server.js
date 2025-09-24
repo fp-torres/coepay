@@ -8,7 +8,7 @@ const { Pool } = pg;
 const pool = new Pool({
   user: "postgres",
   host: "1.0.90.90",
-  database: "coepay",
+  database: "flowPay",
   password: "postgres",
   port: 5432,
 });
@@ -21,14 +21,23 @@ app.use(express.json());
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
-    const result = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
-    if (result.rows.length === 0) return res.status(401).json({ message: "Usuário não encontrado" });
+    const result = await pool.query("SELECT * FROM users WHERE email=$1", [
+      email,
+    ]);
+    if (result.rows.length === 0)
+      return res.status(401).json({ message: "Usuário não encontrado" });
 
     const user = result.rows[0];
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return res.status(401).json({ message: "Senha incorreta" });
+    if (!validPassword)
+      return res.status(401).json({ message: "Senha incorreta" });
 
-    res.json({ id: user.id, name: user.name, email: user.email, pix: user.pix });
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      pix: user.pix,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro no servidor" });
@@ -55,10 +64,9 @@ app.post("/signup", async (req, res) => {
 app.get("/devedores/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query(
-      "SELECT * FROM devedores WHERE id = $1",
-      [id]
-    );
+    const result = await pool.query("SELECT * FROM devedores WHERE id = $1", [
+      id,
+    ]);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Cobrança não encontrada" });
     }
@@ -106,50 +114,67 @@ app.get("/devedores", async (req, res) => {
 
 // DEVEDORES
 app.post("/devedores", async (req, res) => {
-  const { user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros } = req.body;
+  const {
+    user_id,
+    nome,
+    email,
+    telefone,
+    valor,
+    data_vencimento,
+    taxa_juros,
+    tipo_juros,
+  } = req.body;
 
   try {
     // Verifica se a data de vencimento é válida
     const hoje = new Date();
     const vencimento = new Date(data_vencimento);
-    const status = hoje > vencimento ? 'vencida' : 'ativa';
+    const status = hoje > vencimento ? "vencida" : "ativa";
 
     // Gerar link temporário
-    const link = `${req.protocol}://${req.get('host')}/cobranca/TEMP_ID`;
+    const link = `${req.protocol}://${req.get("host")}/cobranca/TEMP_ID`;
 
     // Inserir no banco com status correto
     const result = await pool.query(
       `INSERT INTO devedores 
        (user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, status, link) 
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-      [user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, status, link]
+      [
+        user_id,
+        nome,
+        email,
+        telefone,
+        valor,
+        data_vencimento,
+        taxa_juros,
+        tipo_juros,
+        status,
+        link,
+      ]
     );
 
     // Atualizar o link com o ID real da cobrança
-    const linkAtualizado = link.replace('TEMP_ID', result.rows[0].id);
-    await pool.query(
-      "UPDATE devedores SET link = $1 WHERE id = $2",
-      [linkAtualizado, result.rows[0].id]
-    );
+    const linkAtualizado = link.replace("TEMP_ID", result.rows[0].id);
+    await pool.query("UPDATE devedores SET link = $1 WHERE id = $2", [
+      linkAtualizado,
+      result.rows[0].id,
+    ]);
 
     result.rows[0].link = linkAtualizado;
     res.json(result.rows[0]);
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao cadastrar devedor" });
   }
 });
 
-
 // COBRANÇA PÚBLICA
 app.get("/cobranca/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query(
-      "SELECT * FROM devedores WHERE id = $1",
-      [id]
-    );
+    const result = await pool.query("SELECT * FROM devedores WHERE id = $1", [
+      id,
+    ]);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Cobrança não encontrada" });
     }
@@ -165,7 +190,9 @@ app.delete("/devedores/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query("DELETE FROM devedores WHERE id = $1", [id]);
+    const result = await pool.query("DELETE FROM devedores WHERE id = $1", [
+      id,
+    ]);
 
     if (result.rowCount === 0) {
       return res.status(404).json({ message: "Cobrança não encontrada" });
@@ -177,4 +204,3 @@ app.delete("/devedores/:id", async (req, res) => {
     res.status(500).json({ message: "Erro ao excluir cobrança" });
   }
 });
-

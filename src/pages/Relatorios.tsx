@@ -109,9 +109,9 @@ export default function Relatorios() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-flowpay-primary/5 to-flowpay-secondary/5 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 to-coepay-secondary/5 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-flowpay-primary mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-coepay-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Carregando relatórios...</p>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function Relatorios() {
   // Temporariamente desabilitado - restrição premium
   // if (!subscription.subscribed) {
   //   return (
-  //     <div className="min-h-screen bg-gradient-to-br from-flowpay-primary/5 to-flowpay-secondary/5 flex items-center justify-center">
+  //     <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 to-coepay-secondary/5 flex items-center justify-center">
   //       <Card className="w-full max-w-md">
   //         <CardHeader className="text-center">
   //           <Crown className="w-12 h-12 text-amber-500 mx-auto mb-4" />
@@ -141,7 +141,7 @@ export default function Relatorios() {
   // }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-flowpay-primary/5 via-background to-flowpay-secondary/5">
+    <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/5">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -150,17 +150,17 @@ export default function Relatorios() {
               variant="outline"
               size="sm"
               onClick={() => navigate('/dashboard')}
-              className="hover:bg-flowpay-primary/10 hover:border-flowpay-primary/20"
+              className="hover:bg-coepay-primary/10 hover:border-coepay-primary/20"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
             <div>
-              <h1 className="text-4xl font-bold flex items-center gap-3 bg-gradient-to-r from-flowpay-primary to-flowpay-secondary bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold flex items-center gap-3 bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
                 <Crown className="w-10 h-10 text-amber-500 drop-shadow-lg" />
                 Relatórios Avançados
               </h1>
-              <p className="text-muted-foreground text-lg mt-1">FlowPay - Análise completa das suas Contas a Receber</p>
+              <p className="text-muted-foreground text-lg mt-1">CoéPay - Análise completa das suas Contas a Receber</p>
             </div>
           </div>
         </div>
@@ -170,25 +170,25 @@ export default function Relatorios() {
           <TabsList className="grid w-full grid-cols-4 mb-8 bg-card/50 backdrop-blur-sm border shadow-lg">
             <TabsTrigger 
               value="visao-geral" 
-              className="data-[state=active]:bg-flowpay-primary data-[state=active]:text-white"
+              className="data-[state=active]:bg-coepay-primary data-[state=active]:text-white"
             >
               Visão Geral
             </TabsTrigger>
             <TabsTrigger 
               value="performance"
-              className="data-[state=active]:bg-flowpay-primary data-[state=active]:text-white"
+              className="data-[state=active]:bg-coepay-primary data-[state=active]:text-white"
             >
               Performance
             </TabsTrigger>
             <TabsTrigger 
               value="juros"
-              className="data-[state=active]:bg-flowpay-primary data-[state=active]:text-white"
+              className="data-[state=active]:bg-coepay-primary data-[state=active]:text-white"
             >
               Análise de Juros
             </TabsTrigger>
             <TabsTrigger 
               value="temporal"
-              className="data-[state=active]:bg-flowpay-primary data-[state=active]:text-white"
+              className="data-[state=active]:bg-coepay-primary data-[state=active]:text-white"
             >
               Análise Temporal
             </TabsTrigger>
