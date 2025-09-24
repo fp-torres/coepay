@@ -178,12 +178,14 @@ const CobrancaPublica = () => {
               </div>
             )}
             
-            {cobranca.taxaJuros && cobranca.status === 'vencida' && (
+            {cobranca.status === 'vencida' && (
               <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                Juros aplicados: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
+                {cobranca.taxaJuros
+                  ? `Juros aplicados: ${cobranca.taxaJuros}% ${cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}`
+                  : "Sem juros"}
               </div>
             )}
-            
+
             {cobranca.status === 'vencida' && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <Badge variant="destructive" className="mb-2">

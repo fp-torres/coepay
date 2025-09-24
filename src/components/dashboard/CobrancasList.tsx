@@ -58,13 +58,11 @@ export const CobrancasList = ({ cobrancas, onCopiarLink, onExcluirCobranca }: Co
                         </p>
                       )}
                   </div>
-
-                  {cobranca.taxaJuros && (
-                    <p className="text-xs text-blue-600">
-                      Juros: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
-                    </p>
-                  )}
-
+                  <p className="text-xs text-blue-600">
+                    {cobranca.taxaJuros
+                      ? `Juros: ${cobranca.taxaJuros}% ${cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}`
+                      : "Sem juros"}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {estaVencida ? `Vencida em: ${dataFormatada}` : `Vence em: ${dataFormatada}`}
                   </p>

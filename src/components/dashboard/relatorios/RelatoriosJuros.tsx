@@ -37,17 +37,26 @@ export const RelatoriosJuros = ({ cobrancas }: RelatoriosJurosProps) => {
                   <div className="flex-1">
                     <div className="font-medium text-lg">{cobranca.nomeDevedor}</div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      {diasVencido} dias vencido • {cobranca.taxaJuros}% {cobranca.tipoJuros}
-                    </div>
+                    {diasVencido} dias vencido •{" "}
+                    {cobranca.taxaJuros
+                      ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros}`
+                      : "Sem juros"}
+                  </div>
                     <div className="text-xs text-muted-foreground mt-1">
                       Vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-lg">R$ {(cobranca.valorAtual || cobranca.valor).toFixed(2)}</div>
+                   {cobranca.taxaJuros ? (
                     <div className="text-sm text-green-600 font-medium">
                       +R$ {jurosPorCobranca.toFixed(2)} em juros
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500 italic">
+                        Sem juros
+                      </div>
+                    )}
                     <div className="text-xs text-muted-foreground">
                       Valor original: R$ {cobranca.valor.toFixed(2)}
                     </div>

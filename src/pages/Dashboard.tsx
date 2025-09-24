@@ -61,13 +61,13 @@ const Dashboard = () => {
   };
 
   const carregarCobrancas = async (userId: number) => {
-    try {
-      const response = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-       const cobrancasFormatadas = data.map((item: any) => {
+  try {
+    const response = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
+    if (response.ok) {
+      const data = await response.json();
+      const cobrancasFormatadas = data.map((item: any) => {
         let valorAtual = parseFloat(item.valor);
-        
+
         if (item.taxa_juros && item.tipo_juros) {
           valorAtual = calcularJurosCompostos(
             parseFloat(item.valor),
@@ -88,19 +88,22 @@ const Dashboard = () => {
           valorAtual,
           dataVencimento: item.data_vencimento,
           status,
-          // usar frontend para link público
           link: `${window.location.origin}/cobranca/${item.id}`,
           taxaJuros: item.taxa_juros ? parseFloat(item.taxa_juros) : undefined,
           tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
+          // adiciona campo legível para exibir
+          jurosLabel: item.taxa_juros 
+            ? `${item.taxa_juros}% ${item.tipo_juros === 'diario' ? 'ao dia' : 'ao mês'}`
+            : "Sem juros",
         };
       });
 
-        setCobrancas(cobrancasFormatadas);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar cobranças:', error);
+      setCobrancas(cobrancasFormatadas);
     }
-  };
+  } catch (error) {
+    console.error('Erro ao carregar cobranças:', error);
+  }
+};
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -158,8 +161,8 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
           telefone: null,
           valor: isNaN(valorInicial) ? 0 : valorInicial,
           data_vencimento: novaCobranca.dataVencimento || new Date().toISOString().split('T')[0],
-          taxa_juros: novaCobranca.taxaJuros,  
-          tipo_juros: novaCobranca.tipoJuros, 
+          taxa_juros: novaCobranca.taxaJuros ? parseFloat(novaCobranca.taxaJuros) : null,  
+          tipo_juros: novaCobranca.taxaJuros ? novaCobranca.tipoJuros : null, 
         })
       });
 
