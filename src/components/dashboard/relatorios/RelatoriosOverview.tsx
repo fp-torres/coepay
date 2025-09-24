@@ -43,52 +43,76 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total de cobranças */}
-        <Card className="...">
-          <CardHeader>...</CardHeader>
+        {/* Total de Cobranças */}
+          <Card className="border-flowpay-primary hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <CardHeader className="flex items-center space-x-2">
+            <TrendingUp className="w-5 h-5 text-flowpay-primary" />
+        <CardTitle className="text-sm font-medium">Total de Cobranças</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-flowpay-primary">{totalCobrancas}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {cobrancasAtivas.length} ativas, {cobrancasVencidas.length} vencidas
+            <div className="text-2xl font-bold text-flowpay-primary">{totalCobrancas}</div>
+            <CardDescription>
+              {cobrancasAtivas.length} ativas • {cobrancasVencidas.length} vencidas
+            </CardDescription>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Número total de cobranças registradas no sistema.
             </p>
           </CardContent>
         </Card>
 
-        {/* Valor total */}
-        <Card className="...">
-          <CardHeader>...</CardHeader>
+        {/* Valor Total */}
+          <Card className="border-flowpay-success hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <CardHeader className="flex items-center space-x-2">
+            <DollarSign className="w-5 h-5 text-flowpay-success" />
+          <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-flowpay-success">
+            <div className="text-2xl font-bold text-flowpay-success">
               R$ {Number(valorTotalAtual).toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <CardDescription>
               Original: R$ {Number(valorTotalOriginal).toFixed(2)}
+            </CardDescription>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Soma de todos os valores de cobranças, considerando juros aplicados.
             </p>
           </CardContent>
         </Card>
 
-        {/* Ticket médio */}
-        <Card className="...">
-          <CardHeader>...</CardHeader>
+        {/* Ticket Médio */}
+          <Card className="border-flowpay-secondary hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <CardHeader className="flex items-center space-x-2">
+            <BarChart3 className="w-5 h-5 text-flowpay-secondary" />
+          <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-flowpay-secondary">
+            <div className="text-2xl font-bold text-flowpay-secondary">
               R$ {Number(ticketMedio).toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <CardDescription>
               Por cobrança criada
+            </CardDescription>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Valor médio das cobranças registradas no sistema.
             </p>
           </CardContent>
         </Card>
 
-        {/* Taxa de recuperação */}
-        <Card className="...">
-          <CardHeader>...</CardHeader>
+        {/* Taxa de Recuperação */}
+          <Card className="border-flowpay-warning hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <CardHeader className="flex items-center space-x-2">
+            <PieChart className="w-5 h-5 text-flowpay-warning" />
+          <CardTitle className="text-sm font-medium">Taxa de Recuperação</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-flowpay-warning">
+            <div className="text-2xl font-bold text-flowpay-warning">
               {percentualRecuperacao.toFixed(1)}%
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <CardDescription>
               Cobranças não vencidas
+            </CardDescription>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Percentual de cobranças ainda em dia em relação ao total.
             </p>
           </CardContent>
         </Card>
