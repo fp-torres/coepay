@@ -44,11 +44,13 @@ export const RelatoriosJuros = ({ cobrancas }: RelatoriosJurosProps) => {
                       <Badge
                         className={
                           cobranca.taxaJuros
-                            ? "border border-red-500 text-red-600 bg-red-100"
-                            : "border border-blue-500 text-blue-600 bg-blue-100"
+                            ? "border border-red-500 text-red-600 bg-red-100 hover:bg-red-200"
+                            : "border border-blue-500 text-blue-600 bg-blue-100 hover:bg-blue-200"
                         }
                       >
-                        {cobranca.taxaJuros ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros}` : "Sem juros"}
+                        {cobranca.taxaJuros
+                          ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros}`
+                          : "Sem juros"}
                       </Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">

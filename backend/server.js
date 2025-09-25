@@ -7,23 +7,21 @@ dotenv.config();
 
 const { Pool } = pg;
 
-// const pool = new Pool({
-//   user: "postgres",
-//   //host: "1.0.90.90",
-//   host: "127.0.0.1",
-//   database: "flowPay",
-//   password: "postgres",
-//   port: 5432,
-// });
-
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  user: "postgres",
+  host: "1.0.90.90",
+  //host: "127.0.0.1",
+  database: "flowPay",
+  password: "postgres",
+  port: 5432,
 });
 
-
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+//   ssl: {
+//     rejectUnauthorized: false,
+//   },
+// });
 
 const app = express();
 app.use(cors());
