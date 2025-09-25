@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import pg from "pg";
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+dotenv.config();
 
 const { Pool } = pg;
 
@@ -15,12 +17,12 @@ const { Pool } = pg;
 // });
 
 const pool = new Pool({
-  connectionString:
-    "postgresql://postgress:UXcP5GhJgNpwEuANRf9uFlh3BMmGca3M@dpg-d3a97dq4d50c73d39eig-a/coepay",
+  connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false, // Necessário para conectar com o Render
+    rejectUnauthorized: false,
   },
 });
+
 
 
 const app = express();
