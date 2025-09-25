@@ -5,13 +5,23 @@ import bcrypt from "bcrypt";
 
 const { Pool } = pg;
 
+// const pool = new Pool({
+//   user: "postgres",
+//   //host: "1.0.90.90",
+//   host: "127.0.0.1",
+//   database: "flowPay",
+//   password: "postgres",
+//   port: 5432,
+// });
+
 const pool = new Pool({
-  user: "postgres",
-  host: "1.0.90.90",
-  database: "flowPay",
-  password: "postgres",
-  port: 5432,
+  connectionString:
+    "postgresql://postgress:UXcP5GhJgNpwEuANRf9uFlh3BMmGca3M@dpg-d3a97dq4d50c73d39eig-a/coepay",
+  ssl: {
+    rejectUnauthorized: false, // Necessário para conectar com o Render
+  },
 });
+
 
 const app = express();
 app.use(cors());
