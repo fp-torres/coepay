@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, BarChart3, PieChart } from "lucide-react";
+import { DollarSign, TrendingUp, BarChart3, PieChart, Star, Clock  } from "lucide-react";
 
 interface Cobranca {
   id: string;
@@ -24,30 +24,57 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
   const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida');
 
   const valorTotalOriginal = cobrancas.reduce((sum, c) => sum + (Number(c.valor) || 0), 0);
+  const valorTotalAtual = cobrancas.reduce((sum, c) => sum + (Number(c.valorAtual) || Number(c.valor) || 0), 0);
 
-  const valorTotalAtual = cobrancas.reduce((sum, c) => {
-    const atual = Number(c.valorAtual) || Number(c.valor) || 0;
-    return sum + atual;
-  }, 0);
+  // Percentual de recuperação
+  const percentualRecuperacaoQtd = totalCobrancas > 0 ? (cobrancasAtivas.length / totalCobrancas) * 100 : 0;
+  const percentualRecuperacaoValor = valorTotalOriginal > 0
+    ? (cobrancasAtivas.reduce((sum, c) => sum + Number(c.valor), 0) / valorTotalOriginal) * 100
+    : 0;
 
-  const percentualRecuperacao = totalCobrancas > 0 ? (cobrancasAtivas.length / totalCobrancas) * 100 : 0;
+  // Ticket médio
   const ticketMedio = totalCobrancas > 0 ? valorTotalOriginal / totalCobrancas : 0;
+  const ticketMedioAtivas = cobrancasAtivas.length > 0
+    ? cobrancasAtivas.reduce((sum, c) => sum + Number(c.valor), 0) / cobrancasAtivas.length
+    : 0;
+  const ticketMedioVencidas = cobrancasVencidas.length > 0
+    ? cobrancasVencidas.reduce((sum, c) => sum + Number(c.valor), 0) / cobrancasVencidas.length
+    : 0;
 
+  // Faixas de valor
   const faixasValor = {
     ate100: cobrancas.filter(c => Number(c.valor) <= 100).length,
-    ate500: cobrancas.filter(c => Number(c.valor) > 100 && Number(c.valor) <= 500).length,
-    ate1000: cobrancas.filter(c => Number(c.valor) > 500 && Number(c.valor) <= 1000).length,
+    de101a500: cobrancas.filter(c => Number(c.valor) > 100 && Number(c.valor) <= 500).length,
+    de501a1000: cobrancas.filter(c => Number(c.valor) > 500 && Number(c.valor) <= 1000).length,
     acima1000: cobrancas.filter(c => Number(c.valor) > 1000).length,
   };
+
+  // Faixas de atraso
+  const faixasAtraso = {
+    ate7: cobrancasVencidas.filter(c => {
+      const dias = (new Date().getTime() - new Date(c.dataVencimento).getTime()) / (1000*60*60*24);
+      return dias <= 7;
+    }).length,
+    de8a30: cobrancasVencidas.filter(c => {
+      const dias = (new Date().getTime() - new Date(c.dataVencimento).getTime()) / (1000*60*60*24);
+      return dias > 7 && dias <= 30;
+    }).length,
+    acima30: cobrancasVencidas.filter(c => {
+      const dias = (new Date().getTime() - new Date(c.dataVencimento).getTime()) / (1000*60*60*24);
+      return dias > 30;
+    }).length,
+  };
+  // Top 3 cobranças
+  const topCobrancas = [...cobrancas].sort((a, b) => (b.valorAtual || b.valor) - (a.valorAtual || a.valor)).slice(0,3);
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total de Cobranças */}
-          <Card className="border-coepay-primary hover:shadow-lg hover:scale-105 transition-all duration-300">
+        <Card className="border-coepay-primary hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
             <TrendingUp className="w-5 h-5 text-coepay-primary" />
-        <CardTitle className="text-sm font-medium">Total de Cobranças</CardTitle>
+            <CardTitle className="text-sm font-medium">Total de Cobranças</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coepay-primary">{totalCobrancas}</div>
@@ -61,10 +88,10 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
         </Card>
 
         {/* Valor Total */}
-          <Card className="border-coepay-success hover:shadow-lg hover:scale-105 transition-all duration-300">
+        <Card className="border-coepay-success hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
             <DollarSign className="w-5 h-5 text-coepay-success" />
-          <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
+            <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coepay-success">
@@ -80,17 +107,17 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
         </Card>
 
         {/* Ticket Médio */}
-          <Card className="border-coepay-secondary hover:shadow-lg hover:scale-105 transition-all duration-300">
+        <Card className="border-coepay-secondary hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
             <BarChart3 className="w-5 h-5 text-coepay-secondary" />
-          <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
+            <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coepay-secondary">
               R$ {ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <CardDescription>
-              Por cobrança criada
+              Ativas: R$ {ticketMedioAtivas.toFixed(2)} • Vencidas: R$ {ticketMedioVencidas.toFixed(2)}
             </CardDescription>
             <p className="text-[11px] text-muted-foreground mt-1">
               Valor médio das cobranças registradas no sistema.
@@ -98,21 +125,21 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
           </CardContent>
         </Card>
 
-        {/* Taxa de Recuperação */}
-          <Card className="border-coepay-warning hover:shadow-lg hover:scale-105 transition-all duration-300">
+        {/* Percentual de Recuperação */}
+        <Card className="border-coepay-warning hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
             <PieChart className="w-5 h-5 text-coepay-warning" />
-          <CardTitle className="text-sm font-medium">Cobranças em Dia</CardTitle>
+            <CardTitle className="text-sm font-medium">Cobranças em Dia</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coepay-warning">
-              {percentualRecuperacao.toFixed(1)}%
+              {percentualRecuperacaoQtd.toFixed(1)}%
             </div>
             <CardDescription>
-              Cobranças não vencidas
+              Por quantidade: {percentualRecuperacaoQtd.toFixed(1)}% • Por valor: {percentualRecuperacaoValor.toFixed(1)}%
             </CardDescription>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Percentual de cobranças ainda em dia em relação ao total.
+              Mostra o percentual de cobranças ainda em dia, tanto pelo número de cobranças quanto pelo valor financeiro.
             </p>
           </CardContent>
         </Card>
@@ -126,37 +153,116 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
         </CardHeader>
         <CardContent className="pt-6">
           <div className="space-y-6">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-800">
-              <span className="font-medium text-green-800 dark:text-green-200">Até R$ 100</span>
-              <div className="flex items-center gap-3">
-                <div className="bg-green-500 h-4 rounded-full shadow-sm" style={{width: `${Math.max((faixasValor.ate100/totalCobrancas)*120, 20)}px`}}></div>
-                <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">{faixasValor.ate100}</Badge>
+            {[
+              { label: 'Até R$ 100', key: 'ate100', color: 'red' },       // baixo valor → vermelho
+              { label: 'R$ 101 - 500', key: 'de101a500', color: 'orange' },
+              { label: 'R$ 501 - 1.000', key: 'de501a1000', color: 'blue' },
+              { label: 'Acima de R$ 1.000', key: 'acima1000', color: 'green' } // valor alto → verde
+            ].map(faixa => (
+              <div 
+                key={faixa.key} 
+                className={`
+                  flex items-center justify-between p-4 rounded-lg 
+                  bg-gradient-to-r from-${faixa.color}-50 to-${faixa.color}-100 
+                  dark:from-${faixa.color}-900/20 dark:to-${faixa.color}-800/20 
+                  border border-${faixa.color}-200 dark:border-${faixa.color}-800
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+                `}
+              >
+                <span className={`font-medium text-${faixa.color}-800 dark:text-${faixa.color}-200`}>
+                  {faixa.label}
+                </span>
+                <div className="flex items-center gap-3">
+                  <div 
+                    className={`bg-${faixa.color}-500 h-4 rounded-full shadow-sm`} 
+                    style={{width: `${Math.max((faixasValor[faixa.key]/totalCobrancas)*120, 20)}px`}}
+                  ></div>
+                  <Badge variant="secondary" className={`bg-${faixa.color}-100 text-${faixa.color}-800 border-${faixa.color}-300`}>
+                    {faixasValor[faixa.key]}
+                  </Badge>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800">
-              <span className="font-medium text-blue-800 dark:text-blue-200">R$ 101 - R$ 500</span>
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-500 h-4 rounded-full shadow-sm" style={{width: `${Math.max((faixasValor.ate500/totalCobrancas)*120, 20)}px`}}></div>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300">{faixasValor.ate500}</Badge>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border border-orange-200 dark:border-orange-800">
-              <span className="font-medium text-orange-800 dark:text-orange-200">R$ 501 - R$ 1.000</span>
-              <div className="flex items-center gap-3">
-                <div className="bg-orange-500 h-4 rounded-full shadow-sm" style={{width: `${Math.max((faixasValor.ate1000/totalCobrancas)*120, 20)}px`}}></div>
-                <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-300">{faixasValor.ate1000}</Badge>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border border-red-200 dark:border-red-800">
-              <span className="font-medium text-red-800 dark:text-red-200">Acima de R$ 1.000</span>
-              <div className="flex items-center gap-3">
-                <div className="bg-red-500 h-4 rounded-full shadow-sm" style={{width: `${Math.max((faixasValor.acima1000/totalCobrancas)*120, 20)}px`}}></div>
-                <Badge variant="secondary" className="bg-red-100 text-red-800 border-red-300">{faixasValor.acima1000}</Badge>
-              </div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
+      <Card className="shadow-lg border-0 bg-gradient-to-br from-card to-muted/20">
+      <CardHeader className="bg-gradient-to-r from-coepay-primary/5 to-coepay-secondary/5 rounded-t-lg">
+          <CardTitle className="text-xl font-bold text-coepay-primary">Distribuição por Faixas de Atraso</CardTitle>
+          <CardDescription className="text-base">Análise das cobranças vencidas por tempo de atraso</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              {[
+                { label: 'Até 7 dias', key: 'ate7', color: 'green' },
+                { label: '8 a 30 dias', key: 'de8a30', color: 'orange' },
+                { label: 'Acima de 30 dias', key: 'acima30', color: 'red' }
+              ].map(faixa => (
+                <div 
+                  key={faixa.key} 
+                  className={`
+                    flex items-center justify-between p-4 rounded-lg 
+                    bg-gradient-to-r from-${faixa.color}-50 to-${faixa.color}-100 
+                    dark:from-${faixa.color}-900/20 dark:to-${faixa.color}-800/20 
+                    border border-${faixa.color}-200 dark:border-${faixa.color}-800
+                    transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+                  `}
+                >
+                  <span className={`font-medium text-${faixa.color}-800 dark:text-${faixa.color}-200`}>
+                    {faixa.label}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className={`bg-${faixa.color}-500 h-4 rounded-full shadow-sm`} 
+                      style={{width: `${Math.max((faixasAtraso[faixa.key]/cobrancasVencidas.length)*120, 20)}px`}}
+                    ></div>
+                    <Badge variant="secondary" className={`bg-${faixa.color}-100 text-${faixa.color}-800 border-${faixa.color}-300`}>
+                      {faixasAtraso[faixa.key]}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+{/* Top 3 Cobranças */}
+<Card className="shadow-lg border-0 bg-gradient-to-br from-card to-muted/20">
+  <CardHeader className="bg-gradient-to-r from-coepay-primary/5 to-coepay-secondary/5 rounded-t-lg">
+    <CardTitle className="text-xl font-bold text-coepay-primary">Top 3 Cobranças</CardTitle>
+    <CardDescription className="text-base">Valores mais altos do mês</CardDescription>
+  </CardHeader>
+  <CardContent className="pt-6 space-y-4">
+    {topCobrancas.map((c, index) => {
+      const corBadge = (c.valorAtual || c.valor) > 1000 ? 'green' : (c.valorAtual || c.valor) > 500 ? 'blue' : 'orange';
+      return (
+        <div
+          key={c.id}
+          className={`
+            flex items-center justify-between p-4 rounded-lg 
+            bg-gradient-to-r from-${corBadge}-50 to-${corBadge}-100
+            dark:from-${corBadge}-900/20 dark:to-${corBadge}-800/20
+            border border-${corBadge}-200 dark:border-${corBadge}-800
+            transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+          `}
+        >
+          <span className={`font-medium text-${corBadge}-800 dark:text-${corBadge}-200 truncate max-w-[120px]`}>
+            {index + 1}. {c.nomeDevedor}
+          </span>
+          <Badge
+            variant="secondary"
+            className={`bg-${corBadge}-100 text-${corBadge}-800 border-${corBadge}-300 font-bold px-3 py-1`}
+          >
+            R$ {(c.valorAtual || c.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Badge>
+        </div>
+      )
+    })}
+  </CardContent>
+</Card>
+
+
+
+      {/* Futuro: gráficos de tendência mensal, recuperação por faixa, distribuição geográfica */}
     </div>
   );
 };
