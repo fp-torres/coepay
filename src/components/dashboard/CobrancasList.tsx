@@ -49,12 +49,12 @@ export const CobrancasList = ({ cobrancas, onCopiarLink, onExcluirCobranca }: Co
                   {/* Valores originais*/}
                   <div className="flex items-end gap-2">
                     <p className="text-xl font-bold text-red-600">
-                      R$ {(cobranca.valorAtual || cobranca.valor).toFixed(2).replace(".", ",")}
+                      R$ {(cobranca.valorAtual || cobranca.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                     {cobranca.valorAtual &&
                       cobranca.valorAtual !== cobranca.valor && (
                         <p className="text-sm text-muted-foreground line-through">
-                          R$ {cobranca.valor.toFixed(2).replace(".", ",")}
+                          R$ {cobranca.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                       )}
                   </div>

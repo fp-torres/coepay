@@ -43,7 +43,7 @@ export default function Relatorios() {
     if (tipoJuros === 'diario') {
       periodos = diasVencido;
     } else {
-      periodos = diasVencido / 30;
+      periodos = diasVencido / 30; // Usando 30 dias por mês para consistência
     }
     
     const taxa = taxaJuros / 100;
@@ -90,7 +90,7 @@ export default function Relatorios() {
             dataVencimento: cobranca.data_vencimento,
             status,
             link: cobranca.link,
-            taxaJuros: taxaJurosNum,
+            taxaJuros: taxaJurosNum || undefined,
             tipoJuros: cobranca.tipo_juros
           };
         });

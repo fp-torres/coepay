@@ -23,21 +23,21 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
   const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa');
   const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida');
 
-  const valorTotalOriginal = cobrancas.reduce((sum, c) => sum + (typeof c.valor === 'number' ? c.valor : 0), 0);
+  const valorTotalOriginal = cobrancas.reduce((sum, c) => sum + (Number(c.valor) || 0), 0);
 
   const valorTotalAtual = cobrancas.reduce((sum, c) => {
-    const atual = typeof c.valorAtual === 'number' ? c.valorAtual : c.valor;
-    return sum + (typeof atual === 'number' ? atual : 0);
+    const atual = Number(c.valorAtual) || Number(c.valor) || 0;
+    return sum + atual;
   }, 0);
 
   const percentualRecuperacao = totalCobrancas > 0 ? (cobrancasAtivas.length / totalCobrancas) * 100 : 0;
   const ticketMedio = totalCobrancas > 0 ? valorTotalOriginal / totalCobrancas : 0;
 
   const faixasValor = {
-    ate100: cobrancas.filter(c => c.valor <= 100).length,
-    ate500: cobrancas.filter(c => c.valor > 100 && c.valor <= 500).length,
-    ate1000: cobrancas.filter(c => c.valor > 500 && c.valor <= 1000).length,
-    acima1000: cobrancas.filter(c => c.valor > 1000).length,
+    ate100: cobrancas.filter(c => Number(c.valor) <= 100).length,
+    ate500: cobrancas.filter(c => Number(c.valor) > 100 && Number(c.valor) <= 500).length,
+    ate1000: cobrancas.filter(c => Number(c.valor) > 500 && Number(c.valor) <= 1000).length,
+    acima1000: cobrancas.filter(c => Number(c.valor) > 1000).length,
   };
 
   return (
@@ -68,10 +68,10 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coepay-success">
-              R$ {Number(valorTotalAtual).toFixed(2)}
+              R$ {valorTotalAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <CardDescription>
-              Original: R$ {Number(valorTotalOriginal).toFixed(2)}
+              Original: R$ {valorTotalOriginal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </CardDescription>
             <p className="text-[11px] text-muted-foreground mt-1">
               Soma de todos os valores de cobranças, considerando juros aplicados.
@@ -87,7 +87,7 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coepay-secondary">
-              R$ {Number(ticketMedio).toFixed(2)}
+              R$ {ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <CardDescription>
               Por cobrança criada

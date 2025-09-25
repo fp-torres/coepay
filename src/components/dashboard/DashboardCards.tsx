@@ -17,7 +17,7 @@ export const DashboardCards = ({ totalReceber, cobrancasAtivas, cobrancasVencida
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-green-600">
-            R$ {totalReceber.toFixed(2).replace('.', ',')}
+            R$ {totalReceber.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </CardContent>
       </Card>

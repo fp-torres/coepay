@@ -21,8 +21,8 @@ export const RelatoriosPerformance = ({ cobrancas }: RelatoriosPerformanceProps)
   const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa');
   const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida');
   
-  const valorTotalOriginal = cobrancas.reduce((sum, c) => sum + c.valor, 0);
-  const valorTotalAtual = cobrancas.reduce((sum, c) => sum + (c.valorAtual || c.valor), 0);
+  const valorTotalOriginal = cobrancas.reduce((sum, c) => sum + Number(c.valor), 0);
+  const valorTotalAtual = cobrancas.reduce((sum, c) => sum + (Number(c.valorAtual) || Number(c.valor)), 0);
   const valorJuros = valorTotalAtual - valorTotalOriginal;
 
   return (
@@ -72,7 +72,7 @@ export const RelatoriosPerformance = ({ cobrancas }: RelatoriosPerformanceProps)
             <div className="space-y-4">
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">
-                  + R$ {valorJuros.toFixed(2)}
+                  + R$ {valorJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Valor adicional em juros

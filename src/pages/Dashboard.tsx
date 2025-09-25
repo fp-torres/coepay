@@ -42,22 +42,26 @@ const Dashboard = () => {
     tipoJuros: "mensal" as "mensal" | "diario",
   });
 
-  const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: 'mensal' | 'diario', dataVencimento: string) => {
+  const calcularJurosCompostos = (valor: number, taxaJuros: number, tipoJuros: 'mensal' | 'diario', dataVencimento: string): number => {
     const hoje = new Date();
     const vencimento = new Date(dataVencimento);
     
-    if (hoje <= vencimento) return valorInicial;
+    if (hoje <= vencimento) return valor;
     
-    const diffTime = hoje.getTime() - vencimento.getTime();
+    const diferencaMs = hoje.getTime() - vencimento.getTime();
+    const diasVencido = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
+    
+    if (diasVencido <= 0) return valor;
+    
     let periodos: number;
-    
-    if (tipo === 'diario') {
-      periodos = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    if (tipoJuros === 'diario') {
+      periodos = diasVencido;
     } else {
-      periodos = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Média de dias por mês
+      periodos = diasVencido / 30; // Usando 30 dias por mês para consistência
     }
     
-    return valorInicial * Math.pow(1 + (taxa / 100), periodos);
+    const taxa = taxaJuros / 100;
+    return valor * Math.pow(1 + taxa, periodos);
   };
 
   const carregarCobrancas = async (userId: number) => {
@@ -66,16 +70,11 @@ const Dashboard = () => {
     if (response.ok) {
       const data = await response.json();
       const cobrancasFormatadas = data.map((item: any) => {
-        let valorAtual = parseFloat(item.valor);
-
-        if (item.taxa_juros && item.tipo_juros) {
-          valorAtual = calcularJurosCompostos(
-            parseFloat(item.valor),
-            parseFloat(item.taxa_juros),
-            item.tipo_juros,
-            item.data_vencimento
-          );
-        }
+        const valorNum = Number(item.valor);
+        const taxaJurosNum = Number(item.taxa_juros);
+        const valorAtual = (taxaJurosNum && item.tipo_juros)
+          ? calcularJurosCompostos(valorNum, taxaJurosNum, item.tipo_juros, item.data_vencimento)
+          : valorNum;
 
         const hoje = new Date();
         const vencimento = new Date(item.data_vencimento);
@@ -84,16 +83,16 @@ const Dashboard = () => {
         return {
           id: item.id.toString(),
           nomeDevedor: item.nome,
-          valor: parseFloat(item.valor),
+          valor: valorNum,
           valorAtual,
           dataVencimento: item.data_vencimento,
           status,
           link: `${window.location.origin}/cobranca/${item.id}`,
-          taxaJuros: item.taxa_juros ? parseFloat(item.taxa_juros) : undefined,
+          taxaJuros: taxaJurosNum || undefined,
           tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
           // adiciona campo legível para exibir
-          jurosLabel: item.taxa_juros 
-            ? `${item.taxa_juros}% ${item.tipo_juros === 'diario' ? 'ao dia' : 'ao mês'}`
+          jurosLabel: taxaJurosNum 
+            ? `${taxaJurosNum}% ${item.tipo_juros === 'diario' ? 'ao dia' : 'ao mês'}`
             : "Sem juros",
         };
       });
@@ -145,8 +144,8 @@ const Dashboard = () => {
       return;
     }
 
-const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replace(',', '.'));
-    const taxaJuros = subscription.subscribed ? parseFloat(novaCobranca.taxaJuros) || 0 : 0;
+    const valorInicial = Number(novaCobranca.valor.replace(/[^\d,]/g, '').replace(',', '.'));
+    const taxaJuros = subscription.subscribed ? Number(novaCobranca.taxaJuros) || 0 : 0;
 
     try {
       const response = await fetch('http://localhost:5000/devedores', {
@@ -161,7 +160,7 @@ const valorInicial = parseFloat(novaCobranca.valor.replace(/[^\d,]/g, '').replac
           telefone: null,
           valor: isNaN(valorInicial) ? 0 : valorInicial,
           data_vencimento: novaCobranca.dataVencimento || new Date().toISOString().split('T')[0],
-          taxa_juros: novaCobranca.taxaJuros ? parseFloat(novaCobranca.taxaJuros) : null,  
+          taxa_juros: novaCobranca.taxaJuros ? Number(novaCobranca.taxaJuros) : null,  
           tipo_juros: novaCobranca.taxaJuros ? novaCobranca.tipoJuros : null, 
         })
       });
