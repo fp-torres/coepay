@@ -24,6 +24,12 @@ export const RelatoriosPerformance = ({ cobrancas }: RelatoriosPerformanceProps)
   const valorTotalOriginal = cobrancas.reduce((sum, c) => sum + Number(c.valor), 0);
   const valorTotalAtual = cobrancas.reduce((sum, c) => sum + (Number(c.valorAtual) || Number(c.valor)), 0);
   const valorJuros = valorTotalAtual - valorTotalOriginal;
+  
+  const cobrancasComJuros = cobrancas.filter(c => c.taxaJuros && c.taxaJuros > 0);
+  const percComJuros = totalCobrancas > 0 ? ((cobrancasComJuros.length / totalCobrancas) * 100).toFixed(1) : '0';
+
+  const mediaJuros = cobrancasComJuros.length > 0 ? valorJuros / cobrancasComJuros.length : 0;
+
 
   return (
     <div className="space-y-6">
@@ -62,35 +68,37 @@ export const RelatoriosPerformance = ({ cobrancas }: RelatoriosPerformanceProps)
             </div>
           </CardContent>
         </Card>
+          {/* Impacto dos Juros */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Impacto dos Juros</CardTitle>
+              <CardDescription>Receita adicional gerada</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center space-y-4">
+                
+                {/* Valor total + percentual */}
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600">
+                    + R$ {valorJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-lg text-gray-700 mt-1">
+                    {valorTotalOriginal > 0 ? ((valorJuros / valorTotalOriginal) * 100).toFixed(2) : 0}%
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">Aumento sobre valor original</p>
+                </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Impacto dos Juros</CardTitle>
-            <CardDescription>Receita adicional gerada</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">
-                  + R$ {valorJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {/* Detalhes adicionais */}
+                <div className="flex justify-center gap-8 mt-2 text-center text-sm text-muted-foreground">
+                  <div>
+                    % de cobranças com juros<br/>
+                    <span className="font-medium text-gray-900">{percComJuros}%</span>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Valor adicional em juros
-                </p>
               </div>
-              <div className="text-center">
-                <div className="text-xl font-semibold">
-                  {valorTotalOriginal > 0 ? ((valorJuros/valorTotalOriginal)*100).toFixed(2) : 0}%
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Aumento sobre valor original
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
       </div>
-
       {/* Gráfico visual de performance */}
       <Card>
         <CardHeader>
