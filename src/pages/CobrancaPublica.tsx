@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { payload } from 'pix-payload';
+import QRCode from 'qrcode';
+
 
 interface CobrancaData {
   id: string;
@@ -38,9 +41,24 @@ const mensagensMotivacionais = [
 ];
 
 
+
+const gerarQRCodePIX = async (chave: string, valor: number, nome: string) => {
+  const pixPayload = payload({
+    key: chave,
+    name: nome,
+    city: 'SUA CIDADE',
+    amount: valor,
+  });
+
+  const qrCodeDataURL = await QRCode.toDataURL(pixPayload);
+  return qrCodeDataURL;
+};
+
+
 const CobrancaPublica = () => {
   const { id } = useParams();
   const [cobranca, setCobranca] = useState<CobrancaData | null>(null);
+  const [qrCodeURL, setQrCodeURL] = useState<string>(''); // novo estado
   const [mensagemAtual, setMensagemAtual] = useState(0);
 
   // Faz as mensagens mudarem automaticamente
@@ -70,56 +88,71 @@ const CobrancaPublica = () => {
     return valorInicial * Math.pow(1 + (taxa / 100), periodos);
   };
 
+  // Carrega cobrança
   useEffect(() => {
-    const carregarCobranca = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/devedores/${id}`);
-        if (response.ok) {
-          const cobrancaData = await response.json();
-          
-          let valorAtual = parseFloat(cobrancaData.valor);
-          
-          // Calcular juros compostos se houver taxa e estiver vencido
-          if (cobrancaData.taxa_juros && cobrancaData.tipo_juros) {
-            valorAtual = calcularJurosCompostos(
-              parseFloat(cobrancaData.valor),
-              parseFloat(cobrancaData.taxa_juros),
-              cobrancaData.tipo_juros,
-              cobrancaData.data_vencimento
-            );
-          }
-          
-          const hoje = new Date();
-          const vencimento = new Date(cobrancaData.data_vencimento);
-          const status = hoje > vencimento ? 'vencida' : 'ativa';
-          const diasVencido = hoje > vencimento ? Math.ceil((hoje.getTime() - vencimento.getTime()) / (1000*60*60*24)) : 0;
-          
-          // Buscar dados do usuário para pegar o PIX
-          const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
-          const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
-          
-          setCobranca({
-            id: cobrancaData.id.toString(),
-            nomeDevedor: cobrancaData.nome,
-            valor: parseFloat(cobrancaData.valor),
-            valorAtual: valorAtual,
-            dataVencimento: cobrancaData.data_vencimento,
-            diasVencido: diasVencido,
-            pixCobranca: userData.pix || '',
-            status: status,
-            taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,
-            tipoJuros: cobrancaData.tipo_juros
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao carregar cobrança:', error);
-      }
-    };
+  const carregarCobranca = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/devedores/${id}`);
+      if (!response.ok) return;
 
-    if (id) {
-      carregarCobranca();
+      const cobrancaData = await response.json();
+
+      // Calcula juros
+      let valorAtual = parseFloat(cobrancaData.valor);
+      if (cobrancaData.taxa_juros && cobrancaData.tipo_juros) {
+        valorAtual = calcularJurosCompostos(
+          parseFloat(cobrancaData.valor),
+          parseFloat(cobrancaData.taxa_juros),
+          cobrancaData.tipo_juros,
+          cobrancaData.data_vencimento
+        );
+      }
+
+      // Calcula dias vencido e status
+      const hoje = new Date();
+      const vencimento = new Date(cobrancaData.data_vencimento);
+      const diffTime = hoje.getTime() - vencimento.getTime();
+      const diasVencido = hoje > vencimento ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : 0;
+      const status = (hoje > vencimento ? 'vencida' : 'ativa') as 'vencida' | 'ativa';
+
+      // Busca dados do usuário para pegar o PIX
+      const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
+      const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
+
+      const cobrancaObj: CobrancaData = {
+        id: cobrancaData.id.toString(),
+        nomeDevedor: cobrancaData.nome,
+        valor: parseFloat(cobrancaData.valor),
+        valorAtual,
+        dataVencimento: cobrancaData.data_vencimento,
+        diasVencido,
+        pixCobranca: userData.pix || '',
+        status,
+        taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,
+        tipoJuros: cobrancaData.tipo_juros
+      };
+
+      setCobranca(cobrancaObj);
+
+      // Gera QR Code PIX
+      if (cobrancaObj.pixCobranca && cobrancaObj.valorAtual) {
+        const qrCode = await gerarQRCodePIX(
+          cobrancaObj.pixCobranca,
+          cobrancaObj.valorAtual,
+          cobrancaObj.nomeDevedor
+        );
+        setQrCodeURL(qrCode);
+      }
+
+    } catch (err) {
+      console.error(err);
     }
-  }, [id]);
+  };
+
+  if (id) carregarCobranca();
+}, [id]);
+
+
 
   const gerarQRCode = (pix: string, valor: number, nome: string) => {
     // Em um caso real, aqui seria gerado um QR Code PIX válido
@@ -213,41 +246,60 @@ const CobrancaPublica = () => {
           </CardContent>
         </Card>
 
-        {/* QR Code PIX */}
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle>Pague com PIX</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <div className="flex justify-center">
-              <img
-                src={gerarQRCode(cobranca.pixCobranca, cobranca.valorAtual, cobranca.nomeDevedor)}
-                alt="QR Code PIX"
-                className="w-48 h-48 border rounded-lg"
-              />
-            </div>
-            
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
-              <div className="flex items-center justify-between bg-background p-2 rounded border">
-                <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
-                <Button size="sm" variant="outline" onClick={() => {
-                  navigator.clipboard.writeText(cobranca.pixCobranca);
-                  toast({
-                    title: "Chave PIX copiada!",
-                    description: "Você pode colar onde precisar.",
-                  });
-                }}>
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+     {/* Card PIX */}
+{cobranca ? (
+  <Card className="mb-6 border-l-4 border-l-green-500">
+    <CardHeader className="text-center">
+      <CardTitle>Pague com PIX</CardTitle>
+    </CardHeader>
+    <CardContent className="text-center space-y-4">
+      {/* QR Code */}
+      <div className="flex justify-center">
+        {qrCodeURL ? (
+          <img
+            src={qrCodeURL}
+            alt="QR Code PIX"
+            className="w-48 h-48 border rounded-lg"
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
+        )}
+      </div>
 
-            <div className="text-xs text-muted-foreground">
-              Escaneie o QR Code ou copie a chave PIX para fazer o pagamento
-            </div>
-          </CardContent>
-        </Card>
+      {/* Chave PIX */}
+      <div className="bg-muted p-4 rounded-lg">
+        <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
+        <div className="flex items-center justify-between bg-background p-2 rounded border">
+          <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              navigator.clipboard.writeText(cobranca.pixCobranca);
+              toast({
+                title: "Chave PIX copiada!",
+                description: "Você pode colar onde precisar.",
+              });
+            }}
+          >
+            <Copy className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
+      </p>
+    </CardContent>
+  </Card>
+) : (
+  <Card className="mb-6 border-l-4 border-l-gray-300">
+    <CardContent className="text-center">
+      <p className="text-sm text-muted-foreground">Carregando cobrança...</p>
+    </CardContent>
+  </Card>
+)}
+
 
         {/* Footer motivacional */}
         <div className="text-center mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
