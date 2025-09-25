@@ -223,7 +223,7 @@ export const RelatoriosJuros = ({ cobrancas }: RelatoriosJurosProps) => {
                   );
                   return (
                     <>
-                      <div className="text-3xl font-bold text-green-600">R$ {maiorJuros.toFixed(2)}</div>
+                      <div className="text-2xl font-bold text-green-600">R$ {maiorJuros.toFixed(2)}</div>
                       <p className="text-sm text-muted-foreground flex flex-col items-center justify-center gap-1">
                         <span className="flex items-center gap-1">
                           <TrendingUp className="w-4 h-4" /> Maior juros

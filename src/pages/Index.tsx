@@ -254,7 +254,7 @@ const Index = () => {
             ) : (
               <div className="hidden lg:block w-full max-w-md">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-coepay-primary/20 to-coepay-secondary/20 rounded-3xl blur-3xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-coepay-primary/40 to-coepay-secondary/20 rounded-3xl blur-3xl"></div>
                   <div className="relative bg-card/60 backdrop-blur-sm rounded-3xl p-8 border border-coepay-primary/10">
                     <div className="text-center space-y-4">
                       <div className="w-16 h-16 bg-gradient-to-br from-coepay-primary to-coepay-secondary rounded-2xl flex items-center justify-center mx-auto mb-6">

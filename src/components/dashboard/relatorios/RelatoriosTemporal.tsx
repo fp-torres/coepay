@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Clock, DollarSign, TrendingUp } from "lucide-react";
 
 interface Cobranca {
   id: string;
@@ -20,15 +21,11 @@ interface RelatoriosTemporalProps {
 export const RelatoriosTemporal = ({ cobrancas }: RelatoriosTemporalProps) => {
   const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa');
 
-  // Análise temporal (últimos 30 dias)
   const dataLimite = new Date();
   dataLimite.setDate(dataLimite.getDate() - 30);
   
-  const cobrancasRecentes = cobrancas.filter(c => 
-    new Date(c.dataVencimento) >= dataLimite
-  );
+  const cobrancasRecentes = cobrancas.filter(c => new Date(c.dataVencimento) >= dataLimite);
 
-  // Próximos vencimentos (7 dias)
   const proximosVencimentos = cobrancasAtivas
     .filter(c => {
       const diasParaVencer = Math.ceil((new Date(c.dataVencimento).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
@@ -36,112 +33,123 @@ export const RelatoriosTemporal = ({ cobrancas }: RelatoriosTemporalProps) => {
     })
     .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime());
 
+  const valorTotal = cobrancasRecentes.reduce((sum, c) => sum + c.valor, 0);
+  const ticketMedio = cobrancasRecentes.length > 0 ? (valorTotal / cobrancasRecentes.length) : 0;
+  const maiorCobranca = cobrancasRecentes.length > 0 ? Math.max(...cobrancasRecentes.map(c => c.valor)) : 0;
+  const menorCobranca = cobrancasRecentes.length > 0 ? Math.min(...cobrancasRecentes.map(c => c.valor)) : 0;
+
   return (
     <div className="space-y-6">
-      <Card>
+      {/* Resumo 30 dias */}
+      <Card className="bg-white shadow-lg border-0 rounded-xl">
         <CardHeader>
-          <CardTitle>Análise dos Últimos 30 Dias</CardTitle>
-          <CardDescription>Cobranças criadas no período</CardDescription>
+          <CardTitle className="text-xl font-bold">Resumo dos Últimos 30 Dias</CardTitle>
+          <CardDescription>Análise das cobranças recentes</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-coepay-primary">{cobrancasRecentes.length}</div>
-              <p className="text-sm text-muted-foreground">Cobranças no período</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="text-center p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="text-2xl font-bold text-coepay-primary">{cobrancasRecentes.length}</div>
+              <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                <Clock className="w-4 h-4" /> Total de cobranças
+              </p>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-coepay-secondary">
-                R$ {cobrancasRecentes.reduce((sum, c) => sum + c.valor, 0).toFixed(2)}
-              </div>
-              <p className="text-sm text-muted-foreground">Valor total</p>
+            <div className="text-center p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="text-2xl font-bold text-coepay-secondary">R$ {valorTotal.toFixed(2)}</div>
+              <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                <DollarSign className="w-4 h-4" /> Valor total
+              </p>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold">
-                R$ {cobrancasRecentes.length > 0 ? (cobrancasRecentes.reduce((sum, c) => sum + c.valor, 0) / cobrancasRecentes.length).toFixed(2) : '0.00'}
-              </div>
-              <p className="text-sm text-muted-foreground">Ticket médio</p>
+            <div className="text-center p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="text-2xl font-bold">R$ {ticketMedio.toFixed(2)}</div>
+              <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                <DollarSign className="w-4 h-4" /> Ticket médio
+              </p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="text-2xl font-bold text-green-600">R$ {maiorCobranca.toFixed(2)}</div>
+              <p className="text-sm text-gray-500">Maior cobrança</p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="text-2xl font-bold text-red-600">R$ {menorCobranca.toFixed(2)}</div>
+              <p className="text-sm text-gray-500">Menor cobrança</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Próximos vencimentos */}
+      <Card className="bg-white shadow-lg border-0 rounded-xl">
         <CardHeader>
           <CardTitle>Próximos Vencimentos</CardTitle>
           <CardDescription>Cobranças que vencem nos próximos 7 dias</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {proximosVencimentos.map(cobranca => {
-              const diasParaVencer = Math.ceil((new Date(cobranca.dataVencimento).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-              return (
-                <div key={cobranca.id} className="flex justify-between items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex-1">
-                    <div className="font-medium text-lg">{cobranca.nomeDevedor}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Vence em {diasParaVencer} dia{diasParaVencer !== 1 ? 's' : ''}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-lg">R$ {cobranca.valor.toFixed(2)}</div>
-                    <Badge variant={diasParaVencer <= 2 ? "destructive" : diasParaVencer <= 5 ? "secondary" : "outline"}>
-                      {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
-                    </Badge>
+        <CardContent className="space-y-3">
+          {proximosVencimentos.length > 0 ? proximosVencimentos.map(c => {
+            const diasParaVencer = Math.ceil((new Date(c.dataVencimento).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            return (
+              <div key={c.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                <div>
+                  <div className="font-medium">{c.nomeDevedor}</div>
+                  <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                    <Clock className="w-4 h-4" /> Vence em {diasParaVencer} dia{diasParaVencer !== 1 ? 's' : ''}
                   </div>
                 </div>
-              );
-            })}
-            {proximosVencimentos.length === 0 && (
-              <div className="text-center text-muted-foreground py-12">
-                <div className="text-6xl mb-4">📅</div>
-                <h3 className="text-lg font-medium mb-2">Agenda tranquila</h3>
-                <p>Nenhuma cobrança vence nos próximos 7 dias</p>
+                <div className="text-right">
+                  <div className="font-bold">R$ {c.valor.toFixed(2)}</div>
+                    <Badge
+                      className={
+                        diasParaVencer <= 2
+                          ? "bg-red-100 text-red-600 border-red-200 hover:bg-red-200 transition-colors"
+                          : diasParaVencer <= 5
+                          ? "bg-yellow-100 text-yellow-600 border-yellow-200 hover:bg-yellow-200 transition-colors"
+                          : "bg-green-100 text-green-600 border-green-200 hover:bg-green-200 transition-colors"
+                      }
+                    >
+                      {new Date(c.dataVencimento).toLocaleDateString("pt-BR")}
+                    </Badge>
+                </div>
               </div>
-            )}
-          </div>
+            );
+          }) : (
+            <div className="text-center text-gray-400 py-10">
+              <div className="text-4xl mb-2">📅</div>
+              <p>Nenhuma cobrança vence nos próximos 7 dias</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Análise por mês */}
-      <Card>
+      {/* Distribuição mensal */}
+      <Card className="bg-white shadow-lg border-0 rounded-xl">
         <CardHeader>
           <CardTitle>Distribuição Mensal</CardTitle>
           <CardDescription>Cobranças agrupadas por mês de vencimento</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {(() => {
-              const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
-                            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-              
-              const distribuicaoMensal = cobrancas.reduce((acc, cobranca) => {
-                const mes = new Date(cobranca.dataVencimento).getMonth();
-                const ano = new Date(cobranca.dataVencimento).getFullYear();
-                const chave = `${ano}-${mes}`;
-                
-                if (!acc[chave]) {
-                  acc[chave] = { mes: meses[mes], ano, count: 0, valor: 0 };
-                }
-                acc[chave].count++;
-                acc[chave].valor += cobranca.valor;
-                return acc;
-              }, {} as Record<string, { mes: string; ano: number; count: number; valor: number }>);
+        <CardContent className="space-y-2">
+          {(() => {
+            const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            const distribuicaoMensal = cobrancas.reduce((acc, c) => {
+              const data = new Date(c.dataVencimento);
+              const chave = `${data.getFullYear()}-${data.getMonth()}`;
+              if (!acc[chave]) acc[chave] = { mes: meses[data.getMonth()], ano: data.getFullYear(), count: 0, valor: 0 };
+              acc[chave].count++;
+              acc[chave].valor += c.valor;
+              return acc;
+            }, {} as Record<string, { mes: string; ano: number; count: number; valor: number }>);
 
-              return Object.values(distribuicaoMensal)
-                .sort((a, b) => `${a.ano}-${meses.indexOf(a.mes)}`.localeCompare(`${b.ano}-${meses.indexOf(b.mes)}`))
-                .map((item, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{item.mes} {item.ano}</div>
-                      <div className="text-sm text-muted-foreground">{item.count} cobranças</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold">R$ {item.valor.toFixed(2)}</div>
-                    </div>
+            return Object.values(distribuicaoMensal)
+              .sort((a, b) => `${a.ano}-${meses.indexOf(a.mes)}`.localeCompare(`${b.ano}-${meses.indexOf(b.mes)}`))
+              .map((item, idx) => (
+                <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <div>
+                    <div className="font-medium">{item.mes} {item.ano}</div>
+                    <div className="text-sm text-gray-500">{item.count} cobrança{item.count > 1 ? 's' : ''}</div>
                   </div>
-                ));
-            })()}
-          </div>
+                  <div className="font-semibold">R$ {item.valor.toFixed(2)}</div>
+                </div>
+              ));
+          })()}
         </CardContent>
       </Card>
     </div>
