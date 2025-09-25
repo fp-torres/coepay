@@ -120,38 +120,54 @@ export const RelatoriosTemporal = ({ cobrancas }: RelatoriosTemporalProps) => {
         </CardContent>
       </Card>
 
-      {/* Distribuição mensal */}
-      <Card className="bg-white shadow-lg border-0 rounded-xl">
-        <CardHeader>
-          <CardTitle>Distribuição Mensal</CardTitle>
-          <CardDescription>Cobranças agrupadas por mês de vencimento</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {(() => {
-            const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-            const distribuicaoMensal = cobrancas.reduce((acc, c) => {
-              const data = new Date(c.dataVencimento);
-              const chave = `${data.getFullYear()}-${data.getMonth()}`;
-              if (!acc[chave]) acc[chave] = { mes: meses[data.getMonth()], ano: data.getFullYear(), count: 0, valor: 0 };
-              acc[chave].count++;
-              acc[chave].valor += c.valor;
-              return acc;
-            }, {} as Record<string, { mes: string; ano: number; count: number; valor: number }>);
+{/* Distribuição mensal */}
+<Card className="bg-white shadow-lg border-0 rounded-xl">
+  <CardHeader>
+    <CardTitle>Distribuição Mensal</CardTitle>
+    <CardDescription>Cobranças agrupadas por mês de vencimento</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-2">
+    {(() => {
+      const meses = [
+        'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+        'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
+      ];
+      const valorTotalGeral = cobrancas.reduce((sum, c) => sum + c.valor, 0);
 
-            return Object.values(distribuicaoMensal)
-              .sort((a, b) => `${a.ano}-${meses.indexOf(a.mes)}`.localeCompare(`${b.ano}-${meses.indexOf(b.mes)}`))
-              .map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <div>
-                    <div className="font-medium">{item.mes} {item.ano}</div>
-                    <div className="text-sm text-gray-500">{item.count} cobrança{item.count > 1 ? 's' : ''}</div>
-                  </div>
-                  <div className="font-semibold">R$ {item.valor.toFixed(2)}</div>
+      const distribuicaoMensal = cobrancas.reduce((acc, c) => {
+        const data = new Date(c.dataVencimento);
+        const chave = `${data.getFullYear()}-${data.getMonth()}`;
+        if (!acc[chave])
+          acc[chave] = { mes: meses[data.getMonth()], ano: data.getFullYear(), count: 0, valor: 0 };
+        acc[chave].count++;
+        acc[chave].valor += c.valor;
+        return acc;
+      }, {} as Record<string, { mes: string; ano: number; count: number; valor: number }>);
+
+      return Object.values(distribuicaoMensal)
+        .sort((a, b) => a.ano - b.ano || meses.indexOf(a.mes) - meses.indexOf(b.mes))
+        .map((item, idx) => {
+          const ticketMedio = item.valor / item.count;
+          const percentual = valorTotalGeral ? (item.valor / valorTotalGeral) * 100 : 0;
+
+          return (
+            <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div>
+                <div className="font-medium">{item.mes} {item.ano}</div>
+                <div className="text-sm text-gray-500 flex flex-col sm:flex-row sm:gap-4">
+                  <span>{item.count} cobrança{item.count > 1 ? 's' : ''}</span>
+                  <span>Ticket médio: R$ {ticketMedio.toFixed(2)}</span>
+                  <span className="text-gray-400">({percentual.toFixed(1)}% do total)</span>
                 </div>
-              ));
-          })()}
-        </CardContent>
-      </Card>
+              </div>
+              <div className="font-semibold text-green-700">R$ {item.valor.toFixed(2)}</div>
+            </div>
+          );
+        });
+    })()}
+  </CardContent>
+</Card>
+
     </div>
   );
 };

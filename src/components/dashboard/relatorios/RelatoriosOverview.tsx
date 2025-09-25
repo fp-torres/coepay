@@ -102,7 +102,7 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
           <Card className="border-coepay-warning hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
             <PieChart className="w-5 h-5 text-coepay-warning" />
-          <CardTitle className="text-sm font-medium">Taxa de Recuperação</CardTitle>
+          <CardTitle className="text-sm font-medium">Cobranças em Dia</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coepay-warning">
