@@ -23,8 +23,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/relatorios" element={<Relatorios />} />
-          <Route path="/cobranca/:id" element={<CobrancaPublica />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/cobranca/:hash" element={<CobrancaPublica />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

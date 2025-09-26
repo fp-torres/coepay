@@ -56,11 +56,12 @@ const gerarQRCodePIX = async (chave: string, valor: number, nome: string) => {
 
 
 const CobrancaPublica = () => {
-  const { id } = useParams();
+  const { hash } = useParams();
   const [cobranca, setCobranca] = useState<CobrancaData | null>(null);
-  const [qrCodeURL, setQrCodeURL] = useState<string>(''); // novo estado
+  const [qrCodeURL, setQrCodeURL] = useState<string>('');
   const [mensagemAtual, setMensagemAtual] = useState(0);
 
+  
   // Faz as mensagens mudarem automaticamente
   useEffect(() => {
     const intervalo = setInterval(() => {
@@ -70,6 +71,7 @@ const CobrancaPublica = () => {
     return () => clearInterval(intervalo);
   }, []);
 
+  // Função precisa estar aqui, dentro do componente
   const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: 'mensal' | 'diario', dataVencimento: string) => {
     const hoje = new Date();
     const vencimento = new Date(dataVencimento);
@@ -88,25 +90,26 @@ const CobrancaPublica = () => {
     return valorInicial * Math.pow(1 + (taxa / 100), periodos);
   };
 
+  
   // Carrega cobrança
   useEffect(() => {
-  const carregarCobranca = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/devedores/${id}`);
-      if (!response.ok) return;
+    const carregarCobranca = async () => {
+      if (!hash) return;
+      try {
+        const response = await fetch(`http://localhost:5000/cobranca/${hash}`);
+        if (!response.ok) return;
 
-      const cobrancaData = await response.json();
+        const cobrancaData = await response.json();
 
-      // Calcula juros
-      let valorAtual = parseFloat(cobrancaData.valor);
-      if (cobrancaData.taxa_juros && cobrancaData.tipo_juros) {
-        valorAtual = calcularJurosCompostos(
-          parseFloat(cobrancaData.valor),
-          parseFloat(cobrancaData.taxa_juros),
-          cobrancaData.tipo_juros,
-          cobrancaData.data_vencimento
-        );
-      }
+        let valorAtual = parseFloat(cobrancaData.valor);
+        if (cobrancaData.taxa_juros && cobrancaData.tipo_juros) {
+          valorAtual = calcularJurosCompostos(
+            parseFloat(cobrancaData.valor),
+            parseFloat(cobrancaData.taxa_juros),
+            cobrancaData.tipo_juros,
+            cobrancaData.data_vencimento
+          );
+        }
 
       // Calcula dias vencido e status
       const hoje = new Date();
@@ -149,8 +152,10 @@ const CobrancaPublica = () => {
     }
   };
 
-  if (id) carregarCobranca();
-}, [id]);
+  if (hash) {
+    carregarCobranca();
+  }
+}, [hash]);
 
 
 

@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import pg from "pg";
 import bcrypt from "bcrypt";
-import dotenv from "dotenv";
+import dotenv from "dotenv"
+import { v4 as uuidv4 } from "uuid";
 dotenv.config();
 
 const { Pool } = pg;
@@ -126,59 +127,43 @@ app.get("/devedores", async (req, res) => {
 
 // DEVEDORES
 app.post("/devedores", async (req, res) => {
-  const {
-    user_id,
-    nome,
-    email,
-    telefone,
-    valor,
-    data_vencimento,
-    taxa_juros,
-    tipo_juros,
-  } = req.body;
-
+  const { user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros } = req.body;
   try {
-    // Verifica se a data de vencimento é válida
     const hoje = new Date();
     const vencimento = new Date(data_vencimento);
     const status = hoje > vencimento ? "vencida" : "ativa";
 
-    // Gerar link temporário
-    const link = `${req.protocol}://${req.get("host")}/cobranca/TEMP_ID`;
+    const hash = uuidv4();
+    const link = `${req.protocol}://${req.get("host")}/cobranca/${hash}`;
 
-    // Inserir no banco com status correto
     const result = await pool.query(
       `INSERT INTO devedores 
-       (user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, status, link) 
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-      [
-        user_id,
-        nome,
-        email,
-        telefone,
-        valor,
-        data_vencimento,
-        taxa_juros,
-        tipo_juros,
-        status,
-        link,
-      ]
+       (user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, status, hash, link) 
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+      [user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, status, hash, link]
     );
 
-    // Atualizar o link com o ID real da cobrança
-    const linkAtualizado = link.replace("TEMP_ID", result.rows[0].id);
-    await pool.query("UPDATE devedores SET link = $1 WHERE id = $2", [
-      linkAtualizado,
-      result.rows[0].id,
-    ]);
-
-    result.rows[0].link = linkAtualizado;
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao cadastrar devedor" });
   }
 });
+
+    // Rota pública usando hash
+    app.get("/cobranca/:hash", async (req, res) => {
+      const { hash } = req.params;
+      try {
+        const result = await pool.query("SELECT * FROM devedores WHERE hash = $1", [hash]);
+        if (result.rows.length === 0) {
+          return res.status(404).json({ message: "Cobrança não encontrada" });
+        }
+        res.json(result.rows[0]);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Erro ao buscar cobrança" });
+      }
+    });
 
 // COBRANÇA PÚBLICA
 app.get("/cobranca/:id", async (req, res) => {

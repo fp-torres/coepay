@@ -87,7 +87,7 @@ const Dashboard = () => {
           valorAtual,
           dataVencimento: item.data_vencimento,
           status,
-          link: `${window.location.origin}/cobranca/${item.id}`,
+          link: `${window.location.origin}/cobranca/${item.hash}`,
           taxaJuros: taxaJurosNum || undefined,
           tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
           // adiciona campo legível para exibir
@@ -135,7 +135,7 @@ const Dashboard = () => {
     if (!user?.id) return;
     
     // Verificar limite de cobranças para usuários não premium
-    if (!subscription.subscribed && cobrancas.length >= 3) {
+    if (!subscription.subscribed && cobrancas.length >= 15) {
       toast({
         title: "Limite atingido!",
         description: "Usuários gratuitos podem criar apenas 3 cobranças. Upgrade para premium para criar ilimitadas.",
