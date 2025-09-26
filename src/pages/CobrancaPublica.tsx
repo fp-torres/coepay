@@ -7,6 +7,8 @@ import { Copy, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { payload } from 'pix-payload';
 import QRCode from 'qrcode';
+import { gerarQRCodePIXManual } from '@/utils/pix';
+
 
 
 interface CobrancaData {
@@ -42,17 +44,6 @@ const mensagensMotivacionais = [
 
 
 
-const gerarQRCodePIX = async (chave: string, valor: number, nome: string) => {
-  const pixPayload = payload({
-    key: chave,
-    name: nome,
-    city: 'SUA CIDADE',
-    amount: valor,
-  });
-
-  const qrCodeDataURL = await QRCode.toDataURL(pixPayload);
-  return qrCodeDataURL;
-};
 
 
 const CobrancaPublica = () => {
@@ -139,11 +130,12 @@ const CobrancaPublica = () => {
 
       // Gera QR Code PIX
       if (cobrancaObj.pixCobranca && cobrancaObj.valorAtual) {
-        const qrCode = await gerarQRCodePIX(
-          cobrancaObj.pixCobranca,
-          cobrancaObj.valorAtual,
-          cobrancaObj.nomeDevedor
-        );
+const qrCode = await gerarQRCodePIXManual(
+  cobrancaObj.pixCobranca,
+  cobrancaObj.valorAtual,
+  cobrancaObj.nomeDevedor
+);
+
         setQrCodeURL(qrCode);
       }
 
