@@ -72,27 +72,34 @@ export const CobrancasList = ({ cobrancas, onCopiarLink, onExcluirCobranca }: Co
                     variant="outline"
                     size="sm"
                     onClick={() => window.open(cobranca.link, "_blank")}
+                    className="flex items-center border  font-semibold shadow-sm
+                              hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
                   >
-                    Abrir Cobrança
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onCopiarLink(cobranca.link)}
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copiar Link
-                  </Button>
-
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => onExcluirCobranca(cobranca.id)}
-                  className="bg-red-700 hover:bg-red-800"
-                >
-                  Excluir
+                  Abrir Cobrança
                 </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onCopiarLink(cobranca.link)}
+                className="flex items-center border font-semibold shadow-sm
+                          hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copiar Link
+              </Button>
+
+
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => onExcluirCobranca(cobranca.id)}
+                className="bg-red-700 text-white font-semibold shadow-sm rounded-sm
+                          hover:bg-gradient-to-r hover:from-red-600 hover:to-red-800 transition"
+              >
+                Excluir
+              </Button>
+
                 </div>
               </div>
             );

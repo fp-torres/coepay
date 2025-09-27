@@ -150,7 +150,8 @@ export default function Relatorios() {
               variant="outline"
               size="sm"
               onClick={() => navigate('/painel-de-controle')}
-              className="hover:bg-coepay-primary/10 hover:border-coepay-primary/20"
+              className="flex items-center border border-coepay-primary text-coepay-primary font-semibold shadow-sm
+                        hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
@@ -164,35 +165,41 @@ export default function Relatorios() {
             </div>
           </div>
         </div>
-
-        {/* Tabs */}
         <Tabs defaultValue="visao-geral" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-8 bg-card/50 backdrop-blur-sm border shadow-lg">
             <TabsTrigger 
-              value="visao-geral" 
-              className="data-[state=active]:bg-coepay-primary data-[state=active]:text-white"
+              value="visao-geral"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coepay-primary data-[state=active]:to-coepay-secondary data-[state=active]:text-white
+                        hover:opacity-90 transition"
             >
               Visão Geral
             </TabsTrigger>
+
             <TabsTrigger 
               value="performance"
-              className="data-[state=active]:bg-coepay-primary data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coepay-primary data-[state=active]:to-coepay-secondary data-[state=active]:text-white
+                        hover:opacity-90 transition"
             >
               Performance
             </TabsTrigger>
+
             <TabsTrigger 
               value="juros"
-              className="data-[state=active]:bg-coepay-primary data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coepay-primary data-[state=active]:to-coepay-secondary data-[state=active]:text-white
+                        hover:opacity-90 transition"
             >
               Análise de Juros
             </TabsTrigger>
+
             <TabsTrigger 
               value="temporal"
-              className="data-[state=active]:bg-coepay-primary data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coepay-primary data-[state=active]:to-coepay-secondary data-[state=active]:text-white
+                        hover:opacity-90 transition"
             >
               Análise Temporal
             </TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="visao-geral">
             <RelatoriosOverview cobrancas={cobrancas} />

@@ -160,7 +160,12 @@ export const NovaCobrancaForm = ({ user, novaCobranca, setNovaCobranca, setUser,
               <span className="text-xs">Exemplo: R$ 100,00 em 01/01/2025 com 2% ao mês = R$ 102,00 após 1 mês</span>
             </div>
           )}
-          <Button type="submit" className="w-full">Criar Cobrança</Button>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition"
+          >
+            Criar Cobrança
+          </Button>
         </form>
       </CardContent>
     </Card>
