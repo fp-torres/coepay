@@ -22,6 +22,7 @@ interface CobrancaData {
   status: 'ativa' | 'vencida';
   taxaJuros?: number;
   tipoJuros?: string;
+  descricao?: string; 
 }
 
 const mensagensMotivacionais = [
@@ -123,18 +124,19 @@ const CobrancaPublica = () => {
         pixCobranca: userData.pix || '',
         status,
         taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,
-        tipoJuros: cobrancaData.tipo_juros
+        tipoJuros: cobrancaData.tipo_juros,
+        descricao: cobrancaData.descricao || ''
       };
 
       setCobranca(cobrancaObj);
 
       // Gera QR Code PIX
       if (cobrancaObj.pixCobranca && cobrancaObj.valorAtual) {
-const qrCode = await gerarQRCodePIXManual(
-  cobrancaObj.pixCobranca,
-  cobrancaObj.valorAtual,
-  cobrancaObj.nomeDevedor
-);
+          const qrCode = await gerarQRCodePIXManual(
+            cobrancaObj.pixCobranca,
+            cobrancaObj.valorAtual,
+            cobrancaObj.nomeDevedor
+          );
 
         setQrCodeURL(qrCode);
       }
@@ -184,30 +186,35 @@ const qrCode = await gerarQRCodePIXManual(
             Você possui uma cobrança pendente
           </p>
         </div>
+          {/* Card Principal da Cobrança */}
+          <Card className="mb-6 border-l-4 border-l-orange-500">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                {cobranca.status === 'vencida' ? (
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                ) : (
+                  <Clock className="w-5 h-5 text-orange-500" />
+                )}
+                Valor da Dívida
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <div className="text-4xl font-bold text-red-600">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valorAtual)}
+              </div>
 
-        {/* Card Principal da Cobrança */}
-        <Card className="mb-6 border-l-4 border-l-orange-500">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2">
-              {cobranca.status === 'vencida' ? (
-                <AlertTriangle className="w-5 h-5 text-red-500" />
-              ) : (
-                <Clock className="w-5 h-5 text-orange-500" />
+              {cobranca.descricao && (
+                <p className="text-sm text-muted-foreground italic">
+                  {cobranca.descricao}
+                </p>
               )}
-              Valor da Dívida
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <div className="text-4xl font-bold text-red-600">
-              R$ {cobranca.valorAtual.toFixed(2).replace('.', ',')}
-            </div>
-            
+
             {cobranca.valorAtual !== cobranca.valor && (
               <div className="text-sm text-muted-foreground">
-                Valor original: R$ {cobranca.valor.toFixed(2).replace('.', ',')}
+                Valor original: <span className="line-through">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valor)}</span>
               </div>
             )}
-            
+
             {cobranca.status === 'vencida' && (
               <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
                 {cobranca.taxaJuros
@@ -244,51 +251,51 @@ const qrCode = await gerarQRCodePIXManual(
         </Card>
 
      {/* Card PIX */}
-{cobranca ? (
-  <Card className="mb-6 border-l-4 border-l-green-500">
-    <CardHeader className="text-center">
-      <CardTitle>Pague com PIX</CardTitle>
-    </CardHeader>
-    <CardContent className="text-center space-y-4">
-      {/* QR Code */}
-      <div className="flex justify-center">
-        {qrCodeURL ? (
-          <img
-            src={qrCodeURL}
-            alt="QR Code PIX"
-            className="w-48 h-48 border rounded-lg"
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
-        )}
-      </div>
+      {cobranca ? (
+        <Card className="mb-6 border-l-4 border-l-green-500">
+          <CardHeader className="text-center">
+            <CardTitle>Pague com PIX</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            {/* QR Code */}
+            <div className="flex justify-center">
+              {qrCodeURL ? (
+                <img
+                  src={qrCodeURL}
+                  alt="QR Code PIX"
+                  className="w-48 h-48 border rounded-lg"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
+              )}
+            </div>
 
-      {/* Chave PIX */}
-      <div className="bg-muted p-4 rounded-lg">
-        <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
-        <div className="flex items-center justify-between bg-background p-2 rounded border">
-          <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              navigator.clipboard.writeText(cobranca.pixCobranca);
-              toast({
-                title: "Chave PIX copiada!",
-                description: "Você pode colar onde precisar.",
-              });
-            }}
-          >
-            <Copy className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
+            {/* Chave PIX */}
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
+              <div className="flex items-center justify-between bg-background p-2 rounded border">
+                <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(cobranca.pixCobranca);
+                    toast({
+                      title: "Chave PIX copiada!",
+                      description: "Você pode colar onde precisar.",
+                    });
+                  }}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
 
-      <p className="text-xs text-muted-foreground">
-        Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
-      </p>
-    </CardContent>
-  </Card>
+            <p className="text-xs text-muted-foreground">
+              Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
+            </p>
+          </CardContent>
+        </Card>
 ) : (
   <Card className="mb-6 border-l-4 border-l-gray-300">
     <CardContent className="text-center">

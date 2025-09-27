@@ -2,7 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea"; // Novo import
 import { Plus } from "lucide-react";
+import { useRef } from "react";
+
 
 interface User {
   id: number;
@@ -18,29 +21,38 @@ interface NovaCobrancaData {
   dataVencimento: string;
   taxaJuros: string;
   tipoJuros: "mensal" | "diario";
+  whatsappDevedor?: string; // Novo campo
+  descricao?: string;        // Novo campo
 }
 
 interface NovaCobrancaFormProps {
   user: User;
   novaCobranca: NovaCobrancaData;
-  setNovaCobranca: (data: NovaCobrancaData) => void;
+  setNovaCobranca: React.Dispatch<React.SetStateAction<NovaCobrancaData>>;
   setUser: (user: User) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
+
+// Componente PremiumBadge atualizado
+const PremiumBadge = () => (
+  <span className="text-xs text-white bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-1 rounded-md font-semibold shadow-sm">
+    💎 Premium
+  </span>
+);
+
 
 export const NovaCobrancaForm = ({ user, novaCobranca, setNovaCobranca, setUser, onSubmit }: NovaCobrancaFormProps) => {
   // Formatar input como moeda (R$)
   const formatarMoeda = (valor: string) => {
     const apenasNumeros = valor.replace(/\D/g, '');
     const numero = parseFloat(apenasNumeros) / 100;
-
     if (isNaN(numero)) return '';
-    
     return numero.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+       style: 'currency',
+       currency: 'BRL'
     });
   };
+const descricaoRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <Card>
@@ -53,6 +65,7 @@ export const NovaCobrancaForm = ({ user, novaCobranca, setNovaCobranca, setUser,
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4">
+          {/* Nome do Devedor */}
           <div className="space-y-2">
             <Label htmlFor="nome-devedor">Nome do Devedor</Label>
             <Input
@@ -65,6 +78,8 @@ export const NovaCobrancaForm = ({ user, novaCobranca, setNovaCobranca, setUser,
               required
             />
           </div>
+
+          {/* Valor da Dívida */}
           <div className="space-y-2">
             <Label htmlFor="valor">Valor da Dívida (R$)</Label>
             <Input
@@ -78,8 +93,9 @@ export const NovaCobrancaForm = ({ user, novaCobranca, setNovaCobranca, setUser,
               }}
               required
             />
-
           </div>
+
+          {/* Data de Vencimento */}
           <div className="space-y-2">
             <Label htmlFor="data-vencimento">Data de Vencimento</Label>
             <Input
@@ -93,6 +109,8 @@ export const NovaCobrancaForm = ({ user, novaCobranca, setNovaCobranca, setUser,
               A partir desta data os juros começam a contar
             </p>
           </div>
+
+          {/* PIX */}
           <div className="space-y-2">
             <Label>Sua Chave PIX</Label>
             <Input 
@@ -104,16 +122,13 @@ export const NovaCobrancaForm = ({ user, novaCobranca, setNovaCobranca, setUser,
               }}
             />
           </div>
-          
-          {/* Campos de Juros Compostos - Premium */}
+
+          {/* Juros Compostos - Premium */}
           <div className="space-y-2">
             <Label htmlFor="taxa-juros" className="flex items-center gap-2">
               Taxa de Juros
-              {!user?.isPremium && (
-                <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">💎 Premium</span>
-              )}
+              {!user?.isPremium && <PremiumBadge />}
             </Label>
-
             <div className="relative">
               <Input
                 id="taxa-juros"
@@ -137,29 +152,88 @@ export const NovaCobrancaForm = ({ user, novaCobranca, setNovaCobranca, setUser,
           <div className="space-y-2">
             <Label htmlFor="tipo-juros" className="flex items-center gap-2">
               Período dos Juros
-              {!user?.isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">💎 Premium</span>}
+              {!user?.isPremium && <PremiumBadge />}
             </Label>
             <select 
               id="tipo-juros"
               value={novaCobranca.tipoJuros}
               onChange={(e) => setNovaCobranca({ ...novaCobranca, tipoJuros: e.target.value as 'mensal' | 'diario' })}
-              // disabled={!user?.isPremium}
               disabled={false}
-
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="mensal">Ao mês</option>
               <option value="diario">Ao dia</option>
             </select>
           </div>
-          
+
+        {/* Novo: WhatsApp do Devedor - Premium */}
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp-devedor" className="flex items-center gap-2">
+              WhatsApp do Devedor
+              {!user?.isPremium && <PremiumBadge />}
+            </Label>
+            <Input
+              id="whatsapp-devedor"
+              type="text"
+              value={novaCobranca.whatsappDevedor || ''}
+              onChange={(e) => {
+                // Remove tudo que não é número
+                let numeros = e.target.value.replace(/\D/g, '');
+                // Limita a 11 dígitos (DD + 9 + 8 números)
+                if (numeros.length > 11) numeros = numeros.slice(0, 11);
+                // Formata como (99) 99999-9999
+                let formatado = numeros;
+                if (numeros.length > 2) formatado = `(${numeros.slice(0,2)}) ${numeros.slice(2)}`;
+                if (numeros.length > 7) formatado = `(${numeros.slice(0,2)}) ${numeros.slice(2,7)}-${numeros.slice(7)}`;
+                setNovaCobranca({ ...novaCobranca, whatsappDevedor: formatado });
+              }}
+              placeholder="Ex: (99) 99999-9999"
+              //disabled={!user?.isPremium}
+            />
+            <p className="text-xs text-muted-foreground">
+              WhatsApp para envio automático do link da cobrança
+            </p>
+          </div>
+
+
+         {/* Novo: Descrição da Cobrança - Premium */}
+          <div className="space-y-2">
+            <Label htmlFor="descricao-cobranca" className="flex items-center gap-2">
+              Descrição da Cobrança
+              {!user?.isPremium && <PremiumBadge />}  
+            </Label>
+            <Textarea
+              id="descricao-cobranca"
+              ref={descricaoRef}
+              value={novaCobranca.descricao || ''}
+              onChange={(e) => {
+                // Limita a 50 caracteres
+                const textoLimitado = e.target.value.slice(0, 80);
+                setNovaCobranca({ ...novaCobranca, descricao: textoLimitado });
+
+                // Ajusta a altura do textarea dinamicamente
+                const textarea = descricaoRef.current;
+                if (textarea) {
+                  textarea.style.height = "auto"; // Reseta altura
+                  textarea.style.height = `${textarea.scrollHeight}px`;
+                }
+              }}
+              placeholder="Referente à cobrança..."
+              rows={3} // altura inicial
+              className="resize-none overflow-hidden"
+              //disabled={!user?.isPremium}
+            />
+            <p className="text-xs text-muted-foreground">Máximo de 80 caracteres</p>
+          </div>
+
+
           {!user?.isPremium && (
-            <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-              💎 <strong>Premium:</strong> Upgrade para adicionar juros compostos às suas cobranças e criar cobranças ilimitadas!
-              <br />
-              <span className="text-xs">Exemplo: R$ 100,00 em 01/01/2025 com 2% ao mês = R$ 102,00 após 1 mês</span>
+            <div className="text-sm text-gray-800 bg-gray-100 p-3 rounded-md shadow-sm">
+              💎 <strong>Premium:</strong> Upgrade para adicionar juros compostos, mensagem automática no WhatsApp, descrição e cobranças ilimitadas!
             </div>
           )}
+
+
           <Button
             type="submit"
             className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition"

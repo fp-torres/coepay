@@ -127,7 +127,8 @@ app.get("/devedores", async (req, res) => {
 
 // DEVEDORES
 app.post("/devedores", async (req, res) => {
-  const { user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros } = req.body;
+  const { user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, descricao, whatsapp_devedor } = req.body;
+
   try {
     const hoje = new Date();
     const vencimento = new Date(data_vencimento);
@@ -138,9 +139,23 @@ app.post("/devedores", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO devedores 
-       (user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, status, hash, link) 
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-      [user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, status, hash, link]
+      (user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, descricao, whatsapp_devedor, status, hash, link) 
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+      [
+        user_id, 
+        nome, 
+        email, 
+        telefone, 
+        valor, 
+        data_vencimento, 
+        taxa_juros, 
+        tipo_juros, 
+        descricao || null,      // opcional
+        whatsapp_devedor || null, // opcional
+        status, 
+        hash, 
+        link
+      ]
     );
 
     res.json(result.rows[0]);

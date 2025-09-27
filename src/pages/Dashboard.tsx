@@ -40,6 +40,9 @@ const Dashboard = () => {
     dataVencimento: "",
     taxaJuros: "",
     tipoJuros: "mensal" as "mensal" | "diario",
+    descricao: "",
+    whatsappDevedor: "",// agora existe
+
   });
 
   const calcularJurosCompostos = (valor: number, taxaJuros: number, tipoJuros: 'mensal' | 'diario', dataVencimento: string): number => {
@@ -161,7 +164,9 @@ const Dashboard = () => {
           valor: isNaN(valorInicial) ? 0 : valorInicial,
           data_vencimento: novaCobranca.dataVencimento || new Date().toISOString().split('T')[0],
           taxa_juros: novaCobranca.taxaJuros ? Number(novaCobranca.taxaJuros) : null,  
-          tipo_juros: novaCobranca.taxaJuros ? novaCobranca.tipoJuros : null, 
+          tipo_juros: novaCobranca.taxaJuros ? novaCobranca.tipoJuros : null,
+          descricao: novaCobranca.descricao ? novaCobranca.descricao : null,
+          whatsapp_devedor: novaCobranca.whatsappDevedor ? novaCobranca.whatsappDevedor : null
         })
       });
 
@@ -170,8 +175,8 @@ const Dashboard = () => {
         
         // Recarregar cobranças do backend
         await carregarCobrancas(user.id);
-        
-        setNovaCobranca({ nomeDevedor: "", valor: "", dataVencimento: "", taxaJuros: "", tipoJuros: "mensal" });
+
+        setNovaCobranca({ nomeDevedor: "", valor: "", dataVencimento: "", taxaJuros: "", tipoJuros: "mensal", descricao: "", whatsappDevedor: "" });
         toast({
           title: "Cobrança criada com sucesso!",
           description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,
