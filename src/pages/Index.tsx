@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { ArrowRight, TrendingUp, Shield, Zap, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, Zap, Eye, EyeOff, Activity,Percent } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -73,10 +73,16 @@ const Index = () => {
               setActiveTab("login");
               setShowAuth(true);
             }}
-            className="border-coepay-primary/20 text-coepay-primary hover:bg-coepay-primary/10"
+            className="
+              border-coepay-primary/20 text-coepay-primary
+              hover:bg-gradient-to-r hover:from-coepay-primary/90 hover:to-coepay-secondary/90
+              hover:text-white hover:border-transparent
+              transition-colors
+            "
           >
             Entrar
           </Button>
+
         )}
       </header>
 
@@ -87,15 +93,17 @@ const Index = () => {
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
                 <span className="bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
-                  Pagamentos
+                  Pagamentos & Cobranças
                 </span>
                 <br />
-                <span className="text-foreground">fluídos e modernos</span>
+                <span className="text-foreground">simples e automatizados</span>
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Gerencie suas cobranças de forma simples e eficiente. 
-                Transforme a maneira como você recebe pagamentos.
-              </p>
+                <p className="text-xl text-foreground/90 leading-relaxed">
+                  Gerencie suas cobranças com praticidade e eficiência, sem dor de cabeça nem burocracia.
+                  <span className="text-base text-coepay-primary block mt-1">
+                    Crie e envie cobranças com PIX, QR Codes, juros e envio automático de forma rápida e descontraída.
+                  </span>
+                </p>
             </div>
 
             {/* Features */}
@@ -112,12 +120,15 @@ const Index = () => {
               
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-coepay-primary/10 rounded-lg flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-coepay-primary" />
+                  <Activity className="w-5 h-5 text-coepay-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Segurança Total</h3>
-                  <p className="text-sm text-muted-foreground">Suas transações protegidas com criptografia</p>
+                  <h3 className="font-semibold">Automatize Cobranças</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Envie cobranças automaticamente facilitando sua rotina e aumentando a eficiência
+                  </p>
                 </div>
+
               </div>
               
               <div className="flex items-center space-x-3">
@@ -129,7 +140,22 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground">Receba pagamentos em segundos</p>
                 </div>
               </div>
+            
+            {/*Juros Personalizados */}
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-coepay-warning/10 rounded-lg flex items-center justify-center">
+                <Percent className="w-5 h-5 text-coepay-warning" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Juros Personalizados</h3>
+                <p className="text-sm text-muted-foreground">
+                  Adicione juros por dia ou por mês e escolha a porcentagem ideal para cada cobrança
+                </p>
+              </div>
             </div>
+          </div>
+
+
 
             {!showAuth && (
               <Button 

@@ -149,7 +149,7 @@ export default function Relatorios() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/painel-de-controle')}
               className="hover:bg-coepay-primary/10 hover:border-coepay-primary/20"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
