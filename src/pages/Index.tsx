@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, Zap, Eye, EyeOff } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -14,6 +14,9 @@ const Index = () => {
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "", pix: "" });
   const [showAuth, setShowAuth] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +30,7 @@ const Index = () => {
       const data = await res.json();
       localStorage.setItem("user", JSON.stringify(data));
       toast({ title: "Login realizado com sucesso!" });
-      navigate("/dashboard");
+      navigate("/painel-de-controle");
     } catch (err: any) {
       toast({ title: "Erro", description: err.message });
     }
@@ -44,7 +47,7 @@ const Index = () => {
       if (!res.ok) throw new Error("Erro ao cadastrar");
       const data = await res.json();
       toast({ title: data.message });
-      navigate("/dashboard");
+      navigate("/painel-de-controle");
     } catch (err: any) {
       toast({ title: "Erro", description: err.message });
     }
@@ -144,110 +147,130 @@ const Index = () => {
           </div>
 
           {/* Right Side - Auth Forms */}
-          <div className="flex justify-center">
-            {showAuth ? (
-              <Card className="w-full max-w-md shadow-2xl border-0 bg-card/60 backdrop-blur-sm">
-                <CardHeader className="text-center space-y-2">
-                  <CardTitle className="text-2xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
-                    Bem-vindo ao CoéPay
-                  </CardTitle>
-                  <CardDescription>
-                    Entre ou cadastre-se para começar
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
-                      <TabsTrigger value="login">Entrar</TabsTrigger>
-                      <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="login" className="space-y-4">
-                      <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="login-email">Email</Label>
-                          <Input
-                            id="login-email"
-                            type="email"
-                            value={loginData.email}
-                            onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                            required
-                            className="border-coepay-primary/20 focus:border-coepay-primary"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="login-password">Senha</Label>
-                          <Input
-                            id="login-password"
-                            type="password"
-                            value={loginData.password}
-                            onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                            required
-                            className="border-coepay-primary/20 focus:border-coepay-primary"
-                          />
-                        </div>
-                        <Button 
-                          type="submit" 
-                          className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary hover:from-coepay-primary/90 hover:to-coepay-secondary/90"
-                        >
-                          Entrar
-                        </Button>
-                      </form>
-                    </TabsContent>
-                    
+                  <div className="flex justify-center">
+                    {showAuth ? (
+                      <Card className="w-full max-w-md shadow-2xl border-0 bg-card/60 backdrop-blur-sm">
+                        <CardHeader className="text-center space-y-2">
+                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
+                            Bem-vindo ao CoéPay
+                          </CardTitle>
+                          <CardDescription>
+                            Entre ou cadastre-se para começar
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 mb-6">
+                              <TabsTrigger value="login">Entrar</TabsTrigger>
+                              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="login" className="space-y-4">
+                              <form onSubmit={handleLogin} className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="login-email">Email</Label>
+                                  <Input
+                                    id="login-email"
+                                    type="email"
+                                    value={loginData.email}
+                                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                                    required
+                                    className="border-coepay-primary/20 focus:border-coepay-primary"
+                                  />
+                                </div>
+
+                                <div className="relative space-y-2">
+                                  <Label htmlFor="login-password">Senha</Label>
+                                  <Input
+                                    id="login-password"
+                                    type={showPassword ? "text" : "password"}
+                                    value={loginData.password}
+                                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                                    required
+                                    className="border-coepay-primary/20 focus:border-coepay-primary pr-10"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-[35px] text-muted-foreground"
+                                  >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                  </button>
+                                </div>
+
+                                <Button
+                                  type="submit"
+                                  className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary hover:from-coepay-primary/90 hover:to-coepay-secondary/90"
+                                >
+                                  Entrar
+                                </Button>
+                              </form>
+                            </TabsContent>
+
                     <TabsContent value="signup" className="space-y-4">
-                      <form onSubmit={handleSignup} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-name">Nome</Label>
-                          <Input
-                            id="signup-name"
-                            value={signupData.name}
-                            onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
-                            required
-                            className="border-coepay-primary/20 focus:border-coepay-primary"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-email">Email</Label>
-                          <Input
-                            id="signup-email"
-                            type="email"
-                            value={signupData.email}
-                            onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                            required
-                            className="border-coepay-primary/20 focus:border-coepay-primary"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-password">Senha</Label>
-                          <Input
-                            id="signup-password"
-                            type="password"
-                            value={signupData.password}
-                            onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                            required
-                            className="border-coepay-primary/20 focus:border-coepay-primary"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-pix">Chave PIX</Label>
-                          <Input
-                            id="signup-pix"
-                            value={signupData.pix}
-                            onChange={(e) => setSignupData({ ...signupData, pix: e.target.value })}
-                            placeholder="Sua chave PIX"
-                            required
-                            className="border-coepay-primary/20 focus:border-coepay-primary"
-                          />
-                        </div>
-                        <Button 
-                          type="submit" 
-                          className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary hover:from-coepay-primary/90 hover:to-coepay-secondary/90"
+                    <form onSubmit={handleSignup} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-name">Nome</Label>
+                        <Input
+                          id="signup-name"
+                          value={signupData.name}
+                          onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
+                          required
+                          className="border-coepay-primary/20 focus:border-coepay-primary"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-email">Email</Label>
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          value={signupData.email}
+                          onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                          required
+                          className="border-coepay-primary/20 focus:border-coepay-primary"
+                        />
+                      </div>
+
+                      <div className="relative space-y-2">
+                        <Label htmlFor="signup-password">Senha</Label>
+                        <Input
+                          id="signup-password"
+                          type={showSignupPassword ? "text" : "password"}
+                          value={signupData.password}
+                          onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                          required
+                          className="border-coepay-primary/20 focus:border-coepay-primary pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowSignupPassword(!showSignupPassword)}
+                          className="absolute right-3 top-[35px] text-muted-foreground"
                         >
-                          Cadastrar
-                        </Button>
-                      </form>
-                    </TabsContent>
+                          {showSignupPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-pix">Chave PIX</Label>
+                        <Input
+                          id="signup-pix"
+                          value={signupData.pix}
+                          onChange={(e) => setSignupData({ ...signupData, pix: e.target.value })}
+                          placeholder="Sua chave PIX"
+                          required
+                          className="border-coepay-primary/20 focus:border-coepay-primary"
+                        />
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-gradient-to-r from-coepay-primary to-coepay-secondary hover:from-coepay-primary/90 hover:to-coepay-secondary/90"
+                      >
+                        Cadastrar
+                      </Button>
+                    </form>
+                  </TabsContent>
                   </Tabs>
                 </CardContent>
               </Card>
