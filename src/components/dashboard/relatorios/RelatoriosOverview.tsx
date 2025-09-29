@@ -154,35 +154,39 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
         <CardContent className="pt-6">
           <div className="space-y-6">
             {[
-              { label: 'Até R$ 100', key: 'ate100', color: 'red' },       // baixo valor → vermelho
+              { label: 'Até R$ 100', key: 'ate100', color: 'red' },       
               { label: 'R$ 101 - 500', key: 'de101a500', color: 'orange' },
               { label: 'R$ 501 - 1.000', key: 'de501a1000', color: 'blue' },
-              { label: 'Acima de R$ 1.000', key: 'acima1000', color: 'green' } // valor alto → verde
+              { label: 'Acima de R$ 1.000', key: 'acima1000', color: 'green' } 
             ].map(faixa => (
               <div 
                 key={faixa.key} 
                 className={`
                   flex items-center justify-between p-4 rounded-lg 
-                  bg-gradient-to-r from-${faixa.color}-50 to-${faixa.color}-100 
-                  dark:from-${faixa.color}-900/20 dark:to-${faixa.color}-800/20 
-                  border border-${faixa.color}-200 dark:border-${faixa.color}-800
+                  bg-gradient-to-r from-${faixa.color}-500/5 to-${faixa.color}-500/10
+                  dark:from-${faixa.color}-900/10 dark:to-${faixa.color}-800/10
+                  border border-${faixa.color}-200/40 dark:border-${faixa.color}-800/40
                   transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
                 `}
               >
-                <span className={`font-medium text-${faixa.color}-800 dark:text-${faixa.color}-200`}>
+                <span className={`font-medium text-${faixa.color}-700 dark:text-${faixa.color}-200`}>
                   {faixa.label}
                 </span>
                 <div className="flex items-center gap-3">
                   <div 
-                    className={`bg-${faixa.color}-500 h-4 rounded-full shadow-sm`} 
+                    className={`bg-${faixa.color}-500/60 h-4 rounded-full shadow-sm`} 
                     style={{width: `${Math.max((faixasValor[faixa.key]/totalCobrancas)*120, 20)}px`}}
                   ></div>
-                  <Badge variant="secondary" className={`bg-${faixa.color}-100 text-${faixa.color}-800 border-${faixa.color}-300`}>
+                  <Badge 
+                    variant="secondary" 
+                    className={`bg-${faixa.color}-100/60 text-${faixa.color}-800 border-${faixa.color}-300/50`}
+                  >
                     {faixasValor[faixa.key]}
                   </Badge>
                 </div>
               </div>
             ))}
+
           </div>
         </CardContent>
       </Card>
@@ -202,10 +206,11 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
                   key={faixa.key} 
                   className={`
                     flex items-center justify-between p-4 rounded-lg 
-                    bg-gradient-to-r from-${faixa.color}-50 to-${faixa.color}-100 
-                    dark:from-${faixa.color}-900/20 dark:to-${faixa.color}-800/20 
-                    border border-${faixa.color}-200 dark:border-${faixa.color}-800
+                    bg-gradient-to-r from-${faixa.color}-500/5 to-${faixa.color}-500/10
+                    dark:from-${faixa.color}-900/10 dark:to-${faixa.color}-800/10
+                    border border-${faixa.color}-200/40 dark:border-${faixa.color}-800/40
                     transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+
                   `}
                 >
                   <span className={`font-medium text-${faixa.color}-800 dark:text-${faixa.color}-200`}>
@@ -239,9 +244,9 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
           key={c.id}
           className={`
             flex items-center justify-between p-4 rounded-lg 
-            bg-gradient-to-r from-${corBadge}-50 to-${corBadge}-100
-            dark:from-${corBadge}-900/20 dark:to-${corBadge}-800/20
-            border border-${corBadge}-200 dark:border-${corBadge}-800
+            bg-gradient-to-r from-${corBadge}-500/5 to-${corBadge}-500/10
+            dark:from-${corBadge}-900/10 dark:to-${corBadge}-800/10
+            border border-${corBadge}-200/40 dark:border-${corBadge}-800/40
             transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
           `}
         >
