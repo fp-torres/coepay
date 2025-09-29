@@ -36,14 +36,15 @@ interface DashboardHeaderProps {
 export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }: DashboardHeaderProps) => {
   const navigate = useNavigate();
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
+      {/* Informações do usuário */}
       <div>
-        <div className="flex items-center gap-3">
-        <h1 className="text-3xl font-bold">
-          <span className="bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
-            Olá, {user.name}!
-          </span>
-        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold">
+            <span className="bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
+              Olá, {user.name}!
+            </span>
+          </h1>
           {subscription.subscribed && (
             <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
               <Crown className="w-3 h-3 mr-1" />
@@ -51,43 +52,50 @@ export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }
             </Badge>
           )}
         </div>
-        <p className="text-muted-foreground">
-          Gerencie suas cobranças 
+        <p className="text-sm md:text-base text-muted-foreground">
+          Gerencie suas cobranças{" "}
           {!subscription.subscribed && (
-            <span className="text-amber-600"> • {cobrancasCount}/3 cobranças usadas</span>
+            <span className="text-amber-600">
+              • {cobrancasCount}/3 cobranças usadas
+            </span>
           )}
         </p>
       </div>
-      <div className="flex items-center gap-2">
-        <Button 
-          variant="outline" 
+
+      {/* Botões de ação */}
+      <div className="flex flex-col sm:flex-row md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
+        <Button
+          variant="outline"
           size="sm"
-          onClick={() => navigate('/relatorios')}
-          // Temporariamente desabilitado - restrição premium
-          // disabled={!subscription.subscribed}
-          className="flex items-center bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white font-semibold shadow-sm
-                    hover:opacity-90 transition"
+          onClick={() => navigate("/relatorios")}
+          className="flex items-center justify-center w-full sm:w-auto bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white font-semibold shadow-sm
+                     hover:opacity-90 transition"
         >
           <BarChart3 className="w-4 h-4 mr-2" />
           Relatórios Avançados
         </Button>
 
         {subscription.subscribed && (
-          <Button variant="outline" size="sm" onClick={subscription.openCustomerPortal}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={subscription.openCustomerPortal}
+            className="flex items-center justify-center w-full sm:w-auto"
+          >
             <CreditCard className="w-4 h-4 mr-2" />
             Gerenciar Assinatura
           </Button>
         )}
-          <Button
-            variant="outline"
-            onClick={onLogout}
-            className="flex items-center border text-coepay-primary font-semibold shadow-sm
-                      hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
-          </Button>
 
+        <Button
+          variant="outline"
+          onClick={onLogout}
+          className="flex items-center justify-center w-full sm:w-auto border text-coepay-primary font-semibold shadow-sm
+                     hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Sair
+        </Button>
       </div>
     </div>
   );

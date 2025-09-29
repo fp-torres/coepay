@@ -22,64 +22,69 @@ export const RelatoriosJuros = ({ cobrancas }: RelatoriosJurosProps) => {
   const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida');
 
   return (
-    <div className="space-y-6">
-      {/* Detalhamento das Cobranças */}
-        <Card className="bg-white shadow-lg border-0">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">Detalhamento dos Juros Aplicados</CardTitle>
-          <CardDescription>Análise detalhada do impacto dos juros compostos</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {cobrancasVencidas.length > 0 ? (
-            cobrancasVencidas.map((cobranca) => {
-              const diasVencido = Math.floor((new Date().getTime() - new Date(cobranca.dataVencimento).getTime()) / (1000 * 60 * 60 * 24));
-              const jurosPorCobranca = (cobranca.valorAtual || cobranca.valor) - cobranca.valor;
-              
-              return (
-                <div key={cobranca.id} className="flex justify-between items-center p-4 border rounded-lg hover:shadow-lg transition-shadow bg-white">
-                  <div className="flex-1">
-                    <div className="font-medium text-lg">{cobranca.nomeDevedor}</div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+  <div className="space-y-6 px-4 sm:px-6 lg:px-8">
+    {/* Detalhamento das Cobranças */}
+    <Card className="bg-white shadow-lg border-0 w-full">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">Detalhamento dos Juros Aplicados</CardTitle>
+        <CardDescription>Análise detalhada do impacto dos juros compostos</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {cobrancasVencidas.length > 0 ? (
+          cobrancasVencidas.map((cobranca) => {
+            const diasVencido = Math.floor((new Date().getTime() - new Date(cobranca.dataVencimento).getTime()) / (1000 * 60 * 60 * 24));
+            const jurosPorCobranca = (cobranca.valorAtual || cobranca.valor) - cobranca.valor;
+
+            return (
+              <div
+                key={cobranca.id}
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-lg hover:shadow-lg transition-shadow bg-white"
+              >
+                <div className="flex-1 w-full sm:pr-4">
+                  <div className="font-medium text-lg break-words">{cobranca.nomeDevedor}</div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 text-sm text-muted-foreground mt-1">
+                    <span className="flex items-center gap-1">
                       <Clock className="w-4 h-4" /> {diasVencido} dias vencido
-                      <Badge
-                        className={
-                          cobranca.taxaJuros
-                            ? "border border-red-500 text-red-600 bg-red-100 hover:bg-red-200"
-                            : "border border-blue-500 text-blue-600 bg-blue-100 hover:bg-blue-200"
-                        }
-                      >
-                        {cobranca.taxaJuros
-                          ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros}`
-                          : "Sem juros"}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
-                    </div>
+                    </span>
+                    <Badge
+                      className={
+                        cobranca.taxaJuros
+                          ? "border border-red-500 text-red-600 bg-red-100 hover:bg-red-200"
+                          : "border border-blue-500 text-blue-600 bg-blue-100 hover:bg-blue-200"
+                      }
+                    >
+                      {cobranca.taxaJuros
+                        ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros}`
+                        : "Sem juros"}
+                    </Badge>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-lg">R$ {(cobranca.valorAtual || cobranca.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                    {cobranca.taxaJuros ? (
-                      <div className="text-sm text-green-600 font-medium flex items-center gap-1">
-                        <TrendingUp className="w-4 h-4" /> +R$ {jurosPorCobranca.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} em juros
-                      </div>
-                    ) : (
-                      <div className="text-sm text-gray-500 italic">Sem juros</div>
-                    )}
-                    <div className="text-xs text-muted-foreground">Valor original: R$ {cobranca.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
                   </div>
                 </div>
-              );
-            })
-          ) : (
+                <div className="text-right mt-2 sm:mt-0">
+                  <div className="font-bold text-lg break-words">R$ {(cobranca.valorAtual || cobranca.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  {cobranca.taxaJuros ? (
+                    <div className="text-sm text-green-600 font-medium flex items-center gap-1 mt-1">
+                      <TrendingUp className="w-4 h-4" /> +R$ {jurosPorCobranca.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} em juros
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500 italic mt-1">Sem juros</div>
+                  )}
+                  <div className="text-xs text-muted-foreground mt-1">Valor original: R$ {cobranca.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
           <div className="text-center text-muted-foreground py-12">
             <div className="text-6xl mb-4">💰</div>
             <h3 className="text-lg font-medium mb-2">Nenhum atraso!</h3>
             <p>Atualmente, não há juros a receber de cobranças vencidas.</p>
           </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </CardContent>
+    </Card>
       
       {/* Resumo de Juros */}
       {cobrancasVencidas.length > 0 && (

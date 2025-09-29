@@ -140,31 +140,34 @@ export default function Relatorios() {
   //   );
   // }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/5">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/painel-de-controle')}
-              className="flex items-center border border-coepay-primary text-coepay-primary font-semibold shadow-sm
-                        hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
-            </Button>
-            <div>
-              <h1 className="text-4xl font-bold flex items-center gap-3 bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
-                <Crown className="w-10 h-10 text-amber-500 drop-shadow-lg" />
-                Relatórios Avançados
-              </h1>
-              <p className="text-muted-foreground text-lg mt-1">CoéPay - Análise completa das suas Contas a Receber</p>
-            </div>
+return (
+  <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/5">
+    <div className="container mx-auto px-4 py-6 sm:py-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/painel-de-controle")}
+          className="flex items-center border border-coepay-primary text-coepay-primary font-semibold shadow-sm
+                     hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition w-full sm:w-auto"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+
+        <div className="flex items-center gap-3">
+          <Crown className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500 drop-shadow-lg" />
+          <div>
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
+              Relatórios Avançados
+            </h1>
+            <p className="text-muted-foreground text-sm sm:text-lg mt-1">
+              CoéPay - Análise completa das suas Contas a Receber
+            </p>
           </div>
         </div>
+      </div>
         <Tabs defaultValue="visao-geral" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-8 bg-card/50 backdrop-blur-sm border shadow-lg">
             <TabsTrigger 
