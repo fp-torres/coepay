@@ -216,3 +216,63 @@ app.delete("/devedores/:id", async (req, res) => {
     res.status(500).json({ message: "Erro ao excluir cobrança" });
   }
 });
+
+// Atualizar status de pagamento
+app.put("/devedores/:id/pagar", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `UPDATE devedores 
+       SET pago = true, pago_em = NOW(), status = 'paga'
+       WHERE id = $1 RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Cobrança não encontrada" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao atualizar cobrança" });
+  }
+});
+
+// Rota para receber webhook de PSP
+app.post("/webhook/psp", async (req, res) => {
+  try {
+    // Exemplo de payload que o PSP pode enviar
+    // {
+    //   cobrancaId: "123",
+    //   pagoEm: "2025-09-30T15:00:00Z",
+    //   valorPago: 150.50
+    // }
+    const { cobrancaId, pagoEm } = req.body;
+
+    if (!cobrancaId) {
+      return res.status(400).json({ message: "ID da cobrança é obrigatório" });
+    }
+
+    // Atualiza a cobrança no banco
+    const result = await pool.query(
+      `UPDATE devedores 
+       SET pago = true, pago_em = $1, status = 'paga'
+       WHERE id = $2
+       RETURNING *`,
+      [pagoEm || new Date(), cobrancaId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Cobrança não encontrada" });
+    }
+
+    console.log(`Cobrança ${cobrancaId} marcada como paga via webhook`);
+    res.status(200).json({ message: "Cobrança atualizada com sucesso", cobranca: result.rows[0] });
+  } catch (err) {
+    console.error("Erro ao processar webhook do PSP:", err);
+    res.status(500).json({ message: "Erro ao atualizar cobrança" });
+  }
+});
+

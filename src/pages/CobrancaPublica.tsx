@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Clock, AlertTriangle } from "lucide-react";
+import { Copy, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { payload } from 'pix-payload';
 import QRCode from 'qrcode';
@@ -19,11 +19,14 @@ interface CobrancaData {
   dataVencimento: string;
   diasVencido: number;
   pixCobranca: string;
-  status: 'ativa' | 'vencida';
+  status: 'ativa' | 'vencida' | 'paga'; // adiciona "paga"
+  pago?: boolean; // true se já foi pago
+  pagoEm?: string; // timestamp do pagamento
   taxaJuros?: number;
   tipoJuros?: string;
   descricao?: string; 
 }
+
 
 const mensagensMotivacionais = [
   "💸 Que tal quitar essa e ficar livre? Sua tranquilidade vale mais!",
@@ -114,19 +117,22 @@ const CobrancaPublica = () => {
       const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
       const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
 
-      const cobrancaObj: CobrancaData = {
-        id: cobrancaData.id.toString(),
-        nomeDevedor: cobrancaData.nome,
-        valor: parseFloat(cobrancaData.valor),
-        valorAtual,
-        dataVencimento: cobrancaData.data_vencimento,
-        diasVencido,
-        pixCobranca: userData.pix || '',
-        status,
-        taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,
-        tipoJuros: cobrancaData.tipo_juros,
-        descricao: cobrancaData.descricao || ''
-      };
+const cobrancaObj: CobrancaData = {
+  id: cobrancaData.id.toString(),
+  nomeDevedor: cobrancaData.nome,
+  valor: parseFloat(cobrancaData.valor),
+  valorAtual,
+  dataVencimento: cobrancaData.data_vencimento,
+  diasVencido,
+  pixCobranca: userData.pix || '',
+  status: cobrancaData.pago ? 'paga' : status, // muda para paga se já estiver pago
+  pago: cobrancaData.pago,
+  pagoEm: cobrancaData.pago_em,
+  taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,
+  tipoJuros: cobrancaData.tipo_juros,
+  descricao: cobrancaData.descricao || ''
+};
+
 
       setCobranca(cobrancaObj);
 
@@ -146,11 +152,48 @@ const CobrancaPublica = () => {
     }
   };
 
-  if (hash) {
-    carregarCobranca();
+   if (hash) {
+    carregarCobranca(); // carrega inicialmente
+
+    // 🚀 Auto-refresh a cada 5 segundos
+    const interval = setInterval(() => {
+      carregarCobranca();
+    }, 5000);
+
+    return () => clearInterval(interval); // limpa intervalo quando o componente desmonta
   }
 }, [hash]);
 
+const marcarComoPago = async () => {
+  if (!cobranca) return;
+  try {
+    const resp = await fetch(`http://localhost:5000/devedores/${cobranca.id}/pagar`, {
+      method: "PUT",
+    });
+    if (!resp.ok) throw new Error("Erro ao atualizar cobrança");
+
+    toast({
+      title: "Cobrança atualizada",
+      description: "Pagamento marcado como pago ✅",
+      className: "bg-green-50 text-green-700 border-green-400", // cores personalizadas
+
+    });
+
+    setCobranca({
+      ...cobranca,
+      pago: true,
+      pagoEm: new Date().toISOString(),
+      status: "paga",
+    });
+  } catch (err) {
+    console.error(err);
+    toast({
+      title: "Erro",
+      description: "Não foi possível atualizar o status",
+      variant: "destructive",
+    });
+  }
+};
 
 
   const gerarQRCode = (pix: string, valor: number, nome: string) => {
@@ -186,123 +229,179 @@ const CobrancaPublica = () => {
             Você possui uma cobrança pendente
           </p>
         </div>
-          {/* Card Principal da Cobrança */}
-          <Card className="mb-6 border-l-4 border-l-orange-500">
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2">
-                {cobranca.status === 'vencida' ? (
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                ) : (
-                  <Clock className="w-5 h-5 text-orange-500" />
-                )}
-                Valor da Dívida
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <div className="text-4xl font-bold text-red-600">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valorAtual)}
-              </div>
+         {/* Card Principal da Cobrança */}
+<Card className={`mb-6 border-l-4 shadow-sm ${
+  cobranca.pago ? 'border-l-green-500 bg-green-50' : cobranca.status === 'vencida' ? 'border-l-red-500 bg-white' : 'border-l-orange-500 bg-white'
+}`}>
+  <CardHeader className="text-center">
+    <CardTitle className="flex items-center justify-center gap-2">
+      {cobranca.pago ? (
+        <CheckCircle className="w-5 h-5 text-green-500" />
+      ) : cobranca.status === 'vencida' ? (
+        <AlertTriangle className="w-5 h-5 text-red-500" />
+      ) : (
+        <Clock className="w-5 h-5 text-orange-500" />
+      )}
+      Valor da Dívida
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="text-center space-y-4">
+    <div className={`text-4xl font-bold ${
+      cobranca.pago ? 'text-green-700' : 'text-red-600'
+    }`}>
+      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valorAtual)}
+    </div>
 
-              {cobranca.descricao && (
-                <p className="text-sm text-muted-foreground italic">
-                  {cobranca.descricao}
-                </p>
-              )}
+ {cobranca.pago && (
+  <p className="text-sm mt-1 text-green-700">
+    🚀 Conheça o <a href="https://coepay.com.br" className="underline font-semibold">CoéPay</a> – seu jeito prático de gerenciar cobranças e pagamentos!
+  </p>
+)}
 
-            {cobranca.valorAtual !== cobranca.valor && (
-              <div className="text-sm text-muted-foreground">
-                Valor original: <span className="line-through">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valor)}</span>
-              </div>
-            )}
 
-            {cobranca.status === 'vencida' && (
-              <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                {cobranca.taxaJuros
-                  ? `Juros aplicados: ${cobranca.taxaJuros}% ${cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}`
-                  : "Sem juros"}
-              </div>
-            )}
+    {cobranca.descricao && (
+      <p className="text-sm text-muted-foreground italic">
+        {cobranca.descricao}
+      </p>
+    )}
 
-            {cobranca.status === 'vencida' && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <Badge variant="destructive" className="mb-2">
-                  Cobrança Vencida
-                </Badge>
-                <p className="text-sm text-red-700">
-                  Data de vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
-                </p>
-                <p className="text-sm font-semibold text-red-700">
-                  {cobranca.diasVencido} dia(s) vencido(s)
-                </p>
-              </div>
-            )}
+    {cobranca.valorAtual !== cobranca.valor && !cobranca.pago && (
+      <div className="text-sm text-muted-foreground">
+        Valor original: <span className="line-through">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valor)}</span>
+      </div>
+    )}
 
-            {cobranca.status === 'ativa' && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <Badge variant="default" className="mb-2">
-                  No Prazo
-                </Badge>
-                <p className="text-sm text-blue-700">
-                  Data de vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+    {!cobranca.pago && cobranca.status === 'vencida' && (
+      <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+        {cobranca.taxaJuros
+          ? `Juros aplicados: ${cobranca.taxaJuros}% ${cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}`
+          : "Sem juros"}
+      </div>
+    )}
 
-     {/* Card PIX */}
-      {cobranca ? (
-        <Card className="mb-6 border-l-4 border-l-green-500">
-          <CardHeader className="text-center">
-            <CardTitle>Pague com PIX</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            {/* QR Code */}
-            <div className="flex justify-center">
-              {qrCodeURL ? (
-                <img
-                  src={qrCodeURL}
-                  alt="QR Code PIX"
-                  className="w-48 h-48 border rounded-lg"
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
-              )}
-            </div>
+    {!cobranca.pago && cobranca.status === 'vencida' && (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <Badge variant="destructive" className="mb-2">
+          Cobrança Vencida
+        </Badge>
+        <p className="text-sm text-red-700">
+          Data de vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
+        </p>
+        <p className="text-sm font-semibold text-red-700">
+          {cobranca.diasVencido} dia(s) vencido(s)
+        </p>
+      </div>
+    )}
 
-            {/* Chave PIX */}
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
-              <div className="flex items-center justify-between bg-background p-2 rounded border">
-                <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
+    {!cobranca.pago && cobranca.status === 'ativa' && (
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <Badge variant="default" className="mb-2">
+          No Prazo
+        </Badge>
+        <p className="text-sm text-blue-700">
+          Data de vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
+        </p>
+      </div>
+    )}
+  </CardContent>
+</Card>
+
+{/* Card PIX */}
+{cobranca ? (
+  <Card className={`mb-6 border-l-4 ${cobranca.pago ? 'border-l-green-500' : 'border-l-amber-1000'} shadow-sm`}>
+    <CardHeader className="text-center">
+      <CardTitle>Pague com PIX</CardTitle>
+    </CardHeader>
+    <CardContent className="text-center space-y-4">
+
+      {/* QR Code */}
+      <div className="flex justify-center">
+        {qrCodeURL ? (
+          <img
+            src={qrCodeURL}
+            alt="QR Code PIX"
+            className="w-48 h-48 border rounded-lg"
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
+        )}
+      </div>
+
+      {/* Chave PIX */}
+      <div className="bg-gray-100 p-3 rounded-md">
+        <p className="text-xs text-gray-500 mb-1">Chave PIX</p>
+        <div className="flex items-center justify-between bg-white p-2 rounded border">
+          <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              navigator.clipboard.writeText(cobranca.pixCobranca);
+              toast({
+                title: "Chave PIX copiada",
+                description: "Você pode colar onde precisar.",
+              });
+            }}
+          >
+            <Copy className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Status de pagamento */}
+      <div className={`p-2 rounded-md font-medium ${cobranca.pago ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
+        {cobranca.pago ? (
+          <>✅ Pago em {new Date(cobranca.pagoEm!).toLocaleString()}</>
+        ) : (
+          <>⏳ Aguardando pagamento</>
+        )}
+      </div>
+
+      {/* Botão manual para marcar como pago */}
+      {!cobranca.pago && (
+        <Button
+          variant="outline"
+          className="mt-2"
+          onClick={() => {
+            toast({
+              title: "Confirmar pagamento?",
+              description: "Clique em confirmar para marcar esta cobrança como paga.",
+              action: (
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => {
-                    navigator.clipboard.writeText(cobranca.pixCobranca);
+                    marcarComoPago();
                     toast({
-                      title: "Chave PIX copiada!",
-                      description: "Você pode colar onde precisar.",
+                      title: "Cobrança marcada como paga",
+                      description: `Pagamento registrado com sucesso!`,
                     });
                   }}
                 >
-                  <Copy className="w-4 h-4" />
+                  Confirmar
                 </Button>
-              </div>
-            </div>
+              ),
+            });
+          }}
+        >
+          Marcar como pago
+        </Button>
+      )}
 
-            <p className="text-xs text-muted-foreground">
-              Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
-            </p>
-          </CardContent>
-        </Card>
+      <p className="text-xs text-gray-400 mt-1">
+        Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
+      </p>
+    </CardContent>
+  </Card>
 ) : (
-  <Card className="mb-6 border-l-4 border-l-gray-300">
+  <Card className="mb-6 border-l-4 border-l-gray-300 shadow-sm">
     <CardContent className="text-center">
-      <p className="text-sm text-muted-foreground">Carregando cobrança...</p>
+      <p className="text-sm text-gray-500">Carregando cobrança...</p>
     </CardContent>
   </Card>
 )}
+
+
 
 
         {/* Footer motivacional */}
