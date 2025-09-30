@@ -52,89 +52,89 @@ export const CobrancasList = ({
             const dataFormatada = vencimento.toLocaleDateString("pt-BR");
 
             return (
-              <div
-key={cobranca.id}
-  className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-3 border rounded-lg"
->
-  {/* Informações */}
-  <div className="flex-1 space-y-1">
-    <div className="flex flex-wrap items-center gap-2">
-      <h3 className="font-semibold">{cobranca.nomeDevedor}</h3>
-      <Badge
-        variant={cobranca.status === "ativa" ? "default" : "destructive"}
-      >
-        {cobranca.status === "ativa" ? "No prazo" : "Vencida"}
-      </Badge>
-    </div>
+          <div
+            key={cobranca.id}
+              className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-3 border rounded-lg"
+            >
+              {/* Informações */}
+              <div className="flex-1 space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-semibold">{cobranca.nomeDevedor}</h3>
+                  <Badge
+                    variant={cobranca.status === "ativa" ? "default" : "destructive"}
+                  >
+                    {cobranca.status === "ativa" ? "No prazo" : "Vencida"}
+                  </Badge>
+                </div>
 
-    {/* Valores */}
-    <div className="flex items-end gap-2">
-      <p className="text-lg md:text-xl font-bold text-red-600">
-        R${" "}
-        {(cobranca.valorAtual || cobranca.valor).toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
-      </p>
-      {cobranca.valorAtual && cobranca.valorAtual !== cobranca.valor && (
-        <p className="text-sm text-muted-foreground line-through">
-          R${" "}
-          {cobranca.valor.toLocaleString("pt-BR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </p>
-      )}
-    </div>
+                {/* Valores */}
+                <div className="flex items-end gap-2">
+                  <p className="text-lg md:text-xl font-bold text-red-600">
+                    R${" "}
+                    {(cobranca.valorAtual || cobranca.valor).toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
+                  {cobranca.valorAtual && cobranca.valorAtual !== cobranca.valor && (
+                    <p className="text-sm text-muted-foreground line-through">
+                      R${" "}
+                      {cobranca.valor.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                  )}
+                </div>
 
-    <p className="text-xs text-blue-600">
-      {cobranca.taxaJuros
-        ? `Juros: ${cobranca.taxaJuros}% ${
-            cobranca.tipoJuros === "diario" ? "ao dia" : "ao mês"
-          }`
-        : "Sem juros"}
-    </p>
-    <p className="text-sm text-muted-foreground">
-      {estaVencida
-        ? `Vencida em: ${dataFormatada}`
-        : `Vence em: ${dataFormatada}`}
-    </p>
-  </div>
+                <p className="text-xs text-blue-600">
+                  {cobranca.taxaJuros
+                    ? `Juros: ${cobranca.taxaJuros}% ${
+                        cobranca.tipoJuros === "diario" ? "ao dia" : "ao mês"
+                      }`
+                    : "Sem juros"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {estaVencida
+                    ? `Vencida em: ${dataFormatada}`
+                    : `Vence em: ${dataFormatada}`}
+                </p>
+              </div>
 
-  {/* Botões */}
-  <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto">
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => window.open(cobranca.link, "_blank")}
-      className="flex items-center justify-center w-full md:w-auto border font-semibold shadow-sm
-        hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
-    >
-      Abrir Cobrança
-    </Button>
+              {/* Botões */}
+              <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(cobranca.link, "_blank")}
+                  className="flex items-center justify-center w-full md:w-auto border font-semibold shadow-sm
+                    hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+                >
+                  Abrir Cobrança
+                </Button>
 
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => onCopiarLink(cobranca.link)}
-      className="flex items-center justify-center w-full md:w-auto border font-semibold shadow-sm
-        hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
-    >
-      <Copy className="w-4 h-4 mr-2" />
-      Copiar Link
-    </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onCopiarLink(cobranca.link)}
+                  className="flex items-center justify-center w-full md:w-auto border font-semibold shadow-sm
+                    hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copiar Link
+                </Button>
 
-    <Button
-      variant="destructive"
-      size="sm"
-      onClick={() => onExcluirCobranca(cobranca.id)}
-      className="w-full md:w-auto bg-red-700 text-white font-semibold shadow-sm rounded-sm
-        hover:bg-gradient-to-r hover:from-red-600 hover:to-red-800 transition"
-    >
-      Excluir
-    </Button>
-  </div>
-</div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onExcluirCobranca(cobranca.id)}
+                  className="w-full md:w-auto bg-red-700 text-white font-semibold shadow-sm rounded-sm
+                    hover:bg-gradient-to-r hover:from-red-600 hover:to-red-800 transition"
+                >
+                  Excluir
+                </Button>
+              </div>
+            </div>
             );
           })}
 
