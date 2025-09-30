@@ -139,11 +139,12 @@ const Dashboard = () => {
     
     // Verificar limite de cobranças para usuários não premium
     if (!subscription.subscribed && cobrancas.length >= 15) {
-      toast({
-        title: "Limite atingido!",
-        description: "Usuários gratuitos podem criar apenas 3 cobranças. Upgrade para premium para criar ilimitadas.",
-        variant: "destructive",
-      });
+        toast({
+          title: "💎 Limite atingido!",
+          description: "Usuários gratuitos podem criar apenas 5 cobranças. Upgrade para premium para criar ilimitadas.",
+          className: "bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold shadow-md",
+        });
+
       return;
     }
 

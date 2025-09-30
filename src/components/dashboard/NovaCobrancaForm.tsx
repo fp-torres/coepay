@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea"; // Novo import
 import { Plus } from "lucide-react";
 import { useRef } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 
 interface User {
@@ -79,21 +80,35 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
             />
           </div>
 
-          {/* Valor da Dívida */}
-          <div className="space-y-2">
-            <Label htmlFor="valor">Valor da Dívida (R$)</Label>
-            <Input
-              id="valor"
-              type="text"
-              inputMode="numeric"
-              value={novaCobranca.valor}
-              onChange={(e) => {
-                const valorFormatado = formatarMoeda(e.target.value);
-                setNovaCobranca({ ...novaCobranca, valor: valorFormatado });
-              }}
-              required
-            />
-          </div>
+{/* Valor da Dívida */}
+<div className="space-y-2">
+  <Label htmlFor="valor">Valor da Dívida (R$)</Label>
+  <Input
+    id="valor"
+    type="text"
+    inputMode="numeric"
+    value={novaCobranca.valor}
+    onChange={(e) => {
+      const valorFormatado = formatarMoeda(e.target.value);
+      setNovaCobranca({ ...novaCobranca, valor: valorFormatado });
+    }}
+    onBlur={() => {
+      // Remove tudo que não seja dígito ou vírgula/ponto
+      const apenasNumeros = novaCobranca.valor.replace(/[^\d]/g, "");
+      const valorNumerico = apenasNumeros ? parseInt(apenasNumeros, 10) / 100 : 0;
+
+      if (valorNumerico <= 0) {
+        toast({
+          title: "Valor inválido",
+          description: "O valor da dívida deve ser maior que R$ 0,00",
+          variant: "destructive",
+        });
+        setNovaCobranca({ ...novaCobranca, valor: "" });
+      }
+    }}
+    required
+  />
+</div>
 
           {/* Data de Vencimento */}
           <div className="space-y-2">

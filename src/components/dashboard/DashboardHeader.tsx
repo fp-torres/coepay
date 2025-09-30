@@ -56,7 +56,7 @@ export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }
           Gerencie suas cobranças{" "}
           {!subscription.subscribed && (
             <span className="text-amber-600">
-              • {cobrancasCount}/3 cobranças usadas
+              • {cobrancasCount}/5 cobranças usadas
             </span>
           )}
         </p>
