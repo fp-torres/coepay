@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { Eye, EyeOff, Zap } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import logoImage from "/CoéPayLogo.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -55,10 +56,12 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/10">
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center p-6 lg:p-8">
-        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
-          <div className="w-8 h-8 bg-gradient-to-br from-coepay-primary to-coepay-secondary rounded-lg flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
+          <img 
+            src={logoImage} 
+            alt="CoéPay Logo" 
+            className="w-10 h-10 object-contain"
+          />
           <span className="text-2xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
             CoéPay
           </span>

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Zap, Activity, Percent, CheckCircle, BarChart3 } from "lucide-react";
+import logoImage from "/CoéPayLogo.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -9,10 +10,12 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/10">
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center p-6 lg:p-8">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-coepay-primary to-coepay-secondary rounded-lg flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
+          <img 
+            src={logoImage} 
+            alt="CoéPay Logo" 
+            className="w-10 h-10 object-contain"
+          />
           <span className="text-2xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
             CoéPay
           </span>
