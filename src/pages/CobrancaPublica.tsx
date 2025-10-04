@@ -275,114 +275,110 @@ const marcarComoPago = async () => {
       </div>
 
          {/* Card Principal da Cobrança */}
-          <Card className={`mb-6 shadow-lg overflow-hidden ${
-            cobranca.pago ? 'bg-gradient-to-br from-green-50 to-green-100' : 'bg-white'
-          }`}>
-            <div className={`h-1 w-full ${
-              cobranca.pago 
-                ? 'bg-gradient-to-r from-green-400 via-green-500 to-green-600' 
-                : cobranca.status === 'vencida' 
-                  ? 'bg-gradient-to-r from-red-400 via-orange-500 to-red-600'
-                  : 'bg-gradient-to-r from-orange-400 via-amber-500 to-orange-600'
-            }`} />
-            
-            <CardHeader className="text-center pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {cobranca.pago ? (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  ) : cobranca.status === 'vencida' ? (
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-orange-500" />
-                  )}
-                  <CardTitle className="text-lg">Valor da Dívida</CardTitle>
-                </div>
-                {!cobranca.pago && cobranca.status === 'vencida' && (
-                  <Badge variant="destructive" className="text-xs">
-                    Vencida
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            
-            <CardContent className="text-center space-y-4 pt-6">
-              <div className={`text-5xl font-bold tracking-tight ${
-                cobranca.pago ? 'text-green-700' : 'text-red-600'
-              }`}>
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valorAtual)}
-              </div>
+<Card className={`mb-6 shadow-lg overflow-hidden ${
+  cobranca.pago 
+    ? 'bg-gradient-to-br from-green-50 to-green-100' 
+    : 'border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent'
+}`}>
+  { !cobranca.pago && (
+    // Barra esquerda laranja só quando não pago
+    <div className="absolute inset-y-0 left-0 w-1 bg-orange-500 rounded-l"></div>
+  )}
 
-          {cobranca.pago && (
-          <p className="text-sm mt-1 text-green-700">
-            👋 Coé, conheça o <a href="https://coepay.com.br" className="underline font-semibold">CoéPay</a> – 
-            um sistema de cobrança rápido, fácil e seguro. 
-            Controle juros, veja relatórios diários e mensais, 
-            acompanhe histórico de pagamentos e receba notificações 
-            automáticas.
+  <CardContent className={`p-6 text-center space-y-4 ${cobranca.pago ? '' : 'relative'}`}>
+    {!cobranca.pago ? (
+      <>
+        {/* Badge no canto superior direito */}
+        <div className="flex justify-end mb-4">
+          <Badge variant={cobranca.status === 'vencida' ? 'destructive' : 'default'}>
+            {cobranca.status === 'vencida' ? 'Vencida' : 'Ativa'}
+          </Badge>
+        </div>
+
+        <div className="mb-6">
+          <p className="text-sm text-muted-foreground mb-2">Valor Atual</p>
+          <p className="text-5xl font-bold text-orange-600 mb-2">
+            R$ {cobranca.valorAtual.toFixed(2)}
           </p>
-
+          {cobranca.valorAtual !== cobranca.valor && (
+            <p className="text-sm text-muted-foreground">
+              Valor original: R$ {cobranca.valor.toFixed(2)}
+            </p>
           )}
-
+        </div>
 
         {cobranca.descricao && (
-          <p className="text-sm text-muted-foreground italic">
-            {cobranca.descricao}
-          </p>
-        )}
-
-        {cobranca.valorAtual !== cobranca.valor && !cobranca.pago && (
-          <div className="text-sm text-muted-foreground">
-            Valor original: <span className="line-through">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valor)}</span>
+          <div className="mb-4 p-3 bg-muted rounded-lg">
+            <p className="text-sm font-medium mb-1">Descrição:</p>
+            <p className="text-sm text-muted-foreground">{cobranca.descricao}</p>
           </div>
         )}
 
-          {!cobranca.pago && cobranca.taxaJuros && (
-            <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-              Juros: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Vencimento:</span>
+            <span className="font-medium">
+              {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
+            </span>
+          </div>
+
+          {cobranca.status === 'vencida' && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Dias vencidos:</span>
+              <span className="font-medium text-red-600">{cobranca.diasVencido} dias</span>
             </div>
           )}
 
+          {cobranca.taxaJuros && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Taxa de juros:</span>
+              <span className="font-medium">
+                {cobranca.taxaJuros}% {cobranca.tipoJuros === 'mensal' ? 'ao mês' : 'ao dia'}
+              </span>
+            </div>
+          )}
+        </div>
+      </>
+    ) : (
+      <>
+        {/* Quando pago: texto verde, ícone e mensagem CoéPay */}
+        <div className="text-5xl font-bold tracking-tight text-green-700">
+          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valorAtual)}
+        </div>
 
-        {!cobranca.pago && cobranca.status === 'vencida' && (
-          <div className="bg-red-50/50 border border-red-200 rounded-lg p-4">
-            <p className="text-sm text-red-700">
-              <span className="font-semibold">Vencimento:</span> {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
-            </p>
-            <p className="text-sm font-semibold text-red-700 mt-1">
-              {cobranca.diasVencido} dia(s) em atraso
-            </p>
-          </div>
-        )}
+        <div className="flex flex-col items-center space-y-2 py-4">
+          <CheckCircle className="w-20 h-20 text-green-500" />
+        </div>
 
-        {!cobranca.pago && cobranca.status === 'ativa' && (
-          <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4">
-            <Badge variant="default" className="mb-2">
-              No Prazo
-            </Badge>
-            <p className="text-sm text-blue-700">
-              <span className="font-semibold">Vencimento:</span> {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        <p className="text-sm mt-1 text-green-700 max-w-prose mx-auto">
+          👋 Coé, conheça o <a href="https://coepay.com.br" target="_blank" rel="noreferrer" className="underline font-semibold">CoéPay</a> – 
+          um sistema de cobrança rápido, fácil e seguro. Controle juros, veja relatórios diários e mensais, acompanhe histórico de pagamentos e receba notificações automáticas.
+        </p>
+      </>
+    )}
+  </CardContent>
+</Card>
 
 {/* Card PIX */}
 {cobranca ? (
-  <Card className={`mb-6 shadow-lg overflow-hidden ${
-    cobranca.pago ? 'bg-gradient-to-br from-green-50 to-green-100' : 'bg-white'
-  }`}>
-    <div className={`h-1 w-full ${
-      cobranca.pago 
-        ? 'bg-gradient-to-r from-green-400 via-green-500 to-green-600' 
-        : 'bg-gradient-to-r from-orange-400 via-amber-500 to-orange-600'
-    }`} />
-    
-    <CardHeader className="text-center">
+  <Card
+    className={`mb-6 shadow-lg overflow-hidden relative ${
+      cobranca.pago ? 'bg-gradient-to-br from-green-50 to-green-100' : 'bg-white'
+    }`}
+  >
+    {/* Linha lateral esquerda colorida */}
+    <div
+      className={`absolute top-0 bottom-0 left-0 w-1 ${
+        cobranca.pago
+          ? 'bg-gradient-to-b from-green-400 via-green-500 to-green-600'
+          : 'bg-gradient-to-b from-orange-400 via-amber-500 to-orange-600'
+      }`}
+    />
+
+    <CardHeader className="text-center relative z-10">
       <CardTitle className="text-lg">{cobranca.pago ? 'Pagamento Realizado' : 'Pague com PIX'}</CardTitle>
     </CardHeader>
-    <CardContent className="text-center space-y-4">
+    <CardContent className="text-center space-y-4 relative z-10">
 
       {cobranca.pago ? (
         <div className="flex flex-col items-center space-y-2 py-4">
@@ -406,18 +402,23 @@ const marcarComoPago = async () => {
 
       {/* Chave PIX */}
       {!cobranca.pago && (
-        <div className="bg-gray-100 p-3 rounded-md">
-          <p className="text-xs text-gray-500 mb-1">Chave PIX</p>
-          <div className="flex items-center justify-between bg-white p-2 rounded border">
-            <span className="font-mono text-sm break-all">{cobranca.pixCobranca}</span>
+        <div className="text-center">
+          <p className="text-xs text-gray-500 mb-2">Chave PIX</p>
+
+          <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-lg">
+            <span className="font-mono text-sm text-gray-800 break-all select-all">
+              {cobranca.pixCobranca}
+            </span>
+
             <Button
-              size="sm"
-              variant="outline"
+              size="icon"
+              variant="ghost"
+              className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition"
               onClick={() => {
                 navigator.clipboard.writeText(cobranca.pixCobranca);
                 toast({
-                  title: "Chave PIX copiada",
-                  description: "Você pode colar onde precisar.",
+                  title: "Chave PIX copiada ✅",
+                  className: "bg-green-50 text-green-700 border-green-200",
                 });
               }}
             >
@@ -427,64 +428,65 @@ const marcarComoPago = async () => {
         </div>
       )}
 
-    {/* Botão manual para marcar como pago */}
+
+
+
+
+
+      {/* Botão manual para marcar como pago */}
       {!cobranca.pago && (
         <Dialog>
           <DialogTrigger asChild>
-        <Button
-          className="mt-4 w-full font-semibold bg-green-600 text-white px-4 py-2 rounded
+            <Button
+              className="mt-4 w-full font-semibold bg-green-600 text-white px-4 py-2 rounded
                     hover:bg-gradient-to-r hover:from-green-600 hover:to-green-700
                     transition flex items-center justify-center"
-        >
-          <CheckCircle className="mr-2 h-4 w-4 text-white" />
-          Confirmar pagamento
-        </Button>
-
+            >
+              <CheckCircle className="mr-2 h-4 w-4 text-white" />
+              Confirmar pagamento
+            </Button>
           </DialogTrigger>
 
           <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmar pagamento</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja marcar esta cobrança como <b>PAGA</b>? <br />
-              O responsável pela cobrança será notificado.
-            </DialogDescription>
+            <DialogHeader>
+              <DialogTitle>Confirmar pagamento</DialogTitle>
+              <DialogDescription>
+                Tem certeza que deseja marcar esta cobrança como <b>PAGA</b>? <br />
+                O responsável pela cobrança será notificado.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline">Cancelar</Button>
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded
+                          transition"
+                onClick={() => marcarComoPago()}
+              >
+                Confirmar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
-          </DialogHeader>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline">Cancelar</Button>
-            <Button 
-              className="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded
-                        transition"
-              onClick={() => marcarComoPago()}
-            >
-              Confirmar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    )}        
+      {/* Status de pagamento */}
+      <div className="flex justify-center">
+        {cobranca.pago ? (
+          <Badge variant="outline">
+            ✅ Pago em {new Date(cobranca.pagoEm!).toLocaleString()}
+          </Badge>
+        ) : (
+          <Badge
+            variant="secondary"
+            className="bg-yellow-100 text-yellow-800 border-yellow-300 
+                       hover:bg-yellow-100 hover:text-yellow-800 cursor-default"
+          >
+            ⏳ Aguardando pagamento
+          </Badge>
+        )}
+      </div>
 
-{/* Status de pagamento */}
-<div className="flex justify-center">
-  {cobranca.pago ? (
-    <Badge variant="outline">
-      ✅ Pago em {new Date(cobranca.pagoEm!).toLocaleString()}
-    </Badge>
-  ) : (
-    <Badge
-      variant="secondary"
-      className="bg-yellow-100 text-yellow-800 border-yellow-300 
-                 hover:bg-yellow-100 hover:text-yellow-800 cursor-default"
-    >
-      ⏳ Aguardando pagamento
-    </Badge>
-  )}
-</div>
-
-
-
-{/* Texto de instrução só aparece se ainda não foi pago */}
+      {/* Texto de instrução só aparece se ainda não foi pago */}
       {!cobranca.pago && (
         <p className="text-xs text-gray-400 mt-1">
           Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
@@ -499,7 +501,6 @@ const marcarComoPago = async () => {
     </CardContent>
   </Card>
 )}
-
 
 
 
