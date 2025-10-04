@@ -177,23 +177,25 @@ const CobrancaPublica = () => {
         </div>
 
         {/* Card de Cobrança */}
-        <Card className="mb-6 shadow-lg">
+        <Card className="mb-6 shadow-lg border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent">
           <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Valor Atual</p>
-                <p className="text-3xl font-bold text-orange-600">
-                  R$ {cobranca.valorAtual.toFixed(2)}
-                </p>
-                {cobranca.valorAtual !== cobranca.valor && (
-                  <p className="text-sm text-muted-foreground">
-                    Valor original: R$ {cobranca.valor.toFixed(2)}
-                  </p>
-                )}
-              </div>
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex-1" />
               <Badge variant={cobranca.status === 'vencida' ? 'destructive' : 'default'}>
                 {cobranca.status === 'vencida' ? 'Vencida' : 'Ativa'}
               </Badge>
+            </div>
+            
+            <div className="text-center mb-6">
+              <p className="text-sm text-muted-foreground mb-2">Valor Atual</p>
+              <p className="text-5xl font-bold text-orange-600 mb-2">
+                R$ {cobranca.valorAtual.toFixed(2)}
+              </p>
+              {cobranca.valorAtual !== cobranca.valor && (
+                <p className="text-sm text-muted-foreground">
+                  Valor original: R$ {cobranca.valor.toFixed(2)}
+                </p>
+              )}
             </div>
 
             {cobranca.descricao && (
@@ -232,7 +234,7 @@ const CobrancaPublica = () => {
 
         {/* Card de Pagamento PIX */}
         {cobranca.pixCobranca && (
-          <Card className="mb-6 shadow-lg">
+          <Card className="mb-6 shadow-lg border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50/50 to-transparent">
             <CardContent className="p-6">
               <h2 className="text-xl font-bold text-center mb-4">
                 Pague com PIX
