@@ -111,9 +111,7 @@ const CobrancaPublica = () => {
     return valorInicial * Math.pow(1 + (taxa / 100), periodos);
   };
 
-  
   // Carrega cobrança
-  useEffect(() => {
     const carregarCobranca = async () => {
       if (!hash) return;
       try {
@@ -132,16 +130,16 @@ const CobrancaPublica = () => {
           );
         }
 
-      // Calcula dias vencido e status
-      const hoje = new Date();
-      const vencimento = new Date(cobrancaData.data_vencimento);
-      const diffTime = hoje.getTime() - vencimento.getTime();
-      const diasVencido = hoje > vencimento ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : 0;
-      const status = (hoje > vencimento ? 'vencida' : 'ativa') as 'vencida' | 'ativa';
+        // Calcula dias vencido e status
+        const hoje = new Date();
+        const vencimento = new Date(cobrancaData.data_vencimento);
+        const diffTime = hoje.getTime() - vencimento.getTime();
+        const diasVencido = hoje > vencimento ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : 0;
+        const status = (hoje > vencimento ? 'vencida' : 'ativa') as 'vencida' | 'ativa';
 
-      // Busca dados do usuário para pegar o PIX
-      const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
-      const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
+        // Busca dados do usuário para pegar o PIX
+        const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
+        const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
 
       const cobrancaObj: CobrancaData = {
         id: cobrancaData.id.toString(),
@@ -162,31 +160,30 @@ const CobrancaPublica = () => {
 
       setCobranca(cobrancaObj);
 
-      // Gera QR Code PIX
-      if (cobrancaObj.pixCobranca && cobrancaObj.valorAtual) {
+        // Gera QR Code PIX
+        if (cobrancaObj.pixCobranca && cobrancaObj.valorAtual) {
           const qrCode = await gerarQRCodePIXManual(
             cobrancaObj.pixCobranca,
             cobrancaObj.valorAtual,
             cobrancaObj.nomeDevedor
           );
+          setQrCodeURL(qrCode);
+        }
 
-        setQrCodeURL(qrCode);
+      } catch (err) {
+        console.error(err);
       }
+    };
 
-    } catch (err) {
-      console.error(err);
-    }
-  };
+   useEffect(() => {
+  if (hash) {
+    carregarCobranca();
 
-   if (hash) {
-    carregarCobranca(); // carrega inicialmente
-
-    // 🚀 Auto-refresh a cada 5 segundos
     const interval = setInterval(() => {
       carregarCobranca();
     }, 5000);
 
-    return () => clearInterval(interval); // limpa intervalo quando o componente desmonta
+    return () => clearInterval(interval);
   }
 }, [hash]);
 
