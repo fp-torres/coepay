@@ -275,23 +275,39 @@ const marcarComoPago = async () => {
       </div>
 
          {/* Card Principal da Cobrança */}
-          <Card className={`mb-6 border-l-4 shadow-sm ${
-            cobranca.pago ? 'border-l-green-500 bg-green-50' : cobranca.status === 'vencida' ? 'border-l-red-500 bg-white' : 'border-l-orange-500 bg-white'
+          <Card className={`mb-6 shadow-lg overflow-hidden ${
+            cobranca.pago ? 'bg-gradient-to-br from-green-50 to-green-100' : 'bg-white'
           }`}>
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2">
-                {cobranca.pago ? (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                ) : cobranca.status === 'vencida' ? (
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                ) : (
-                  <Clock className="w-5 h-5 text-orange-500" />
+            <div className={`h-1 w-full ${
+              cobranca.pago 
+                ? 'bg-gradient-to-r from-green-400 via-green-500 to-green-600' 
+                : cobranca.status === 'vencida' 
+                  ? 'bg-gradient-to-r from-red-400 via-orange-500 to-red-600'
+                  : 'bg-gradient-to-r from-orange-400 via-amber-500 to-orange-600'
+            }`} />
+            
+            <CardHeader className="text-center pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {cobranca.pago ? (
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  ) : cobranca.status === 'vencida' ? (
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-orange-500" />
+                  )}
+                  <CardTitle className="text-lg">Valor da Dívida</CardTitle>
+                </div>
+                {!cobranca.pago && cobranca.status === 'vencida' && (
+                  <Badge variant="destructive" className="text-xs">
+                    Vencida
+                  </Badge>
                 )}
-                Valor da Dívida
-              </CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <div className={`text-4xl font-bold ${
+            
+            <CardContent className="text-center space-y-4 pt-6">
+              <div className={`text-5xl font-bold tracking-tight ${
                 cobranca.pago ? 'text-green-700' : 'text-red-600'
               }`}>
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valorAtual)}
@@ -329,26 +345,23 @@ const marcarComoPago = async () => {
 
 
         {!cobranca.pago && cobranca.status === 'vencida' && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <Badge variant="destructive" className="mb-2">
-              Cobrança Vencida
-            </Badge>
+          <div className="bg-red-50/50 border border-red-200 rounded-lg p-4">
             <p className="text-sm text-red-700">
-              Data de vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
+              <span className="font-semibold">Vencimento:</span> {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
             </p>
-            <p className="text-sm font-semibold text-red-700">
-              {cobranca.diasVencido} dia(s) vencido(s)
+            <p className="text-sm font-semibold text-red-700 mt-1">
+              {cobranca.diasVencido} dia(s) em atraso
             </p>
           </div>
         )}
 
         {!cobranca.pago && cobranca.status === 'ativa' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4">
             <Badge variant="default" className="mb-2">
               No Prazo
             </Badge>
             <p className="text-sm text-blue-700">
-              Data de vencimento: {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
+              <span className="font-semibold">Vencimento:</span> {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
             </p>
           </div>
         )}
@@ -357,24 +370,34 @@ const marcarComoPago = async () => {
 
 {/* Card PIX */}
 {cobranca ? (
-  <Card className={`mb-6 border-l-4 ${cobranca.pago ? 'border-l-green-500' : 'border-l-amber-1000'} shadow-sm`}>
+  <Card className={`mb-6 shadow-lg overflow-hidden ${
+    cobranca.pago ? 'bg-gradient-to-br from-green-50 to-green-100' : 'bg-white'
+  }`}>
+    <div className={`h-1 w-full ${
+      cobranca.pago 
+        ? 'bg-gradient-to-r from-green-400 via-green-500 to-green-600' 
+        : 'bg-gradient-to-r from-orange-400 via-amber-500 to-orange-600'
+    }`} />
+    
     <CardHeader className="text-center">
-      <CardTitle>{cobranca.pago ? 'Pagamento Realizado' : 'Pague com PIX'}</CardTitle>
+      <CardTitle className="text-lg">{cobranca.pago ? 'Pagamento Realizado' : 'Pague com PIX'}</CardTitle>
     </CardHeader>
     <CardContent className="text-center space-y-4">
 
       {cobranca.pago ? (
-        <div className="flex flex-col items-center space-y-2">
-          <CheckCircle className="w-16 h-16 text-green-500" />
+        <div className="flex flex-col items-center space-y-2 py-4">
+          <CheckCircle className="w-20 h-20 text-green-500" />
         </div>
       ) : (
-        <div className="flex justify-center">
+        <div className="flex justify-center py-2">
           {qrCodeURL ? (
-            <img
-              src={qrCodeURL}
-              alt="QR Code PIX"
-              className="w-48 h-48 border rounded-lg"
-            />
+            <div className="p-3 bg-white rounded-xl border-4 border-orange-400 shadow-md">
+              <img
+                src={qrCodeURL}
+                alt="QR Code PIX"
+                className="w-48 h-48 rounded-lg"
+              />
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
           )}
