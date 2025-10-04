@@ -8,6 +8,14 @@ import { toast } from "@/components/ui/use-toast";
 import { payload } from 'pix-payload';
 import QRCode from 'qrcode';
 import { gerarQRCodePIXManual } from '@/utils/pix';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 
 
@@ -317,13 +325,12 @@ const marcarComoPago = async () => {
           </div>
         )}
 
-        {!cobranca.pago && cobranca.status === 'vencida' && (
-          <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-            {cobranca.taxaJuros
-              ? `Juros aplicados: ${cobranca.taxaJuros}% ${cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}`
-              : "Sem juros"}
-          </div>
-        )}
+          {!cobranca.pago && cobranca.taxaJuros && (
+            <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+              Juros: {cobranca.taxaJuros}% {cobranca.tipoJuros === 'diario' ? 'ao dia' : 'ao mês'}
+            </div>
+          )}
+
 
         {!cobranca.pago && cobranca.status === 'vencida' && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -394,64 +401,62 @@ const marcarComoPago = async () => {
           </div>
         </div>
 
-        {/* Status de pagamento */}
-        <div className={`p-2 rounded-md font-medium ${cobranca.pago ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
-          {cobranca.pago ? (
-            <>✅ Pago em {new Date(cobranca.pagoEm!).toLocaleString()}</>
-          ) : (
-            <>⏳ Aguardando pagamento</>
-          )}
-        </div>
-
     {/* Botão manual para marcar como pago */}
       {!cobranca.pago && (
+        <Dialog>
+          <DialogTrigger asChild>
         <Button
-          variant="destructive"
-          className="mt-4 w-full font-bold"
-          onClick={() => {
-            const toastInstance = toast({
-              title: "⚠️ Confirmação necessária",
-              description: (
-                <div className="space-y-2 text-left">
-                  <p className="font-semibold text-red-600">
-                    Você está prestes a marcar esta cobrança como <u>PAGA</u>.
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Esta ação notificará o dono da cobrança e não deve ser feita se o pagamento ainda não foi realizado.
-                  </p>
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => toastInstance.dismiss()}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold"
-                      onClick={() => {
-                        marcarComoPago();
-                        toastInstance.dismiss();
-                        toast({
-                          title: "✅ Cobrança marcada como paga",
-                          description: `Pagamento registrado com sucesso e o dono foi notificado.`,
-                        });
-                      }}
-                    >
-                      Confirmar pagamento
-                    </Button>
-                  </div>
-                </div>
-              ),
-              duration: 8000,
-            });
-          }}
+          className="mt-4 w-full font-semibold bg-green-600 text-white px-4 py-2 rounded
+                    hover:bg-gradient-to-r hover:from-green-600 hover:to-green-700
+                    transition flex items-center justify-center"
         >
-          🚨 Marcar como pago
+          <CheckCircle className="mr-2 h-4 w-4 text-white" />
+          Confirmar pagamento
         </Button>
-      )}
+
+          </DialogTrigger>
+
+          <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar pagamento</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja marcar esta cobrança como <b>PAGA</b>? <br />
+              O responsável pela cobrança será notificado.
+            </DialogDescription>
+
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline">Cancelar</Button>
+            <Button 
+              className="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded
+                        transition"
+              onClick={() => marcarComoPago()}
+            >
+              Confirmar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}        
+
+{/* Status de pagamento */}
+<div className="flex justify-center">
+  {cobranca.pago ? (
+    <Badge variant="outline">
+      ✅ Pago em {new Date(cobranca.pagoEm!).toLocaleString()}
+    </Badge>
+  ) : (
+    <Badge
+      variant="secondary"
+      className="bg-yellow-100 text-yellow-800 border-yellow-300 
+                 hover:bg-yellow-100 hover:text-yellow-800 cursor-default"
+    >
+      ⏳ Aguardando pagamento
+    </Badge>
+  )}
+</div>
+
+
 
       <p className="text-xs text-gray-400 mt-1">
         Escaneie o QR Code ou copie a chave PIX para realizar o pagamento

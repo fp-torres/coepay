@@ -218,7 +218,7 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
                   textarea.style.height = `${textarea.scrollHeight}px`;
                 }
               }}
-              placeholder="Referente à cobrança..."
+              placeholder="Pagamento referente à..."
               rows={3} // altura inicial
               className="resize-none overflow-hidden"
               //disabled={!user?.isPremium}
