@@ -197,13 +197,12 @@ const marcarComoPago = async () => {
       method: "PUT",
     });
     if (!resp.ok) throw new Error("Erro ao atualizar cobrança");
-
+     
     toast({
-      title: "Cobrança atualizada",
-      description: "Pagamento marcado como pago ✅",
-      className: "bg-green-50 text-green-700 border-green-400", // cores personalizadas
-
-    });
+        title: "Pagamento confirmado ✅",
+        description: "O responsável será notificado.",
+        className: "bg-green-50 text-green-700 border-green-400", // opcional
+      });
 
     setCobranca({
       ...cobranca,
@@ -360,14 +359,18 @@ const marcarComoPago = async () => {
     </Card>
 
 {/* Card PIX */}
-  {cobranca ? (
-    <Card className={`mb-6 border-l-4 ${cobranca.pago ? 'border-l-green-500' : 'border-l-amber-1000'} shadow-sm`}>
-      <CardHeader className="text-center">
-        <CardTitle>Pague com PIX</CardTitle>
-      </CardHeader>
-      <CardContent className="text-center space-y-4">
+{cobranca ? (
+  <Card className={`mb-6 border-l-4 ${cobranca.pago ? 'border-l-green-500' : 'border-l-amber-1000'} shadow-sm`}>
+    <CardHeader className="text-center">
+      <CardTitle>{cobranca.pago ? 'Pagamento Realizado' : 'Pague com PIX'}</CardTitle>
+    </CardHeader>
+    <CardContent className="text-center space-y-4">
 
-        {/* QR Code */}
+      {cobranca.pago ? (
+        <div className="flex flex-col items-center space-y-2">
+          <CheckCircle className="w-16 h-16 text-green-500" />
+        </div>
+      ) : (
         <div className="flex justify-center">
           {qrCodeURL ? (
             <img
@@ -379,8 +382,10 @@ const marcarComoPago = async () => {
             <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
           )}
         </div>
+      )}
 
-        {/* Chave PIX */}
+      {/* Chave PIX */}
+      {!cobranca.pago && (
         <div className="bg-gray-100 p-3 rounded-md">
           <p className="text-xs text-gray-500 mb-1">Chave PIX</p>
           <div className="flex items-center justify-between bg-white p-2 rounded border">
@@ -400,6 +405,7 @@ const marcarComoPago = async () => {
             </Button>
           </div>
         </div>
+      )}
 
     {/* Botão manual para marcar como pago */}
       {!cobranca.pago && (
@@ -458,9 +464,12 @@ const marcarComoPago = async () => {
 
 
 
-      <p className="text-xs text-gray-400 mt-1">
-        Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
-      </p>
+{/* Texto de instrução só aparece se ainda não foi pago */}
+      {!cobranca.pago && (
+        <p className="text-xs text-gray-400 mt-1">
+          Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
+        </p>
+      )}
     </CardContent>
   </Card>
 ) : (
