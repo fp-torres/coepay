@@ -179,8 +179,7 @@ const CobrancaPublica = () => {
         {/* Card de Cobrança */}
         <Card className="mb-6 shadow-lg border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent">
           <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex-1" />
+            <div className="flex justify-end mb-4">
               <Badge variant={cobranca.status === 'vencida' ? 'destructive' : 'default'}>
                 {cobranca.status === 'vencida' ? 'Vencida' : 'Ativa'}
               </Badge>
@@ -234,7 +233,7 @@ const CobrancaPublica = () => {
 
         {/* Card de Pagamento PIX */}
         {cobranca.pixCobranca && (
-          <Card className="mb-6 shadow-lg border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50/50 to-transparent">
+          <Card className="mb-6 shadow-lg border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent">
             <CardContent className="p-6">
               <h2 className="text-xl font-bold text-center mb-4">
                 Pague com PIX
