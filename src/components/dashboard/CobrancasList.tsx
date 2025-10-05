@@ -10,7 +10,7 @@ interface Cobranca {
   valor: number;
   valorAtual?: number;
   dataVencimento: string;
-  status: "ativa" | "vencida";
+  status: "ativa" | "vencida" | "paga";
   link: string;
   taxaJuros?: number;
   tipoJuros?: "mensal" | "diario";
@@ -61,9 +61,24 @@ export const CobrancasList = ({
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-semibold">{cobranca.nomeDevedor}</h3>
                   <Badge
-                    variant={cobranca.status === "ativa" ? "default" : "destructive"}
+                    variant={
+                      cobranca.status === "paga" 
+                        ? "outline" 
+                        : cobranca.status === "ativa" 
+                        ? "default" 
+                        : "destructive"
+                    }
+                    className={
+                      cobranca.status === "paga"
+                        ? "bg-green-50 text-green-700 border-green-300 hover:bg-green-100"
+                        : ""
+                    }
                   >
-                    {cobranca.status === "ativa" ? "No prazo" : "Vencida"}
+                    {cobranca.status === "paga" 
+                      ? "✅ Paga" 
+                      : cobranca.status === "ativa" 
+                      ? "No prazo" 
+                      : "Vencida"}
                   </Badge>
                 </div>
 

@@ -23,7 +23,7 @@ interface Cobranca {
   valor: number;
   valorAtual?: number;
   dataVencimento: string;
-  status: 'ativa' | 'vencida';
+  status: 'ativa' | 'vencida' | 'paga';
   link: string;
   taxaJuros?: number;
   tipoJuros?: 'mensal' | 'diario';
@@ -81,7 +81,7 @@ const Dashboard = () => {
 
         const hoje = new Date();
         const vencimento = new Date(item.data_vencimento);
-        const status = hoje > vencimento ? 'vencida' : 'ativa';
+        const status = item.pago ? 'paga' : (hoje > vencimento ? 'vencida' : 'ativa');
 
         return {
           id: item.id.toString(),
