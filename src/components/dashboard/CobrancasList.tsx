@@ -63,19 +63,19 @@ export const CobrancasList = ({
                   <Badge
                     variant={
                       cobranca.status === "paga" 
-                        ? "outline" 
+                        ? "default" 
                         : cobranca.status === "ativa" 
                         ? "default" 
                         : "destructive"
                     }
                     className={
                       cobranca.status === "paga"
-                        ? "bg-green-50 text-green-700 border-green-300 hover:bg-green-100"
+                        ? "bg-green-600 hover:bg-green-600"
                         : ""
                     }
                   >
                     {cobranca.status === "paga" 
-                      ? "✅ Paga" 
+                      ? "Paga" 
                       : cobranca.status === "ativa" 
                       ? "No prazo" 
                       : "Vencida"}
