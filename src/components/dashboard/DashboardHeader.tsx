@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Crown, CreditCard, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { NotificationBell } from "./NotificationBell";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface User {
   id: number;
@@ -35,6 +37,8 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }: DashboardHeaderProps) => {
   const navigate = useNavigate();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useNotifications(user.id);
+  
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
       {/* Informações do usuário */}
@@ -64,6 +68,14 @@ export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }
 
       {/* Botões de ação */}
       <div className="flex flex-col sm:flex-row md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
+        <NotificationBell
+          notifications={notifications}
+          unreadCount={unreadCount}
+          onMarkAsRead={markAsRead}
+          onMarkAllAsRead={markAllAsRead}
+          onClearAll={clearNotifications}
+        />
+        
         <Button
           variant="outline"
           size="sm"
