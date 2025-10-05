@@ -27,7 +27,7 @@ interface CobrancaData {
   dataVencimento: string;
   diasVencido: number;
   pixCobranca: string;
-  status: 'ativa' | 'vencida' | 'paga'; // adiciona "paga"
+  status: 'no prazo' | 'vencida' | 'paga'; // adiciona "paga"
   pago?: boolean; // true se já foi pago
   pagoEm?: string; // timestamp do pagamento
   taxaJuros?: number;
@@ -135,7 +135,7 @@ const CobrancaPublica = () => {
         const vencimento = new Date(cobrancaData.data_vencimento);
         const diffTime = hoje.getTime() - vencimento.getTime();
         const diasVencido = hoje > vencimento ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : 0;
-        const status = (hoje > vencimento ? 'vencida' : 'ativa') as 'vencida' | 'ativa';
+        const status = (hoje > vencimento ? 'vencida' : 'no prazo') as 'vencida' | 'no prazo';
 
         // Busca dados do usuário para pegar o PIX
         const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
@@ -274,13 +274,13 @@ const marcarComoPago = async () => {
         </p>
       </div>
 
-         {/* Card Principal da Cobrança */}
+   {/* Card Principal da Cobrança */}
 <Card className={`mb-6 shadow-lg overflow-hidden ${
   cobranca.pago 
     ? 'bg-gradient-to-br from-green-50 to-green-100' 
     : 'border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent'
 }`}>
-  { !cobranca.pago && (
+  {!cobranca.pago && (
     // Barra esquerda laranja só quando não pago
     <div className="absolute inset-y-0 left-0 w-1 bg-orange-500 rounded-l"></div>
   )}
@@ -291,18 +291,25 @@ const marcarComoPago = async () => {
         {/* Badge no canto superior direito */}
         <div className="flex justify-end mb-4">
           <Badge variant={cobranca.status === 'vencida' ? 'destructive' : 'default'}>
-            {cobranca.status === 'vencida' ? 'Vencida' : 'Ativa'}
+            {cobranca.status === 'vencida' ? 'Vencida' : 'No Prazo'}
           </Badge>
         </div>
 
-        <div className="mb-6">
+<div className="mb-6">
           <p className="text-sm text-muted-foreground mb-2">Valor Atual</p>
           <p className="text-5xl font-bold text-orange-600 mb-2">
-            R$ {cobranca.valorAtual.toFixed(2)}
+            {cobranca.valorAtual.toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            })}
           </p>
           {cobranca.valorAtual !== cobranca.valor && (
             <p className="text-sm text-muted-foreground">
-              Valor original: R$ {cobranca.valor.toFixed(2)}
+              Valor original:{' '}
+              {cobranca.valor.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              })}
             </p>
           )}
         </div>
@@ -329,14 +336,14 @@ const marcarComoPago = async () => {
             </div>
           )}
 
-          {cobranca.taxaJuros && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Taxa de juros:</span>
-              <span className="font-medium">
-                {cobranca.taxaJuros}% {cobranca.tipoJuros === 'mensal' ? 'ao mês' : 'ao dia'}
-              </span>
-            </div>
-          )}
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Taxa de juros:</span>
+            <span className="font-medium">
+              {cobranca.taxaJuros
+                ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros === 'mensal' ? 'ao mês' : 'ao dia'}`
+                : 'Sem juros'}
+            </span>
+          </div>
         </div>
       </>
     ) : (
