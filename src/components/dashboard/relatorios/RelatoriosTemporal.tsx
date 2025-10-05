@@ -8,7 +8,7 @@ interface Cobranca {
   valor: number;
   valorAtual?: number;
   dataVencimento: string;
-  status: 'ativa' | 'vencida';
+  status: 'ativa' | 'vencida' | 'paga';
   link: string;
   taxaJuros?: number;
   tipoJuros?: 'mensal' | 'diario';
@@ -19,12 +19,13 @@ interface RelatoriosTemporalProps {
 }
 
 export const RelatoriosTemporal = ({ cobrancas }: RelatoriosTemporalProps) => {
-  const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa');
+  const cobrancasNaoPagas = cobrancas.filter(c => c.status !== 'paga');
+  const cobrancasAtivas = cobrancasNaoPagas.filter(c => c.status === 'ativa');
 
   const dataLimite = new Date();
   dataLimite.setDate(dataLimite.getDate() - 30);
   
-  const cobrancasRecentes = cobrancas.filter(c => new Date(c.dataVencimento) >= dataLimite);
+  const cobrancasRecentes = cobrancasNaoPagas.filter(c => new Date(c.dataVencimento) >= dataLimite);
 
   const proximosVencimentos = cobrancasAtivas
     .filter(c => {
@@ -132,9 +133,9 @@ export const RelatoriosTemporal = ({ cobrancas }: RelatoriosTemporalProps) => {
         'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
         'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
       ];
-      const valorTotalGeral = cobrancas.reduce((sum, c) => sum + c.valor, 0);
+      const valorTotalGeral = cobrancasNaoPagas.reduce((sum, c) => sum + c.valor, 0);
 
-      const distribuicaoMensal = cobrancas.reduce((acc, c) => {
+      const distribuicaoMensal = cobrancasNaoPagas.reduce((acc, c) => {
         const data = new Date(c.dataVencimento);
         const chave = `${data.getFullYear()}-${data.getMonth()}`;
         if (!acc[chave])

@@ -16,7 +16,7 @@ interface Cobranca {
   valor: number;
   valorAtual?: number;
   dataVencimento: string;
-  status: 'ativa' | 'vencida';
+  status: 'ativa' | 'vencida' | 'paga';
   link: string;
   taxaJuros?: number;
   tipoJuros?: 'mensal' | 'diario';
@@ -80,7 +80,7 @@ export default function Relatorios() {
           
           const hoje = new Date();
           const vencimento = new Date(cobranca.data_vencimento);
-          const status = hoje > vencimento ? 'vencida' : 'ativa';
+          const status = cobranca.pago ? 'paga' : (hoje > vencimento ? 'vencida' : 'ativa');
           
           return {
             id: cobranca.id,

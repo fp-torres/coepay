@@ -6,7 +6,7 @@ interface Cobranca {
   valor: number;
   valorAtual?: number;
   dataVencimento: string;
-  status: 'ativa' | 'vencida';
+  status: 'ativa' | 'vencida' | 'paga';
   link: string;
   taxaJuros?: number;
   tipoJuros?: 'mensal' | 'diario';
@@ -17,15 +17,16 @@ interface RelatoriosPerformanceProps {
 }
 
 export const RelatoriosPerformance = ({ cobrancas }: RelatoriosPerformanceProps) => {
-  const totalCobrancas = cobrancas.length;
-  const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa');
-  const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida');
+  const cobrancasNaoPagas = cobrancas.filter(c => c.status !== 'paga');
+  const totalCobrancas = cobrancasNaoPagas.length;
+  const cobrancasAtivas = cobrancasNaoPagas.filter(c => c.status === 'ativa');
+  const cobrancasVencidas = cobrancasNaoPagas.filter(c => c.status === 'vencida');
   
-  const valorTotalOriginal = cobrancas.reduce((sum, c) => sum + Number(c.valor), 0);
-  const valorTotalAtual = cobrancas.reduce((sum, c) => sum + (Number(c.valorAtual) || Number(c.valor)), 0);
+  const valorTotalOriginal = cobrancasNaoPagas.reduce((sum, c) => sum + Number(c.valor), 0);
+  const valorTotalAtual = cobrancasNaoPagas.reduce((sum, c) => sum + (Number(c.valorAtual) || Number(c.valor)), 0);
   const valorJuros = valorTotalAtual - valorTotalOriginal;
   
-  const cobrancasComJuros = cobrancas.filter(c => c.taxaJuros && c.taxaJuros > 0);
+  const cobrancasComJuros = cobrancasNaoPagas.filter(c => c.taxaJuros && c.taxaJuros > 0);
   const percComJuros = totalCobrancas > 0 ? ((cobrancasComJuros.length / totalCobrancas) * 100).toFixed(1) : '0';
 
   const mediaJuros = cobrancasComJuros.length > 0 ? valorJuros / cobrancasComJuros.length : 0;

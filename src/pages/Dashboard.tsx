@@ -8,6 +8,7 @@ import { DashboardCards } from "@/components/dashboard/DashboardCards";
 import { UpgradePremiumCard } from "@/components/dashboard/UpgradePremiumCard";
 import { NovaCobrancaForm } from "@/components/dashboard/NovaCobrancaForm";
 import { CobrancasList } from "@/components/dashboard/CobrancasList";
+import { CobrancasPagasList } from "@/components/dashboard/CobrancasPagasList";
 
 interface User {
   id: number;
@@ -245,9 +246,11 @@ const Dashboard = () => {
   };
 
 
-  const totalReceber = cobrancas.reduce((sum, c) => sum + (c.valorAtual || c.valor), 0);
+  const totalReceber = cobrancas.filter(c => c.status !== 'paga').reduce((sum, c) => sum + (c.valorAtual || c.valor), 0);
   const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa').length;
   const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida').length;
+  const cobrancasPagas = cobrancas.filter(c => c.status === 'paga').length;
+  const totalRecebido = cobrancas.filter(c => c.status === 'paga').reduce((sum, c) => sum + c.valor, 0);
 
   if (!user) return null;
 
@@ -265,6 +268,8 @@ const Dashboard = () => {
           totalReceber={totalReceber}
           cobrancasAtivas={cobrancasAtivas}
           cobrancasVencidas={cobrancasVencidas}
+          cobrancasPagas={cobrancasPagas}
+          totalRecebido={totalRecebido}
         />
 
         {!subscription.subscribed && (
@@ -281,11 +286,15 @@ const Dashboard = () => {
           />
 
           <CobrancasList 
-            cobrancas={cobrancas}
+            cobrancas={cobrancas.filter(c => c.status !== 'paga')}
             onCopiarLink={copiarLink}
             onExcluirCobranca={excluirCobranca}
           />
         </div>
+
+        {cobrancasPagas > 0 && (
+          <CobrancasPagasList cobrancas={cobrancas} />
+        )}
       </div>
     </div>
   );

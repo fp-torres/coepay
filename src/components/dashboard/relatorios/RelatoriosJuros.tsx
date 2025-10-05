@@ -8,7 +8,7 @@ interface Cobranca {
   valor: number;
   valorAtual?: number;
   dataVencimento: string;
-  status: 'ativa' | 'vencida';
+  status: 'ativa' | 'vencida' | 'paga';
   link: string;
   taxaJuros?: number;
   tipoJuros?: 'mensal' | 'diario';

@@ -8,7 +8,7 @@ interface Cobranca {
   valor: number;
   valorAtual?: number;
   dataVencimento: string;
-  status: 'ativa' | 'vencida';
+  status: 'ativa' | 'vencida' | 'paga';
   link: string;
   taxaJuros?: number;
   tipoJuros?: 'mensal' | 'diario';
@@ -19,12 +19,15 @@ interface RelatoriosOverviewProps {
 }
 
 export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
-  const totalCobrancas = cobrancas.length;
-  const cobrancasAtivas = cobrancas.filter(c => c.status === 'ativa');
-  const cobrancasVencidas = cobrancas.filter(c => c.status === 'vencida');
+  const cobrancasNaoPagas = cobrancas.filter(c => c.status !== 'paga');
+  const cobrancasPagas = cobrancas.filter(c => c.status === 'paga');
+  const totalCobrancas = cobrancasNaoPagas.length;
+  const cobrancasAtivas = cobrancasNaoPagas.filter(c => c.status === 'ativa');
+  const cobrancasVencidas = cobrancasNaoPagas.filter(c => c.status === 'vencida');
 
-  const valorTotalOriginal = cobrancas.reduce((sum, c) => sum + (Number(c.valor) || 0), 0);
-  const valorTotalAtual = cobrancas.reduce((sum, c) => sum + (Number(c.valorAtual) || Number(c.valor) || 0), 0);
+  const valorTotalOriginal = cobrancasNaoPagas.reduce((sum, c) => sum + (Number(c.valor) || 0), 0);
+  const valorTotalAtual = cobrancasNaoPagas.reduce((sum, c) => sum + (Number(c.valorAtual) || Number(c.valor) || 0), 0);
+  const valorTotalPago = cobrancasPagas.reduce((sum, c) => sum + (Number(c.valor) || 0), 0);
 
   // Percentual de recuperação
   const percentualRecuperacaoQtd = totalCobrancas > 0 ? (cobrancasAtivas.length / totalCobrancas) * 100 : 0;
@@ -43,10 +46,10 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
 
   // Faixas de valor
   const faixasValor = {
-    ate100: cobrancas.filter(c => Number(c.valor) <= 100).length,
-    de101a500: cobrancas.filter(c => Number(c.valor) > 100 && Number(c.valor) <= 500).length,
-    de501a1000: cobrancas.filter(c => Number(c.valor) > 500 && Number(c.valor) <= 1000).length,
-    acima1000: cobrancas.filter(c => Number(c.valor) > 1000).length,
+    ate100: cobrancasNaoPagas.filter(c => Number(c.valor) <= 100).length,
+    de101a500: cobrancasNaoPagas.filter(c => Number(c.valor) > 100 && Number(c.valor) <= 500).length,
+    de501a1000: cobrancasNaoPagas.filter(c => Number(c.valor) > 500 && Number(c.valor) <= 1000).length,
+    acima1000: cobrancasNaoPagas.filter(c => Number(c.valor) > 1000).length,
   };
 
   // Faixas de atraso
@@ -65,7 +68,7 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
     }).length,
   };
   // Top 3 cobranças
-  const topCobrancas = [...cobrancas].sort((a, b) => (b.valorAtual || b.valor) - (a.valorAtual || a.valor)).slice(0,3);
+  const topCobrancas = [...cobrancasNaoPagas].sort((a, b) => (b.valorAtual || b.valor) - (a.valorAtual || a.valor)).slice(0,3);
 
   return (
     <div className="space-y-8">
@@ -79,7 +82,7 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
           <CardContent>
             <div className="text-2xl font-bold text-coepay-primary">{totalCobrancas}</div>
             <CardDescription>
-              {cobrancasAtivas.length} ativas • {cobrancasVencidas.length} vencidas
+              {cobrancasAtivas.length} ativas • {cobrancasVencidas.length} vencidas • {cobrancasPagas.length} pagas
             </CardDescription>
             <p className="text-[11px] text-muted-foreground mt-1">
               Número total de cobranças registradas no sistema.
@@ -91,7 +94,7 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
         <Card className="border-coepay-success hover:shadow-lg hover:scale-105 transition-all duration-300">
           <CardHeader className="flex items-center space-x-2">
             <DollarSign className="w-5 h-5 text-coepay-success" />
-            <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
+            <CardTitle className="text-sm font-medium">Valor a Receber</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-coepay-success">
@@ -101,7 +104,7 @@ export const RelatoriosOverview = ({ cobrancas }: RelatoriosOverviewProps) => {
               Original: R$ {valorTotalOriginal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </CardDescription>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Soma de todos os valores de cobranças, considerando juros aplicados.
+              Soma de todos os valores de cobranças ativas e vencidas, considerando juros aplicados.
             </p>
           </CardContent>
         </Card>
