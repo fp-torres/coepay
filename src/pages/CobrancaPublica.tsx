@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Copy, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { payload } from 'pix-payload';
+import { useNotifications, Notification } from "@/hooks/useNotifications";
 import QRCode from 'qrcode';
 import { gerarQRCodePIXManual } from '@/utils/pix';
 import {
@@ -46,6 +47,13 @@ const CobrancaPublica = () => {
   const [qrCodeURL, setQrCodeURL] = useState<string>('');
   const [mensagemAtual, setMensagemAtual] = useState(0);
   const [mensagemPositiva, setMensagemPositiva] = useState<React.ReactNode>('');
+
+  // Pegando usuário logado do localStorage
+  const userData = localStorage.getItem('user');
+  const currentUser = userData ? JSON.parse(userData) : null;
+
+const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications, addNotification } = useNotifications(currentUser?.id);
+
 
   // Mensagens motivacionais e positivas
   const mensagensMotivacionais = [
@@ -194,19 +202,34 @@ const marcarComoPago = async () => {
       method: "PUT",
     });
     if (!resp.ok) throw new Error("Erro ao atualizar cobrança");
-     
-    toast({
-        title: "Pagamento confirmado ✅",
-        description: "O responsável será notificado.",
-        className: "bg-green-50 text-green-700 border-green-400", // opcional
-      });
 
+    // Atualiza estado da cobrança
     setCobranca({
       ...cobranca,
       pago: true,
       pagoEm: new Date().toISOString(),
       status: "paga",
     });
+
+    // Cria notificação local
+    const novaNotificacao: Notification = {
+      id: `${cobranca.id}-${Date.now()}`,
+      cobrancaId: cobranca.id,
+      nomeDevedor: cobranca.nomeDevedor,
+      valor: Number(cobranca.valor),
+      timestamp: new Date(),
+      read: false,
+    };
+
+    // ✅ Aqui substitui setNotifications/setUnreadCount
+    addNotification(novaNotificacao);
+
+    toast({
+      title: "Pagamento confirmado ✅",
+      description: "O responsável será notificado.",
+      className: "bg-green-50 text-green-700 border-green-400",
+    });
+
   } catch (err) {
     console.error(err);
     toast({
@@ -216,6 +239,8 @@ const marcarComoPago = async () => {
     });
   }
 };
+
+
 
 
   const gerarQRCode = (pix: string, valor: number, nome: string) => {

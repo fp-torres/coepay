@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useCobrancas } from "@/hooks/useCobrancas";
 import {
   Card,
   CardContent,
@@ -23,6 +24,11 @@ interface CobrancasPagasListProps {
   cobrancas: Cobranca[];
 }
 
+export const CobrancasPagasListWrapper = ({ userId }: { userId: number }) => {
+  const { cobrancas } = useCobrancas(userId);
+
+  return <CobrancasPagasList cobrancas={cobrancas} />;
+};
 export const CobrancasPagasList = ({ cobrancas }: CobrancasPagasListProps) => {
   const [mostrarCard, setMostrarCard] = useState(false);
   const [paginaAtual, setPaginaAtual] = useState(1);

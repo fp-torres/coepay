@@ -45,6 +45,16 @@ const Dashboard = () => {
     whatsappDevedor: "",// agora existe
 
   });
+    useEffect(() => {
+      if (!user?.id) return;
+
+      // Função de atualização periódica
+      const interval = setInterval(() => {
+        carregarCobrancas(user.id);
+      }, 10000); // a cada 10 segundos
+
+      return () => clearInterval(interval);
+    }, [user]);
 
   const calcularJurosCompostos = (valor: number, taxaJuros: number, tipoJuros: 'mensal' | 'diario', dataVencimento: string): number => {
     const hoje = new Date();

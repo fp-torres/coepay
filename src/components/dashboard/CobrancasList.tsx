@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useCobrancas } from "@/hooks/useCobrancas";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,25 @@ interface CobrancasListProps {
   onCopiarLink: (link: string) => void;
   onExcluirCobranca: (id: string) => void;
 }
+export const CobrancasListWrapper = ({
+  userId,
+  onCopiarLink,
+  onExcluirCobranca,
+}: {
+  userId: number;
+  onCopiarLink: (link: string) => void;
+  onExcluirCobranca: (id: string) => void;
+}) => {
+  const { cobrancas } = useCobrancas(userId);
 
+  return (
+    <CobrancasList
+      cobrancas={cobrancas}
+      onCopiarLink={onCopiarLink}
+      onExcluirCobranca={onExcluirCobranca}
+    />
+  );
+};
 export const CobrancasList = ({
   cobrancas,
   onCopiarLink,

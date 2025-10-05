@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface Notification {
   id: string;
-  cobrancaId: number;
+  cobrancaId: string;
   nomeDevedor: string;
   valor: number;
   timestamp: Date;
@@ -14,26 +14,66 @@ export const useNotifications = (userId: number | undefined) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const API_URL = "http://localhost:5000"; // ✅ usar porta certa
+
+  // 1️⃣ Buscar notificações iniciais do backend
+useEffect(() => {
+  if (!userId) return;
+
+  const fetchNotifications = async () => {
+    try {
+      const resp = await fetch(`http://localhost:5000/notifications/${userId}`);
+      const data = await resp.json();
+
+      // Cria notificações sem duplicar
+      const newNotifications: Notification[] = data
+        .map((c: any) => ({
+          id: `${c.id}-${Date.now()}`,
+          cobrancaId: c.id,
+          nomeDevedor: c.nome,
+          valor: Number(c.valor),
+          timestamp: new Date(c.pago_em || Date.now()),
+          read: false,
+        }))
+        .filter((n) => !notifications.some((prev) => prev.cobrancaId === n.cobrancaId));
+
+      if (newNotifications.length > 0) {
+        setNotifications((prev) => [...newNotifications, ...prev]);
+        setUnreadCount((prev) => prev + newNotifications.length);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar notificações:", err);
+    }
+  };
+
+  // Primeiro fetch imediato
+  fetchNotifications();
+
+  // Intervalo de atualização
+  const interval = setInterval(fetchNotifications, 10000); // a cada 10s
+
+  return () => clearInterval(interval);
+}, [userId, notifications]);
+
+  // 2️⃣ Realtime com Supabase
   useEffect(() => {
     if (!userId) return;
 
-    // Subscribe to realtime updates for payment confirmations
     const channel = supabase
-      .channel('cobrancas-updates')
+      .channel("cobrancas-updates")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'cobrancas',
+          event: "UPDATE",
+          schema: "public",
+          table: "cobrancas",
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
           const newData = payload.new as any;
           const oldData = payload.old as any;
-          
-          // Check if status changed to 'pago'
-          if (newData.status === 'pago' && oldData.status !== 'pago') {
+
+          if (newData.status === "pago" && oldData.status !== "pago") {
             const newNotification: Notification = {
               id: `${newData.id}-${Date.now()}`,
               cobrancaId: newData.id,
@@ -42,9 +82,9 @@ export const useNotifications = (userId: number | undefined) => {
               timestamp: new Date(),
               read: false,
             };
-            
-            setNotifications(prev => [newNotification, ...prev]);
-            setUnreadCount(prev => prev + 1);
+
+            setNotifications((prev) => [newNotification, ...prev]);
+            setUnreadCount((prev) => prev + 1);
           }
         }
       )
@@ -55,25 +95,56 @@ export const useNotifications = (userId: number | undefined) => {
     };
   }, [userId]);
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev =>
-      prev.map(notif =>
-        notif.id === notificationId ? { ...notif, read: true } : notif
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
+  // Funções de gerenciamento
+  const markAsRead = async (notificationId: string) => {
+    const notif = notifications.find((n) => n.id === notificationId);
+    if (!notif) return;
+
+    try {
+      // ✅ Usar porta correta
+      await fetch(`${API_URL}/notifications/${userId}/${notif.cobrancaId}/read`, {
+        method: "PUT",
+      });
+
+      // Atualiza frontend local
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error("Erro ao marcar notificação como lida:", err);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notif => ({ ...notif, read: true }))
-    );
-    setUnreadCount(0);
+  const markAllAsRead = async () => {
+    try {
+      // Atualiza backend
+      await Promise.all(
+        notifications
+          .filter((n) => !n.read)
+          .map((n) =>
+            fetch(`${API_URL}/notifications/${userId}/${n.cobrancaId}/read`, {
+              method: "PUT",
+            })
+          )
+      );
+
+      // Atualiza frontend
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error("Erro ao marcar todas como lidas:", err);
+    }
   };
 
   const clearNotifications = () => {
     setNotifications([]);
     setUnreadCount(0);
+  };
+
+  const addNotification = (notification: Notification) => {
+    setNotifications((prev) => [notification, ...prev]);
+    setUnreadCount((prev) => prev + 1);
   };
 
   return {
@@ -82,5 +153,6 @@ export const useNotifications = (userId: number | undefined) => {
     markAsRead,
     markAllAsRead,
     clearNotifications,
+    addNotification,
   };
 };

@@ -276,3 +276,46 @@ app.post("/webhook/psp", async (req, res) => {
   }
 });
 
+// Exemplo: marcar notificação de uma cobrança como lida para um usuário
+app.put("/notifications/:userId/:cobrancaId/read", async (req, res) => {
+  const { userId, cobrancaId } = req.params;
+
+  try {
+    await pool.query(
+      `INSERT INTO notificacoes_lidas (user_id, cobranca_id)
+       VALUES ($1, $2)
+       ON CONFLICT (user_id, cobranca_id) DO NOTHING`,
+      [userId, cobrancaId]
+    );
+
+    res.json({ message: "Notificação marcada como lida" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao marcar notificação como lida" });
+  }
+});
+
+app.get("/notifications/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT d.* 
+       FROM devedores d
+       LEFT JOIN notificacoes_lidas l
+       ON d.id = l.cobranca_id AND l.user_id = $1
+       WHERE d.user_id = $1 AND d.status = 'paga' AND l.cobranca_id IS NULL
+       ORDER BY d.pago_em DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao buscar notificações" });
+  }
+});
+
+
+
+
