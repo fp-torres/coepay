@@ -1,24 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Copy, Clock, AlertTriangle, CheckCircle, Upload, Loader2 } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
-import { payload } from 'pix-payload';
+import { toast } from "@/hooks/use-toast";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
-import QRCode from 'qrcode';
 import { gerarQRCodePIXManual } from '@/utils/pix';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { CobrancaHeader } from "@/components/cobranca-publica/CobrancaHeader";
+import { CobrancaSaudacao } from "@/components/cobranca-publica/CobrancaSaudacao";
+import { CobrancaInfoCard } from "@/components/cobranca-publica/CobrancaInfoCard";
+import { CobrancaPixCard } from "@/components/cobranca-publica/CobrancaPixCard";
+import { CobrancaFooter } from "@/components/cobranca-publica/CobrancaFooter";
+import { ValidarComprovanteDialog } from "@/components/cobranca-publica/ValidarComprovanteDialog";
 
 
 
@@ -317,332 +307,55 @@ const validarEMarcarComoPago = async () => {
   }
 
   return (
-      <div
-          className={`min-h-screen ${
-            cobranca?.pago
-              ? 'bg-gradient-to-br from-green-50 to-green-200'
-              : 'bg-gradient-to-br from-orange-50 to-red-50'
-          }`}
-        >
-          {/* Navbar com mensagens */}
-          <div
-            className={`text-white py-3 ${
-              cobranca?.pago
-                ? 'bg-gradient-to-r from-green-500 to-green-700'
-                : 'bg-gradient-to-r from-orange-500 to-red-500'
-            }`}
-          >
-            <div className="text-center animate-pulse">
-              <p className="font-medium">
-        {cobranca?.pago ? mensagemPositiva : mensagensMotivacionais[mensagemAtual]}
-              </p>
-            </div>
-          </div>
-
-            <div className="container mx-auto p-4 py-8 max-w-md">
-              {/* Saudação */}
-      <div className="text-center mb-6">
-        <h1
-          className={`text-3xl font-bold mb-2 ${
-            cobranca?.pago ? 'text-green-600' : 'text-orange-600'
-          }`}
-        >
-          Olá, {cobranca?.nomeDevedor}! 👋
-        </h1>
-        <p className={`font-medium ${
-          cobranca?.pago ? 'text-green-700' : 'text-muted-foreground'
-        }`}>
-          {cobranca?.pago
-            ? 'Você está em dia com suas cobranças!'
-            : 'Você possui uma cobrança pendente'}
-        </p>
-      </div>
-
-   {/* Card Principal da Cobrança */}
-<Card className={`mb-6 shadow-lg overflow-hidden ${
-  cobranca.pago 
-    ? 'bg-gradient-to-br from-green-50 to-green-100' 
-    : 'border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent'
-}`}>
-  {!cobranca.pago && (
-    // Barra esquerda laranja só quando não pago
-    <div className="absolute inset-y-0 left-0 w-1 bg-orange-500 rounded-l"></div>
-  )}
-
-  <CardContent className={`p-6 text-center space-y-4 ${cobranca.pago ? '' : 'relative'}`}>
-    {!cobranca.pago ? (
-      <>
-        {/* Badge no canto superior direito */}
-        <div className="flex justify-end mb-4">
-          <Badge variant={cobranca.status === 'vencida' ? 'destructive' : 'default'}>
-            {cobranca.status === 'vencida' ? 'Vencida' : 'No Prazo'}
-          </Badge>
-        </div>
-
-<div className="mb-6">
-          <p className="text-sm text-muted-foreground mb-2">Valor Atual</p>
-          <p className="text-5xl font-bold text-orange-600 mb-2">
-            {cobranca.valorAtual.toLocaleString('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            })}
-          </p>
-          {cobranca.valorAtual !== cobranca.valor && (
-            <p className="text-sm text-muted-foreground">
-              Valor original:{' '}
-              {cobranca.valor.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}
-            </p>
-          )}
-        </div>
-
-        {cobranca.descricao && (
-          <div className="mb-4 p-3 bg-muted rounded-lg">
-            <p className="text-sm font-medium mb-1">Descrição:</p>
-            <p className="text-sm text-muted-foreground">{cobranca.descricao}</p>
-          </div>
-        )}
-
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Vencimento:</span>
-            <span className="font-medium">
-              {new Date(cobranca.dataVencimento).toLocaleDateString('pt-BR')}
-            </span>
-          </div>
-
-          {cobranca.status === 'vencida' && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Dias vencidos:</span>
-              <span className="font-medium text-red-600">{cobranca.diasVencido} dias</span>
-            </div>
-          )}
-
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Taxa de juros:</span>
-            <span className="font-medium">
-              {cobranca.taxaJuros
-                ? `${cobranca.taxaJuros}% ${cobranca.tipoJuros === 'mensal' ? 'ao mês' : 'ao dia'}`
-                : 'Sem juros'}
-            </span>
-          </div>
-        </div>
-      </>
-    ) : (
-      <>
-        {/* Quando pago: texto verde, ícone e mensagem CoéPay */}
-        <div className="text-5xl font-bold tracking-tight text-green-700">
-          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valorAtual)}
-        </div>
-
-        <div className="flex flex-col items-center space-y-2 py-4">
-          <CheckCircle className="w-20 h-20 text-green-500" />
-        </div>
-
-        <p className="text-sm mt-1 text-green-700 max-w-prose mx-auto">
-          👋 Coé, conheça o <a href="https://coepay.com.br" target="_blank" rel="noreferrer" className="underline font-semibold">CoéPay</a> – 
-          um sistema de cobrança rápido, fácil e seguro. Controle juros, veja relatórios diários e mensais, acompanhe histórico de pagamentos e receba notificações automáticas.
-        </p>
-      </>
-    )}
-  </CardContent>
-</Card>
-
-{/* Card PIX */}
-{cobranca ? (
-  <Card
-    className={`mb-6 shadow-lg overflow-hidden relative ${
-      cobranca.pago ? 'bg-gradient-to-br from-green-50 to-green-100' : 'bg-white'
-    }`}
-  >
-    {/* Linha lateral esquerda colorida */}
     <div
-      className={`absolute top-0 bottom-0 left-0 w-1 ${
-        cobranca.pago
-          ? 'bg-gradient-to-b from-green-400 via-green-500 to-green-600'
-          : 'bg-gradient-to-b from-orange-400 via-amber-500 to-orange-600'
+      className={`min-h-screen ${
+        cobranca?.pago
+          ? 'bg-gradient-to-br from-green-50 to-green-200'
+          : 'bg-gradient-to-br from-orange-50 to-red-50'
       }`}
-    />
+    >
+      <CobrancaHeader
+        isPago={!!cobranca?.pago}
+        mensagem={cobranca?.pago ? mensagemPositiva : mensagensMotivacionais[mensagemAtual]}
+      />
 
-    <CardHeader className="text-center relative z-10">
-      <CardTitle className="text-lg">{cobranca.pago ? 'Pagamento Realizado' : 'Pague com PIX'}</CardTitle>
-    </CardHeader>
-    <CardContent className="text-center space-y-4 relative z-10">
+      <div className="container mx-auto p-4 py-8 max-w-md">
+        <CobrancaSaudacao
+          nomeDevedor={cobranca.nomeDevedor}
+          isPago={!!cobranca.pago}
+        />
 
-      {cobranca.pago ? (
-        <div className="flex flex-col items-center space-y-2 py-4">
-          <CheckCircle className="w-20 h-20 text-green-500" />
-        </div>
-      ) : (
-        <div className="flex justify-center py-2">
-          {qrCodeURL ? (
-            <div className="p-3 bg-white rounded-xl border-4 border-orange-400 shadow-md">
-              <img
-                src={qrCodeURL}
-                alt="QR Code PIX"
-                className="w-48 h-48 rounded-lg"
-              />
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
+        <CobrancaInfoCard
+          pago={!!cobranca.pago}
+          status={cobranca.status}
+          valorAtual={cobranca.valorAtual}
+          valor={cobranca.valor}
+          descricao={cobranca.descricao}
+          dataVencimento={cobranca.dataVencimento}
+          diasVencido={cobranca.diasVencido}
+          taxaJuros={cobranca.taxaJuros}
+          tipoJuros={cobranca.tipoJuros}
+        />
+
+        <CobrancaPixCard
+          pago={!!cobranca.pago}
+          pagoEm={cobranca.pagoEm}
+          qrCodeURL={qrCodeURL}
+          pixCobranca={cobranca.pixCobranca}
+          onConfirmarPagamento={() => setDialogOpen(true)}
+          renderValidarDialog={() => (
+            <ValidarComprovanteDialog
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
+              comprovanteFile={comprovanteFile}
+              onComprovanteChange={setComprovanteFile}
+              validandoComprovante={validandoComprovante}
+              onValidar={validarEMarcarComoPago}
+            />
           )}
-        </div>
-      )}
+        />
 
-      {/* Chave PIX */}
-      {!cobranca.pago && (
-        <div className="text-center">
-          <p className="text-xs text-gray-500 mb-2">Chave PIX</p>
-
-          <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-lg">
-            <span className="font-mono text-sm text-gray-800 break-all select-all">
-              {cobranca.pixCobranca}
-            </span>
-
-            <Button
-              size="icon"
-              variant="ghost"
-              className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition"
-              onClick={() => {
-                navigator.clipboard.writeText(cobranca.pixCobranca);
-                toast({
-                  title: "Chave PIX copiada ✅",
-                  className: "bg-green-50 text-green-700 border-green-200",
-                });
-              }}
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-
-
-
-
-
-      {/* Botão manual para marcar como pago */}
-      {!cobranca.pago && (
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              className="mt-4 w-full font-semibold bg-green-600 text-white px-4 py-2 rounded
-                    hover:bg-gradient-to-r hover:from-green-600 hover:to-green-700
-                    transition flex items-center justify-center"
-            >
-              <CheckCircle className="mr-2 h-4 w-4 text-white" />
-              Confirmar pagamento
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirmar pagamento</DialogTitle>
-              <DialogDescription>
-                Faça upload do comprovante de pagamento para validação automática.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="comprovante">Comprovante (imagem ou PDF)</Label>
-                <Input
-                  id="comprovante"
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => setComprovanteFile(e.target.files?.[0] || null)}
-                  disabled={validandoComprovante}
-                />
-                {comprovanteFile && (
-                  <p className="text-sm text-muted-foreground">
-                    ✓ {comprovanteFile.name}
-                  </p>
-                )}
-              </div>
-
-              <div className="bg-muted/50 p-3 rounded-lg text-sm">
-                <p className="font-medium mb-1">O sistema validará automaticamente:</p>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Valor do pagamento (tolerância de R$ 0,50)</li>
-                  <li>Chave PIX do destinatário</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setDialogOpen(false)}
-                disabled={validandoComprovante}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                className="bg-green-600 hover:bg-green-700 text-white font-bold"
-                onClick={validarEMarcarComoPago}
-                disabled={validandoComprovante || !comprovanteFile}
-              >
-                {validandoComprovante ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Validando...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Validar e Confirmar
-                  </>
-                )}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Status de pagamento */}
-      <div className="flex justify-center">
-        {cobranca.pago ? (
-          <Badge variant="outline">
-            ✅ Pago em {new Date(cobranca.pagoEm!).toLocaleString()}
-          </Badge>
-        ) : (
-          <Badge
-            variant="secondary"
-            className="bg-yellow-100 text-yellow-800 border-yellow-300 
-                       hover:bg-yellow-100 hover:text-yellow-800 cursor-default"
-          >
-            ⏳ Aguardando pagamento
-          </Badge>
-        )}
-      </div>
-
-      {/* Texto de instrução só aparece se ainda não foi pago */}
-      {!cobranca.pago && (
-        <p className="text-xs text-gray-400 mt-1">
-          Escaneie o QR Code ou copie a chave PIX para realizar o pagamento
-        </p>
-      )}
-    </CardContent>
-  </Card>
-) : (
-  <Card className="mb-6 border-l-4 border-l-gray-300 shadow-sm">
-    <CardContent className="text-center">
-      <p className="text-sm text-gray-500">Carregando cobrança...</p>
-    </CardContent>
-  </Card>
-)}
-
-
-
-        {/* Footer motivacional */}
-        <div className="text-center mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
-          <p className="text-sm text-muted-foreground">
-            💡 Pagamento realizado? Entre em contato para confirmar!
-          </p>
-        </div>
+        <CobrancaFooter />
       </div>
     </div>
   );
