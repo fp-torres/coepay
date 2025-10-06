@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, valor, nomeBeneficiario, dataVencimento } = await req.json();
+    const { imageBase64, valor, chavePix } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -38,17 +38,14 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: `Analise este comprovante de pagamento e extraia as seguintes informações:
+                text: `Analise este comprovante de pagamento PIX e extraia as seguintes informações:
 1. Valor pago (em reais)
-2. Nome do beneficiário/destinatário
-3. Data e hora do pagamento
+2. Chave PIX do destinatário/beneficiário (pode ser CPF, CNPJ, e-mail, telefone ou chave aleatória)
 
 Retorne APENAS um JSON válido no seguinte formato:
 {
   "valor": número sem símbolos,
-  "beneficiario": "nome completo",
-  "data": "DD/MM/YYYY",
-  "hora": "HH:MM",
+  "chavePix": "chave pix encontrada no comprovante",
   "sucesso": true/false
 }`
               },
@@ -66,7 +63,7 @@ Retorne APENAS um JSON válido no seguinte formato:
             type: "function",
             function: {
               name: "extrair_dados_comprovante",
-              description: "Extrai dados estruturados de um comprovante de pagamento",
+              description: "Extrai dados estruturados de um comprovante de pagamento PIX",
               parameters: {
                 type: "object",
                 properties: {
@@ -74,24 +71,16 @@ Retorne APENAS um JSON válido no seguinte formato:
                     type: "number",
                     description: "Valor do pagamento em reais"
                   },
-                  beneficiario: {
+                  chavePix: {
                     type: "string",
-                    description: "Nome do beneficiário/destinatário"
-                  },
-                  data: {
-                    type: "string",
-                    description: "Data do pagamento no formato DD/MM/YYYY"
-                  },
-                  hora: {
-                    type: "string",
-                    description: "Hora do pagamento no formato HH:MM"
+                    description: "Chave PIX do destinatário (CPF, CNPJ, email, telefone ou chave aleatória)"
                   },
                   sucesso: {
                     type: "boolean",
                     description: "Se foi possível extrair as informações"
                   }
                 },
-                required: ["valor", "beneficiario", "data", "sucesso"],
+                required: ["valor", "chavePix", "sucesso"],
                 additionalProperties: false
               }
             }
@@ -144,34 +133,20 @@ Retorne APENAS um JSON válido no seguinte formato:
       );
     }
 
-    // Validação do nome (similaridade básica)
-    const nomeComprovanteNorm = dadosExtraidos.beneficiario.toLowerCase().trim();
-    const nomeEsperadoNorm = nomeBeneficiario.toLowerCase().trim();
+    // Validação da chave PIX
+    const chaveComprovanteNorm = dadosExtraidos.chavePix.replace(/\D/g, ''); // Remove formatação
+    const chaveEsperadaNorm = chavePix.replace(/\D/g, '');
     
-    if (!nomeComprovanteNorm.includes(nomeEsperadoNorm.split(' ')[0]) && 
-        !nomeEsperadoNorm.includes(nomeComprovanteNorm.split(' ')[0])) {
+    // Verifica se as chaves são iguais (ignorando formatação)
+    // Para email e chave aleatória, compara diretamente
+    const isChaveIgual = chaveComprovanteNorm === chaveEsperadaNorm || 
+                         dadosExtraidos.chavePix.toLowerCase() === chavePix.toLowerCase();
+    
+    if (!isChaveIgual) {
       return new Response(
         JSON.stringify({ 
           valido: false, 
-          motivo: `Nome do beneficiário no comprovante (${dadosExtraidos.beneficiario}) não corresponde ao esperado (${nomeBeneficiario})`,
-          dadosExtraidos
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validação da data (deve ser hoje ou nos últimos 7 dias)
-    const [dia, mes, ano] = dadosExtraidos.data.split('/');
-    const dataComprovante = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
-    const hoje = new Date();
-    const seteDiasAtras = new Date();
-    seteDiasAtras.setDate(hoje.getDate() - 7);
-    
-    if (dataComprovante > hoje || dataComprovante < seteDiasAtras) {
-      return new Response(
-        JSON.stringify({ 
-          valido: false, 
-          motivo: `Data do comprovante (${dadosExtraidos.data}) está fora do período válido (últimos 7 dias)`,
+          motivo: `Chave PIX do comprovante (${dadosExtraidos.chavePix}) não corresponde à chave esperada`,
           dadosExtraidos
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }

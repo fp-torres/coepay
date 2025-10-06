@@ -236,8 +236,7 @@ const validarEMarcarComoPago = async () => {
         body: JSON.stringify({
           imageBase64,
           valor: cobranca.valorAtual,
-          nomeBeneficiario: cobranca.nomeDevedor,
-          dataVencimento: cobranca.dataVencimento,
+          chavePix: cobranca.pixCobranca,
         }),
       }
     );
@@ -567,9 +566,8 @@ const validarEMarcarComoPago = async () => {
               <div className="bg-muted/50 p-3 rounded-lg text-sm">
                 <p className="font-medium mb-1">O sistema validará automaticamente:</p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Valor do pagamento</li>
-                  <li>Nome do beneficiário</li>
-                  <li>Data do pagamento</li>
+                  <li>Valor do pagamento (tolerância de R$ 0,50)</li>
+                  <li>Chave PIX do destinatário</li>
                 </ul>
               </div>
             </div>
