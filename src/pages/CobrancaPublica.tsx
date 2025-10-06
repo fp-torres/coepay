@@ -3,12 +3,14 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { Copy, Clock, AlertTriangle, CheckCircle, Upload, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { payload } from 'pix-payload';
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import QRCode from 'qrcode';
 import { gerarQRCodePIXManual } from '@/utils/pix';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogTrigger,
@@ -47,6 +49,9 @@ const CobrancaPublica = () => {
   const [qrCodeURL, setQrCodeURL] = useState<string>('');
   const [mensagemAtual, setMensagemAtual] = useState(0);
   const [mensagemPositiva, setMensagemPositiva] = useState<React.ReactNode>('');
+  const [comprovanteFile, setComprovanteFile] = useState<File | null>(null);
+  const [validandoComprovante, setValidandoComprovante] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Pegando usuário logado do localStorage
   const userData = localStorage.getItem('user');
@@ -195,15 +200,67 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
   }
 }, [hash]);
 
-const marcarComoPago = async () => {
+const validarEMarcarComoPago = async () => {
   if (!cobranca) return;
+  
+  if (!comprovanteFile) {
+    toast({
+      title: "Comprovante obrigatório",
+      description: "Por favor, faça upload do comprovante de pagamento.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setValidandoComprovante(true);
+
   try {
+    // Converter arquivo para base64
+    const reader = new FileReader();
+    const base64Promise = new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(comprovanteFile);
+    });
+
+    const imageBase64 = await base64Promise;
+
+    // Chamar edge function para validar comprovante
+    const response = await fetch(
+      "https://mwspdahfoeurzbfekkap.supabase.co/functions/v1/validar-comprovante",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageBase64,
+          valor: cobranca.valorAtual,
+          nomeBeneficiario: cobranca.nomeDevedor,
+          dataVencimento: cobranca.dataVencimento,
+        }),
+      }
+    );
+
+    const resultado = await response.json();
+
+    if (!resultado.valido) {
+      toast({
+        title: "Comprovante inválido",
+        description: resultado.motivo,
+        variant: "destructive",
+      });
+      setValidandoComprovante(false);
+      return;
+    }
+
+    // Se válido, marca como pago
     const resp = await fetch(`http://localhost:5000/devedores/${cobranca.id}/pagar`, {
       method: "PUT",
     });
+    
     if (!resp.ok) throw new Error("Erro ao atualizar cobrança");
 
-    // Atualiza estado da cobrança
     setCobranca({
       ...cobranca,
       pago: true,
@@ -211,7 +268,6 @@ const marcarComoPago = async () => {
       status: "paga",
     });
 
-    // Cria notificação local
     const novaNotificacao: Notification = {
       id: `${cobranca.id}-${Date.now()}`,
       cobrancaId: cobranca.id,
@@ -221,22 +277,26 @@ const marcarComoPago = async () => {
       read: false,
     };
 
-    // ✅ Aqui substitui setNotifications/setUnreadCount
     addNotification(novaNotificacao);
 
     toast({
       title: "Pagamento confirmado ✅",
-      description: "O responsável será notificado.",
+      description: "Comprovante validado e pagamento confirmado!",
       className: "bg-green-50 text-green-700 border-green-400",
     });
+
+    setDialogOpen(false);
+    setComprovanteFile(null);
 
   } catch (err) {
     console.error(err);
     toast({
       title: "Erro",
-      description: "Não foi possível atualizar o status",
+      description: "Não foi possível validar o comprovante",
       variant: "destructive",
     });
+  } finally {
+    setValidandoComprovante(false);
   }
 };
 
@@ -467,7 +527,7 @@ const marcarComoPago = async () => {
 
       {/* Botão manual para marcar como pago */}
       {!cobranca.pago && (
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button
               className="mt-4 w-full font-semibold bg-green-600 text-white px-4 py-2 rounded
@@ -483,18 +543,61 @@ const marcarComoPago = async () => {
             <DialogHeader>
               <DialogTitle>Confirmar pagamento</DialogTitle>
               <DialogDescription>
-                Tem certeza que deseja marcar esta cobrança como <b>PAGA</b>? <br />
-                O responsável pela cobrança será notificado.
+                Faça upload do comprovante de pagamento para validação automática.
               </DialogDescription>
             </DialogHeader>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline">Cancelar</Button>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="comprovante">Comprovante (imagem ou PDF)</Label>
+                <Input
+                  id="comprovante"
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => setComprovanteFile(e.target.files?.[0] || null)}
+                  disabled={validandoComprovante}
+                />
+                {comprovanteFile && (
+                  <p className="text-sm text-muted-foreground">
+                    ✓ {comprovanteFile.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-muted/50 p-3 rounded-lg text-sm">
+                <p className="font-medium mb-1">O sistema validará automaticamente:</p>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                  <li>Valor do pagamento</li>
+                  <li>Nome do beneficiário</li>
+                  <li>Data do pagamento</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
               <Button 
-                className="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded
-                          transition"
-                onClick={() => marcarComoPago()}
+                variant="outline" 
+                onClick={() => setDialogOpen(false)}
+                disabled={validandoComprovante}
               >
-                Confirmar
+                Cancelar
+              </Button>
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                onClick={validarEMarcarComoPago}
+                disabled={validandoComprovante || !comprovanteFile}
+              >
+                {validandoComprovante ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Validando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Validar e Confirmar
+                  </>
+                )}
               </Button>
             </div>
           </DialogContent>
