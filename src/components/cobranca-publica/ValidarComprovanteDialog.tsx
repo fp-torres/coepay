@@ -15,8 +15,8 @@ import {
 interface ValidarComprovanteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  comprovanteFile: File | null;
-  onComprovanteChange: (file: File | null) => void;
+  comprovanteFiles: File[];
+  onComprovanteChange: (files: File[]) => void;
   validandoComprovante: boolean;
   onValidar: () => void;
 }
@@ -24,7 +24,7 @@ interface ValidarComprovanteDialogProps {
 export const ValidarComprovanteDialog = ({
   open,
   onOpenChange,
-  comprovanteFile,
+  comprovanteFiles,
   onComprovanteChange,
   validandoComprovante,
   onValidar,
@@ -46,24 +46,30 @@ export const ValidarComprovanteDialog = ({
         <DialogHeader>
           <DialogTitle>Confirmar pagamento</DialogTitle>
           <DialogDescription>
-            Faça upload do comprovante de pagamento para validação automática.
+            Faça upload de até 2 comprovantes de pagamento para validação automática.
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="comprovante">Comprovante (imagem ou PDF)</Label>
+            <Label htmlFor="comprovante">Comprovantes (imagem ou PDF - máximo 2)</Label>
             <Input
               id="comprovante"
               type="file"
               accept="image/*,.pdf"
-              onChange={(e) => onComprovanteChange(e.target.files?.[0] || null)}
+              multiple
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []).slice(0, 2);
+                onComprovanteChange(files);
+              }}
               disabled={validandoComprovante}
             />
-            {comprovanteFile && (
-              <p className="text-sm text-muted-foreground">
-                ✓ {comprovanteFile.name}
-              </p>
+            {comprovanteFiles.length > 0 && (
+              <div className="text-sm text-muted-foreground space-y-1">
+                {comprovanteFiles.map((file, index) => (
+                  <p key={index}>✓ {file.name}</p>
+                ))}
+              </div>
             )}
           </div>
 
@@ -87,7 +93,7 @@ export const ValidarComprovanteDialog = ({
           <Button 
             className="bg-green-600 hover:bg-green-700 text-white font-bold"
             onClick={onValidar}
-            disabled={validandoComprovante || !comprovanteFile}
+            disabled={validandoComprovante || comprovanteFiles.length === 0}
           >
             {validandoComprovante ? (
               <>

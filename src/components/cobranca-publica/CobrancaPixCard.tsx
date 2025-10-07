@@ -46,25 +46,29 @@ export const CobrancaPixCard = ({
             <CheckCircle className="w-20 h-20 text-green-500" />
             
             {comprovanteUrl && (
-              <div className="w-full max-w-md p-4 border rounded-lg bg-white shadow-sm">
-                <p className="text-sm font-semibold mb-3 text-left">Comprovante de Pagamento:</p>
-                {comprovanteUrl.endsWith('.pdf') ? (
-                  <a 
-                    href={`http://localhost:5000${comprovanteUrl}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                  >
-                    <FileText className="h-8 w-8 text-blue-600" />
-                    <span className="text-blue-600 font-medium">Abrir Comprovante PDF</span>
-                  </a>
-                ) : (
-                  <img 
-                    src={`http://localhost:5000${comprovanteUrl}`} 
-                    alt="Comprovante de Pagamento" 
-                    className="w-full h-auto rounded-lg border shadow-sm"
-                  />
-                )}
+              <div className="w-full max-w-md p-4 border rounded-lg bg-white shadow-sm space-y-3">
+                <p className="text-sm font-semibold text-left">Comprovante(s) de Pagamento:</p>
+                {comprovanteUrl.split(',').map((url, index) => (
+                  <div key={index}>
+                    {url.trim().endsWith('.pdf') ? (
+                      <a 
+                        href={`http://localhost:5000${url.trim()}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                      >
+                        <FileText className="h-8 w-8 text-blue-600" />
+                        <span className="text-blue-600 font-medium">Abrir Comprovante PDF {comprovanteUrl.split(',').length > 1 ? `#${index + 1}` : ''}</span>
+                      </a>
+                    ) : (
+                      <img 
+                        src={`http://localhost:5000${url.trim()}`} 
+                        alt={`Comprovante de Pagamento ${comprovanteUrl.split(',').length > 1 ? `#${index + 1}` : ''}`}
+                        className="w-full h-auto rounded-lg border shadow-sm"
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>

@@ -40,7 +40,7 @@ const CobrancaPublica = () => {
   const [qrCodeURL, setQrCodeURL] = useState<string>('');
   const [mensagemAtual, setMensagemAtual] = useState(0);
   const [mensagemPositiva, setMensagemPositiva] = useState<React.ReactNode>('');
-  const [comprovanteFile, setComprovanteFile] = useState<File | null>(null);
+  const [comprovanteFiles, setComprovanteFiles] = useState<File[]>([]);
   const [validandoComprovante, setValidandoComprovante] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -103,16 +103,20 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
     
     if (hoje <= vencimento) return valorInicial;
     
-    const diffTime = hoje.getTime() - vencimento.getTime();
-    let periodos: number;
+    const diferencaMs = hoje.getTime() - vencimento.getTime();
+    const diasVencido = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
     
+    if (diasVencido <= 0) return valorInicial;
+    
+    let periodos: number;
     if (tipo === 'diario') {
-      periodos = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      periodos = diasVencido;
     } else {
-      periodos = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Média de dias por mês
+      periodos = diasVencido / 30; // Usando 30 dias por mês para consistência
     }
     
-    return valorInicial * Math.pow(1 + (taxa / 100), periodos);
+    const taxaDecimal = taxa / 100;
+    return valorInicial * Math.pow(1 + taxaDecimal, periodos);
   };
 
   // Carrega cobrança
@@ -195,10 +199,10 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
 const validarEMarcarComoPago = async () => {
   if (!cobranca) return;
   
-  if (!comprovanteFile) {
+  if (comprovanteFiles.length === 0) {
     toast({
       title: "Comprovante obrigatório",
-      description: "Por favor, faça upload do comprovante de pagamento.",
+      description: "Por favor, faça upload de pelo menos um comprovante de pagamento.",
       variant: "destructive",
     });
     return;
@@ -207,17 +211,19 @@ const validarEMarcarComoPago = async () => {
   setValidandoComprovante(true);
 
   try {
-    // Converter arquivo para base64
-    const reader = new FileReader();
-    const base64Promise = new Promise<string>((resolve, reject) => {
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(comprovanteFile);
+    // Converter todos os arquivos para base64
+    const base64Promises = comprovanteFiles.map(file => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     });
 
-    const imageBase64 = await base64Promise;
+    const imagesBase64 = await Promise.all(base64Promises);
 
-    // Chamar edge function para validar comprovante
+    // Chamar edge function para validar comprovantes
     const response = await fetch(
       "https://mwspdahfoeurzbfekkap.supabase.co/functions/v1/validar-comprovante",
       {
@@ -226,7 +232,7 @@ const validarEMarcarComoPago = async () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          imageBase64,
+          imagesBase64,
           valor: cobranca.valorAtual,
           chavePix: cobranca.pixCobranca,
         }),
@@ -245,27 +251,29 @@ const validarEMarcarComoPago = async () => {
       return;
     }
 
-    // Upload do comprovante para o backend
+    // Upload dos comprovantes para o backend
     const formData = new FormData();
-    formData.append('comprovante', comprovanteFile);
+    comprovanteFiles.forEach((file, index) => {
+      formData.append('comprovantes', file);
+    });
 
     const uploadResponse = await fetch('http://localhost:5000/upload-comprovante', {
       method: 'POST',
       body: formData,
     });
 
-    if (!uploadResponse.ok) throw new Error("Erro ao fazer upload do comprovante");
+    if (!uploadResponse.ok) throw new Error("Erro ao fazer upload dos comprovantes");
 
     const uploadData = await uploadResponse.json();
-    const comprovanteUrl = uploadData.url;
+    const comprovanteUrls = uploadData.urls.join(','); // salva como string separada por vírgula
 
-    // Se válido, marca como pago com a URL do comprovante
+    // Se válido, marca como pago com as URLs dos comprovantes
     const resp = await fetch(`http://localhost:5000/devedores/${cobranca.id}/pagar`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ comprovante_url: comprovanteUrl }),
+      body: JSON.stringify({ comprovante_url: comprovanteUrls }),
     });
     
     if (!resp.ok) throw new Error("Erro ao atualizar cobrança");
@@ -275,7 +283,7 @@ const validarEMarcarComoPago = async () => {
       pago: true,
       pagoEm: new Date().toISOString(),
       status: "paga",
-      comprovanteUrl,
+      comprovanteUrl: comprovanteUrls,
     });
 
     const novaNotificacao: Notification = {
@@ -291,12 +299,12 @@ const validarEMarcarComoPago = async () => {
 
     toast({
       title: "Pagamento confirmado ✅",
-      description: "Comprovante validado e pagamento confirmado!",
+      description: "Comprovante(s) validado(s) e pagamento confirmado!",
       className: "bg-green-50 text-green-700 border-green-400",
     });
 
     setDialogOpen(false);
-    setComprovanteFile(null);
+    setComprovanteFiles([]);
 
   } catch (err) {
     console.error(err);
@@ -369,8 +377,8 @@ const validarEMarcarComoPago = async () => {
             <ValidarComprovanteDialog
               open={dialogOpen}
               onOpenChange={setDialogOpen}
-              comprovanteFile={comprovanteFile}
-              onComprovanteChange={setComprovanteFile}
+              comprovanteFiles={comprovanteFiles}
+              onComprovanteChange={setComprovanteFiles}
               validandoComprovante={validandoComprovante}
               onValidar={validarEMarcarComoPago}
             />
