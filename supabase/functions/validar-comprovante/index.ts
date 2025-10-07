@@ -38,14 +38,18 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: `Analise este comprovante de pagamento PIX e extraia as seguintes informações:
-1. Valor pago (em reais)
-2. Chave PIX do destinatário/beneficiário (pode ser CPF, CNPJ, e-mail, telefone ou chave aleatória)
+                text: `Analise este documento de pagamento PIX e extraia as seguintes informações:
+1. Verifique se o documento contém as palavras "comprovante", "pix" ou termos relacionados a pagamento
+2. Valor pago (em reais)
+3. Chave PIX do destinatário/beneficiário (pode ser CPF, CNPJ, e-mail, telefone ou chave aleatória)
+
+IMPORTANTE: Este documento pode ser uma imagem ou PDF. Analise todo o conteúdo disponível.
 
 Retorne APENAS um JSON válido no seguinte formato:
 {
   "valor": número sem símbolos,
   "chavePix": "chave pix encontrada no comprovante",
+  "contemComprovante": true/false (se contém palavras como comprovante, pix, pagamento),
   "sucesso": true/false
 }`
               },
@@ -75,12 +79,16 @@ Retorne APENAS um JSON válido no seguinte formato:
                     type: "string",
                     description: "Chave PIX do destinatário (CPF, CNPJ, email, telefone ou chave aleatória)"
                   },
+                  contemComprovante: {
+                    type: "boolean",
+                    description: "Se o documento contém palavras relacionadas a comprovante/pix/pagamento"
+                  },
                   sucesso: {
                     type: "boolean",
                     description: "Se foi possível extrair as informações"
                   }
                 },
-                required: ["valor", "chavePix", "sucesso"],
+                required: ["valor", "chavePix", "contemComprovante", "sucesso"],
                 additionalProperties: false
               }
             }
@@ -111,7 +119,18 @@ Retorne APENAS um JSON válido no seguinte formato:
       return new Response(
         JSON.stringify({ 
           valido: false, 
-          motivo: "Não foi possível ler o comprovante. Por favor, tente com uma imagem mais nítida." 
+          motivo: "Não foi possível ler o comprovante. Por favor, tente com uma imagem ou PDF mais nítido." 
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verifica se é realmente um comprovante
+    if (!dadosExtraidos.contemComprovante) {
+      return new Response(
+        JSON.stringify({ 
+          valido: false, 
+          motivo: "O documento não parece ser um comprovante de pagamento PIX. Por favor, envie um comprovante válido." 
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
