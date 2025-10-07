@@ -4,6 +4,14 @@ import pg from "pg";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv"
 import { v4 as uuidv4 } from "uuid";
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 dotenv.config();
 
 const { Pool } = pg;
@@ -26,7 +34,38 @@ const pool = new Pool({
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Configuração do multer para upload de arquivos
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'uploads'))
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'comprovante-' + uniqueSuffix + path.extname(file.originalname))
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|pdf/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Apenas imagens (JPEG, PNG) e PDFs são permitidos!'));
+    }
+  }
+});
+
+// Servir arquivos estáticos da pasta uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // LOGIN
 app.post("/login", async (req, res) => {
@@ -217,16 +256,32 @@ app.delete("/devedores/:id", async (req, res) => {
   }
 });
 
+// Upload de comprovante
+app.post("/upload-comprovante", upload.single('comprovante'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Nenhum arquivo enviado" });
+    }
+
+    const comprovanteUrl = `/uploads/${req.file.filename}`;
+    res.json({ url: comprovanteUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao fazer upload do comprovante" });
+  }
+});
+
 // Atualizar status de pagamento
 app.put("/devedores/:id/pagar", async (req, res) => {
   const { id } = req.params;
+  const { comprovante_url } = req.body;
 
   try {
     const result = await pool.query(
       `UPDATE devedores 
-       SET pago = true, pago_em = NOW(), status = 'paga'
+       SET pago = true, pago_em = NOW(), status = 'paga', comprovante_url = $2
        WHERE id = $1 RETURNING *`,
-      [id]
+      [id, comprovante_url || null]
     );
 
     if (result.rows.length === 0) {

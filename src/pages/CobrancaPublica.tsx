@@ -25,7 +25,8 @@ interface CobrancaData {
   pagoEm?: string; // timestamp do pagamento
   taxaJuros?: number;
   tipoJuros?: string;
-  descricao?: string; 
+  descricao?: string;
+  comprovanteUrl?: string;
 }
 
 
@@ -157,7 +158,8 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
         pagoEm: cobrancaData.pago_em,
         taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,
         tipoJuros: cobrancaData.tipo_juros,
-        descricao: cobrancaData.descricao || ''
+        descricao: cobrancaData.descricao || '',
+        comprovanteUrl: cobrancaData.comprovante_url
       };
 
 
@@ -243,9 +245,27 @@ const validarEMarcarComoPago = async () => {
       return;
     }
 
-    // Se válido, marca como pago
+    // Upload do comprovante para o backend
+    const formData = new FormData();
+    formData.append('comprovante', comprovanteFile);
+
+    const uploadResponse = await fetch('http://localhost:5000/upload-comprovante', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) throw new Error("Erro ao fazer upload do comprovante");
+
+    const uploadData = await uploadResponse.json();
+    const comprovanteUrl = uploadData.url;
+
+    // Se válido, marca como pago com a URL do comprovante
     const resp = await fetch(`http://localhost:5000/devedores/${cobranca.id}/pagar`, {
       method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ comprovante_url: comprovanteUrl }),
     });
     
     if (!resp.ok) throw new Error("Erro ao atualizar cobrança");
@@ -255,6 +275,7 @@ const validarEMarcarComoPago = async () => {
       pago: true,
       pagoEm: new Date().toISOString(),
       status: "paga",
+      comprovanteUrl,
     });
 
     const novaNotificacao: Notification = {
@@ -342,6 +363,7 @@ const validarEMarcarComoPago = async () => {
           pagoEm={cobranca.pagoEm}
           qrCodeURL={qrCodeURL}
           pixCobranca={cobranca.pixCobranca}
+          comprovanteUrl={cobranca.comprovanteUrl}
           onConfirmarPagamento={() => setDialogOpen(true)}
           renderValidarDialog={() => (
             <ValidarComprovanteDialog
