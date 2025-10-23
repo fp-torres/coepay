@@ -36,18 +36,24 @@ npm run dev
 
 ## Funcionamento
 
-- Quando um devedor marca uma cobrança como paga, ele precisa anexar um comprovante (imagem ou PDF)
-- O comprovante é validado pela IA (edge function)
-- Se válido, o arquivo é salvo em `backend/uploads/`
-- A URL do comprovante é armazenada no banco de dados
-- Na página de cobrança pública, quando estiver marcada como paga, o comprovante será exibido
-- O usuário do sistema pode ver o comprovante clicando em "Ver Comprovante" na lista de cobranças pagas
+- Quando um devedor marca uma cobrança como paga, ele pode anexar **até 2 comprovantes** (imagens ou PDF)
+- Os comprovantes são validados pela IA (edge function do Supabase)
+- A IA verifica automaticamente:
+  - Se o documento é realmente um comprovante PIX
+  - Se o valor do pagamento corresponde (tolerância de R$ 0,50)
+  - Se a chave PIX do destinatário está correta
+- Se pelo menos um comprovante for válido, o pagamento é aprovado
+- Os arquivos são salvos em `backend/uploads/`
+- As URLs dos comprovantes são armazenadas no banco de dados (separadas por vírgula)
+- Na página de cobrança pública, quando estiver marcada como paga, todos os comprovantes serão exibidos
+- O usuário do sistema pode ver os comprovantes na lista de cobranças pagas
 
 ## Tipos de arquivo aceitos
 
 - Imagens: JPEG, JPG, PNG
 - Documentos: PDF
 
-## Tamanho máximo
+## Limites
 
-- 20MB por arquivo
+- **Quantidade**: Até 2 comprovantes por cobrança
+- **Tamanho**: 20MB por arquivo

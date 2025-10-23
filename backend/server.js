@@ -256,18 +256,18 @@ app.delete("/devedores/:id", async (req, res) => {
   }
 });
 
-// Upload de comprovante
-app.post("/upload-comprovante", upload.single('comprovante'), async (req, res) => {
+// Upload de comprovantes (até 2 arquivos)
+app.post("/upload-comprovante", upload.array('comprovantes', 2), async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "Nenhum arquivo enviado" });
     }
 
-    const comprovanteUrl = `/uploads/${req.file.filename}`;
-    res.json({ url: comprovanteUrl });
+    const urls = req.files.map(file => `/uploads/${file.filename}`);
+    res.json({ urls });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Erro ao fazer upload do comprovante" });
+    res.status(500).json({ message: "Erro ao fazer upload dos comprovantes" });
   }
 });
 
