@@ -145,9 +145,12 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
         const diasVencido = hoje > vencimento ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : 0;
         const status = (hoje > vencimento ? 'vencida' : 'no prazo') as 'vencida' | 'no prazo';
 
-        // Busca dados do usuário para pegar o PIX
+        // Busca dados do usuário para pegar o PIX padrão
         const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
         const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
+
+        // Usa o PIX específico da cobrança, se existir, senão usa o PIX padrão do usuário
+        const pixFinal = cobrancaData.pix_cobranca || userData.pix || '';
 
       const cobrancaObj: CobrancaData = {
         id: cobrancaData.id.toString(),
@@ -156,8 +159,8 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
         valorAtual,
         dataVencimento: cobrancaData.data_vencimento,
         diasVencido,
-        pixCobranca: userData.pix || '',
-        status: cobrancaData.pago ? 'paga' : status, // muda para paga se já estiver pago
+        pixCobranca: pixFinal,
+        status: cobrancaData.pago ? 'paga' : status,
         pago: cobrancaData.pago,
         pagoEm: cobrancaData.pago_em,
         taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,

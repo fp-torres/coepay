@@ -166,7 +166,7 @@ app.get("/devedores", async (req, res) => {
 
 // DEVEDORES
 app.post("/devedores", async (req, res) => {
-  const { user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, descricao, whatsapp_devedor } = req.body;
+  const { user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, descricao, whatsapp_devedor, pix_cobranca } = req.body;
 
   try {
     const hoje = new Date();
@@ -178,8 +178,8 @@ app.post("/devedores", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO devedores 
-      (user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, descricao, whatsapp_devedor, status, hash, link) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+      (user_id, nome, email, telefone, valor, data_vencimento, taxa_juros, tipo_juros, descricao, whatsapp_devedor, pix_cobranca, status, hash, link) 
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
       [
         user_id, 
         nome, 
@@ -191,6 +191,7 @@ app.post("/devedores", async (req, res) => {
         tipo_juros, 
         descricao || null,      // opcional
         whatsapp_devedor || null, // opcional
+        pix_cobranca || null, // opcional - PIX específico da cobrança
         status, 
         hash, 
         link
@@ -233,6 +234,28 @@ app.get("/cobranca/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao buscar cobrança" });
+  }
+});
+
+// ATUALIZAR DADOS DO USUÁRIO
+app.put("/users/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, email, pix } = req.body;
+
+  try {
+    const result = await pool.query(
+      "UPDATE users SET name = $1, email = $2, pix = $3 WHERE id = $4 RETURNING id, name, email, pix",
+      [name, email, pix, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erro ao atualizar usuário:", err);
+    res.status(500).json({ message: "Erro ao atualizar usuário" });
   }
 });
 

@@ -42,8 +42,8 @@ const Dashboard = () => {
     taxaJuros: "",
     tipoJuros: "mensal" as "mensal" | "diario",
     descricao: "",
-    whatsappDevedor: "",// agora existe
-
+    whatsappDevedor: "",
+    pixCobranca: "",
   });
     useEffect(() => {
       if (!user?.id) return;
@@ -178,7 +178,8 @@ const Dashboard = () => {
           taxa_juros: novaCobranca.taxaJuros ? Number(novaCobranca.taxaJuros) : null,  
           tipo_juros: novaCobranca.taxaJuros ? novaCobranca.tipoJuros : null,
           descricao: novaCobranca.descricao ? novaCobranca.descricao : null,
-          whatsapp_devedor: novaCobranca.whatsappDevedor ? novaCobranca.whatsappDevedor : null
+          whatsapp_devedor: novaCobranca.whatsappDevedor ? novaCobranca.whatsappDevedor : null,
+          pix_cobranca: novaCobranca.pixCobranca ? novaCobranca.pixCobranca : null
         })
       });
 
@@ -188,7 +189,7 @@ const Dashboard = () => {
         // Recarregar cobranças do backend
         await carregarCobrancas(user.id);
 
-        setNovaCobranca({ nomeDevedor: "", valor: "", dataVencimento: "", taxaJuros: "", tipoJuros: "mensal", descricao: "", whatsappDevedor: "" });
+        setNovaCobranca({ nomeDevedor: "", valor: "", dataVencimento: "", taxaJuros: "", tipoJuros: "mensal", descricao: "", whatsappDevedor: "", pixCobranca: "" });
         toast({
           title: "Cobrança criada com sucesso!",
           description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,

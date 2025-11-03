@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Crown, CreditCard, BarChart3 } from "lucide-react";
+import { LogOut, Crown, CreditCard, BarChart3, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NotificationBell } from "./NotificationBell";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -98,6 +98,16 @@ export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }
             Gerenciar Assinatura
           </Button>
         )}
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/configuracoes")}
+          className="flex items-center justify-center w-full sm:w-auto"
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          Configurações
+        </Button>
 
         <Button
           variant="outline"

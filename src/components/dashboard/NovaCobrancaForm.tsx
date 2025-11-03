@@ -22,8 +22,9 @@ interface NovaCobrancaData {
   dataVencimento: string;
   taxaJuros: string;
   tipoJuros: "mensal" | "diario";
-  whatsappDevedor?: string; // Novo campo
-  descricao?: string;        // Novo campo
+  whatsappDevedor?: string;
+  descricao?: string;
+  pixCobranca?: string;
 }
 
 interface NovaCobrancaFormProps {
@@ -125,17 +126,18 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
             </p>
           </div>
 
-          {/* PIX */}
+          {/* PIX para esta cobrança específica */}
           <div className="space-y-2">
-            <Label>Sua Chave PIX</Label>
-            <Input 
-              value={user.pix} 
-              onChange={(e) => {
-                const updatedUser = { ...user, pix: e.target.value };
-                setUser(updatedUser);
-                localStorage.setItem("user", JSON.stringify(updatedUser));
-              }}
+            <Label htmlFor="pixCobranca">Chave PIX para esta cobrança (opcional)</Label>
+            <Input
+              id="pixCobranca"
+              value={novaCobranca.pixCobranca || ""}
+              onChange={(e) => setNovaCobranca({ ...novaCobranca, pixCobranca: e.target.value })}
+              placeholder={`PIX padrão: ${user.pix}`}
             />
+            <p className="text-xs text-muted-foreground">
+              Deixe em branco para usar seu PIX padrão. Para alterar o PIX padrão permanentemente, acesse Configurações.
+            </p>
           </div>
 
           {/* Juros Compostos - Premium */}
