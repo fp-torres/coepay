@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Key } from "lucide-react";
 
 interface User {
   id: number;
@@ -17,11 +17,7 @@ interface User {
 const Configuracoes = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    pix: "",
-  });
+  const [formData, setFormData] = useState({ name: "", email: "", pix: "" });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -47,16 +43,12 @@ const Configuracoes = () => {
     try {
       const response = await fetch(`http://localhost:5000/users/${user.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         const updatedUser = await response.json();
-        
-        // Atualizar localStorage e state
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setUser(updatedUser);
 
@@ -64,9 +56,7 @@ const Configuracoes = () => {
           title: "Dados atualizados!",
           description: "Suas informações foram salvas com sucesso.",
         });
-      } else {
-        throw new Error("Erro ao atualizar dados");
-      }
+      } else throw new Error("Erro ao atualizar dados");
     } catch (error) {
       console.error("Erro ao atualizar:", error);
       toast({
@@ -82,39 +72,53 @@ const Configuracoes = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6 flex justify-center items-start">
+      <div className="w-full max-w-3xl space-y-6">
+        {/* Botão Voltar */}
         <Button
-          variant="ghost"
-          onClick={() => navigate("/dashboard")}
-          className="mb-4"
+          variant="outline"
+          onClick={() => navigate("/painel-de-controle")}
+          className="flex items-center justify-center w-full sm:w-auto
+                     bg-gradient-to-r from-coepay-primary to-coepay-secondary
+                     text-white font-semibold shadow-lg rounded-lg hover:opacity-90 transition"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar ao Dashboard
+          <ArrowLeft className="w-5 h-5" />
         </Button>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Configurações de Perfil</CardTitle>
-            <CardDescription>
+        {/* Card principal */}
+        <Card className="shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white p-6">
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <Save className="w-6 h-6" />
+              Configurações de Perfil
+            </CardTitle>
+            <CardDescription className="text-white/90 mt-1">
               Atualize suas informações pessoais. As alterações no PIX serão aplicadas a todas as cobranças futuras.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome</Label>
+
+          <CardContent className="p-6 bg-white space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Nome */}
+              <div className="space-y-1">
+                <Label htmlFor="name" className="font-medium text-gray-700">
+                  Nome
+                </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Seu nome completo"
                   required
+                  className="border-gray-300 focus:border-coepay-primary focus:ring-coepay-primary"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
+              {/* Email */}
+              <div className="space-y-1">
+                <Label htmlFor="email" className="font-medium text-gray-700">
+                  E-mail
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -122,29 +126,37 @@ const Configuracoes = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="seu@email.com"
                   required
+                  className="border-gray-300 focus:border-coepay-primary focus:ring-coepay-primary"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="pix">Chave PIX Padrão</Label>
+              {/* PIX */}
+              <div className="space-y-1">
+                <Label htmlFor="pix" className="font-medium text-gray-700 flex items-center gap-1">
+                  <Key className="w-4 h-4 text-coepay-primary" /> Chave PIX Padrão
+                </Label>
                 <Input
                   id="pix"
                   value={formData.pix}
                   onChange={(e) => setFormData({ ...formData, pix: e.target.value })}
-                  placeholder="Sua chave PIX (CPF, e-mail, telefone ou chave aleatória)"
+                  placeholder="Sua chave PIX (CPF, e-mail, telefone ou aleatória)"
                   required
+                  className="border-gray-300 focus:border-coepay-primary focus:ring-coepay-primary"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Esta chave será usada em todas as suas novas cobranças por padrão
+                <p className="text-xs text-gray-500">
+                  Esta chave será usada por padrão em todas as suas novas cobranças
                 </p>
               </div>
 
-              <Button 
-                type="submit" 
+              {/* Botão Salvar */}
+              <Button
+                type="submit"
                 disabled={loading}
-                className="w-full"
+                className="w-full flex items-center justify-center
+                           bg-gradient-to-r from-coepay-primary to-coepay-secondary
+                           text-white font-semibold shadow-lg rounded-lg hover:opacity-90 transition"
               >
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-5 h-5 mr-2" />
                 {loading ? "Salvando..." : "Salvar Alterações"}
               </Button>
             </form>

@@ -19,10 +19,10 @@ interface Cobranca {
   valor: number;
   valorAtual?: number;
   dataVencimento: string;
-  status: 'ativa' | 'vencida';
+  status: "ativa" | "vencida";
   link: string;
   taxaJuros?: number;
-  tipoJuros?: 'mensal' | 'diario';
+  tipoJuros?: "mensal" | "diario";
 }
 
 interface DashboardHeaderProps {
@@ -35,10 +35,21 @@ interface DashboardHeaderProps {
   onLogout: () => void;
 }
 
-export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }: DashboardHeaderProps) => {
+export const DashboardHeader = ({
+  user,
+  subscription,
+  cobrancasCount,
+  onLogout,
+}: DashboardHeaderProps) => {
   const navigate = useNavigate();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useNotifications(user.id);
-  
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    clearNotifications,
+  } = useNotifications(user.id);
+
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
       {/* Informações do usuário */}
@@ -75,47 +86,49 @@ export const DashboardHeader = ({ user, subscription, cobrancasCount, onLogout }
           onMarkAllAsRead={markAllAsRead}
           onClearAll={clearNotifications}
         />
-        
+
+        {/* Relatórios */}
         <Button
-          variant="outline"
           size="sm"
           onClick={() => navigate("/relatorios")}
-          className="flex items-center justify-center w-full sm:w-auto bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white font-semibold shadow-sm
+          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white font-semibold shadow-sm rounded-xl
                      hover:opacity-90 transition"
         >
           <BarChart3 className="w-4 h-4 mr-2" />
           Relatórios Avançados
         </Button>
 
+        {/* Gerenciar Assinatura */}
         {subscription.subscribed && (
           <Button
-            variant="outline"
             size="sm"
             onClick={subscription.openCustomerPortal}
-            className="flex items-center justify-center w-full sm:w-auto"
+            className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border border-muted-foreground/30 font-semibold shadow-sm rounded-xl
+                       hover:bg-muted/30 transition"
           >
             <CreditCard className="w-4 h-4 mr-2" />
             Gerenciar Assinatura
           </Button>
         )}
 
+        {/* Configurações — branco com gradiente no hover */}
         <Button
-          variant="outline"
           size="sm"
           onClick={() => navigate("/configuracoes")}
-          className="flex items-center justify-center w-full sm:w-auto"
-        >
-          <Settings className="w-4 h-4 mr-2" />
-          Configurações
-        </Button>
-
-        <Button
-          variant="outline"
-          onClick={onLogout}
-          className="flex items-center justify-center w-full sm:w-auto border text-coepay-primary font-semibold shadow-sm
+          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border text-coepay-primary bg-white font-semibold shadow-sm rounded-xl
                      hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
         >
-          <LogOut className="w-4 h-4 mr-2" />
+          <Settings className="w-4 h-4" />
+        </Button>
+
+        {/* Sair — branco com gradiente no hover */}
+        <Button
+          size="sm"
+          onClick={onLogout}
+          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border text-coepay-primary bg-white font-semibold shadow-sm rounded-xl
+                     hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+        >
+          <LogOut className="w-4 h-4" />
           Sair
         </Button>
       </div>
