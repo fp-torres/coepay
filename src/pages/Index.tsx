@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Zap, Activity, Percent, CheckCircle, BarChart3 } from "lucide-react";
-import logoImage from "/CoéPayLogo.png";
+import logoImage from "/logo1_modo_claro.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -9,31 +9,36 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/10">
       {/* Header */}
-      <header className="relative z-10 flex justify-between items-center p-6 lg:p-8">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
-          <img 
-            src={logoImage} 
-            alt="CoéPay Logo" 
-            className="w-10 h-10 object-contain"
-          />
-          <span className="text-2xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
-            CoéPay
-          </span>
-        </div>
-        
-        <Button 
-          variant="outline" 
-          onClick={() => navigate("/login")}
-          className="
-            border-coepay-primary/20 text-coepay-primary
-            hover:bg-gradient-to-r hover:from-coepay-primary/90 hover:to-coepay-secondary/90
-            hover:text-white hover:border-transparent
-            transition-colors
-          "
-        >
-          Entrar
-        </Button>
-      </header>
+     <header className="relative z-10 flex justify-between items-center px-6 lg:px-8 h-32">
+      <div
+        className="flex items-center space-x-3 cursor-pointer outline-none focus:outline-none focus-visible:outline-none select-none"
+        onClick={() => navigate("/")}
+        tabIndex={-1} // impede o foco pelo clique
+      >
+    <img 
+      src={logoImage} 
+      alt="CoéPay Logo" 
+      className="w-16 h-16 object-contain"
+    />
+    <span className="text-2xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
+      CoéPay
+    </span>
+  </div>
+
+  <Button 
+    variant="outline" 
+    onClick={() => navigate("/login")}
+    className="
+      border-coepay-primary/20 text-coepay-primary
+      hover:bg-gradient-to-r hover:from-coepay-primary/90 hover:to-coepay-secondary/90
+      hover:text-white hover:border-transparent
+      transition-colors
+    "
+  >
+    Entrar
+  </Button>
+</header>
+
 
       <div className="container mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-120px)]">
