@@ -6,12 +6,14 @@ interface SubscriptionStatus {
   subscribed: boolean;
   product_id?: string;
   subscription_end?: string;
+  plan: "free" | "basic" | "premium";
   loading: boolean;
 }
 
 export const useSubscription = () => {
   const [status, setStatus] = useState<SubscriptionStatus>({
     subscribed: false,
+    plan: "free",
     loading: true,
   });
   const { toast } = useToast();
@@ -20,7 +22,7 @@ export const useSubscription = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setStatus({ subscribed: false, loading: false });
+        setStatus({ subscribed: false, plan: "free", loading: false });
         return;
       }
 
@@ -36,15 +38,16 @@ export const useSubscription = () => {
         subscribed: data.subscribed || false,
         product_id: data.product_id,
         subscription_end: data.subscription_end,
+        plan: data.plan || "free",
         loading: false,
       });
     } catch (error) {
       console.error('Error checking subscription:', error);
-      setStatus({ subscribed: false, loading: false });
+      setStatus({ subscribed: false, plan: "free", loading: false });
     }
   };
 
-  const createCheckout = async () => {
+  const createCheckout = async (priceId: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -60,6 +63,7 @@ export const useSubscription = () => {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
+        body: { priceId },
       });
 
       if (error) throw error;
@@ -113,7 +117,7 @@ export const useSubscription = () => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         checkSubscription();
       } else if (event === 'SIGNED_OUT') {
-        setStatus({ subscribed: false, loading: false });
+        setStatus({ subscribed: false, plan: "free", loading: false });
       }
     });
 

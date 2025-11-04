@@ -270,7 +270,11 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <DashboardHeader 
           user={user} 
-          subscription={subscription} 
+          subscription={{
+            subscribed: subscription.subscribed,
+            plan: subscription.plan,
+            openCustomerPortal: subscription.openCustomerPortal,
+          }}
           cobrancasCount={cobrancas.length}
           onLogout={handleLogout} 
         />
@@ -283,8 +287,8 @@ const Dashboard = () => {
           totalRecebido={totalRecebido}
         />
 
-        {!subscription.subscribed && (
-          <UpgradePremiumCard subscription={subscription} />
+        {subscription.plan !== "premium" && (
+          <UpgradePremiumCard plan={subscription.plan} />
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -29,6 +29,7 @@ interface DashboardHeaderProps {
   user: User;
   subscription: {
     subscribed: boolean;
+    plan: "free" | "basic" | "premium";
     openCustomerPortal: () => void;
   };
   cobrancasCount: number;
@@ -60,8 +61,14 @@ export const DashboardHeader = ({
               Olá, {user.name}!
             </span>
           </h1>
-          {subscription.subscribed && (
+          {subscription.subscribed && subscription.plan === "basic" && (
             <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              <Crown className="w-3 h-3 mr-1" />
+              Basic
+            </Badge>
+          )}
+          {subscription.subscribed && subscription.plan === "premium" && (
+            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
               <Crown className="w-3 h-3 mr-1" />
               Premium
             </Badge>
@@ -69,9 +76,14 @@ export const DashboardHeader = ({
         </div>
         <p className="text-sm md:text-base text-muted-foreground">
           Gerencie suas cobranças{" "}
-          {!subscription.subscribed && (
+          {subscription.plan === "free" && (
             <span className="text-amber-600">
               • {cobrancasCount}/5 cobranças usadas
+            </span>
+          )}
+          {subscription.plan === "basic" && (
+            <span className="text-blue-600">
+              • {cobrancasCount}/50 cobranças usadas
             </span>
           )}
         </p>
@@ -98,6 +110,17 @@ export const DashboardHeader = ({
           Relatórios Avançados
         </Button>
 
+        {/* Planos */}
+        <Button
+          size="sm"
+          onClick={() => navigate("/planos")}
+          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border border-muted-foreground/30 font-semibold shadow-sm rounded-xl
+                     hover:bg-muted/30 transition"
+        >
+          <Crown className="w-4 h-4 mr-2" />
+          Planos
+        </Button>
+
         {/* Gerenciar Assinatura */}
         {subscription.subscribed && (
           <Button
@@ -107,7 +130,7 @@ export const DashboardHeader = ({
                        hover:bg-muted/30 transition"
           >
             <CreditCard className="w-4 h-4 mr-2" />
-            Gerenciar Assinatura
+            Gerenciar
           </Button>
         )}
 
