@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea"; // Novo import
 import { Plus } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { Crown } from "lucide-react";
 
 
 interface User {
@@ -37,8 +38,9 @@ interface NovaCobrancaFormProps {
 
 // Componente PremiumBadge atualizado
 const PremiumBadge = () => (
-  <span className="text-xs text-white bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-1 rounded-md font-semibold shadow-sm">
-    💎 Premium
+  <span className="text-xs text-white bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-1 rounded-md font-semibold shadow-sm flex items-center gap-1">
+    <Crown className="w-3 h-3 text-white" />
+    Premium
   </span>
 );
 
@@ -243,12 +245,29 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
             <p className="text-xs text-muted-foreground">Máximo de 80 caracteres</p>
           </div>
 
-
           {!user?.isPremium && (
-            <div className="text-sm text-gray-800 bg-gray-100 p-3 rounded-md shadow-sm">
-              💎 <strong>Premium:</strong> Upgrade para adicionar juros compostos, mensagem automática no WhatsApp, descrição e cobranças ilimitadas!
-            </div>
+            <Card className="border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm mt-4">
+              <CardContent className="flex items-start gap-3 p-4">
+                <div className="flex-shrink-0">
+                  <div className="w-5 h-5 flex items-center justify-center rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md">
+                    <Crown className="w-4 h-4" />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-gray-800 leading-snug">
+                    <strong className="text-amber-600 font-semibold">Seja Premium:</strong>{" "}
+                    desbloqueie <span className="font-medium">juros compostos</span>,{" "}
+                    <span className="font-medium">futuras implementações na plataforma</span>,{" "}
+                    <span className="font-medium">descrição personalizada</span> e{" "}
+                    <span className="font-medium">cobranças ilimitadas</span>!
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           )}
+
+
 
 
           <Button

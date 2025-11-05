@@ -49,14 +49,17 @@ const Planos = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/painel-de-controle")}
-            className="bg-white"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
+        {/* Voltar */}
+        <Button
+          variant="outline"
+          onClick={() => navigate("/painel-de-controle")}
+          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border text-coepay-primary bg-white font-semibold shadow-sm rounded-xl
+                    hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+
         </div>
 
         {/* Title */}
@@ -70,159 +73,178 @@ const Planos = () => {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mt-12">
-          {/* Free Plan */}
-          <Card className={`relative ${subscription.plan === "free" ? "border-2 border-coepay-primary" : ""}`}>
-            {subscription.plan === "free" && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-coepay-primary">
-                Plano Atual
-              </Badge>
-            )}
-            <CardHeader>
-              <CardTitle className="text-2xl">Free</CardTitle>
-              <CardDescription>Para testar a plataforma</CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold">R$ 0</span>
-                <span className="text-muted-foreground">/mês</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                  <span>Até 5 cobranças por mês</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                  <span>Recursos básicos</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                  <span>Suporte por e-mail</span>
-                </li>
-              </ul>
-              {subscription.plan !== "free" && (
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  disabled
-                >
+      <div className="grid md:grid-cols-3 gap-6 mt-12 items-stretch">
+        
+        {/* Free Plan */}
+      <Card
+        className={`relative flex flex-col h-full transition-all duration-300 ${
+          subscription.plan === "free"
+            ? "border-2 border-coepay-primary bg-gradient-to-br from-coepay-primary/15 via-purple-500/10 to-transparent shadow-lg"
+            : "hover:border-coepay-primary/50 hover:bg-gradient-to-br hover:from-coepay-primary/5 hover:to-purple-500/5"
+        }`}
+      >
+          {subscription.plan === "free" && (
+            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-coepay-primary">
+              Plano Atual
+            </Badge>
+          )}
+          <CardHeader>
+            <CardTitle className="text-2xl">Free</CardTitle>
+            <CardDescription>Para testar a plataforma</CardDescription>
+            <div className="mt-4">
+              <span className="text-4xl font-bold">R$ 0</span>
+              <span className="text-muted-foreground">/mês</span>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col flex-grow space-y-4">
+            <ul className="space-y-3 flex-grow">
+              <li className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                <span>Até 5 cobranças por mês</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                <span>Recursos básicos</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                <span>Suporte por e-mail</span>
+              </li>
+            </ul>
+
+            <div className="mt-auto">
+              {subscription.plan !== "free" ? (
+                <Button variant="outline" className="w-full" disabled>
                   Downgrade disponível em breve
                 </Button>
+              ) : (
+                <Button variant="outline" className="w-full" disabled>
+                  Plano Atual
+                </Button>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Basic Plan */}
-          <Card className={`relative ${subscription.plan === "basic" ? "border-2 border-amber-500" : ""}`}>
-            {subscription.plan === "basic" && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500">
-                <Crown className="w-3 h-3 mr-1" />
-                Plano Atual
-              </Badge>
-            )}
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                Basic
-                <Crown className="w-5 h-5 text-amber-500" />
-              </CardTitle>
-              <CardDescription>{PLANS.basic.description}</CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold">{PLANS.basic.price}</span>
-                <span className="text-muted-foreground">/mês</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
-                {PLANS.basic.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+       {/* Basic Plan */}
+        <Card
+          className={`relative flex flex-col h-full transition-all duration-300 ${
+            subscription.plan === "basic"
+              ? "border-2 border-purple-500 bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-transparent shadow-lg"
+              : "hover:border-purple-500/60 hover:bg-gradient-to-br hover:from-purple-500/10 hover:via-pink-500/10 hover:to-transparent"
+          }`}
+        >
+          {subscription.plan === "basic" && (
+            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Plano Atual
+            </Badge>
+          )}
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              Basic
+              <Sparkles className="w-5 h-5 text-purple-500" />
+            </CardTitle>
+            <CardDescription>{PLANS.basic.description}</CardDescription>
+            <div className="mt-4">
+              <span className="text-4xl font-bold">{PLANS.basic.price}</span>
+              <span className="text-muted-foreground">/mês</span>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col flex-grow space-y-4">
+            <ul className="space-y-3 flex-grow">
+              {PLANS.basic.features.map((feature, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-auto">
               {subscription.plan === "free" ? (
                 <Button
                   onClick={() => handleSelectPlan(PLANS.basic.priceId)}
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-                  disabled={subscription.loading}
-                >
-                  <Crown className="w-4 h-4 mr-2" />
-                  {subscription.loading ? "Carregando..." : "Assinar Basic"}
-                </Button>
-              ) : subscription.plan === "basic" ? (
-                <Button 
-                  variant="outline" 
-                  onClick={subscription.openCustomerPortal}
-                  className="w-full"
-                >
-                  Gerenciar Assinatura
-                </Button>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  disabled
-                >
-                  Downgrade disponível em breve
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Premium Plan */}
-          <Card className={`relative border-2 ${subscription.plan === "premium" ? "border-purple-500" : "border-purple-500/20"}`}>
-            {subscription.plan === "premium" ? (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Plano Atual
-              </Badge>
-            ) : (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500">
-                Recomendado
-              </Badge>
-            )}
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                Premium
-                <Sparkles className="w-5 h-5 text-purple-500" />
-              </CardTitle>
-              <CardDescription>{PLANS.premium.description}</CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold">{PLANS.premium.price}</span>
-                <span className="text-muted-foreground">/mês</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
-                {PLANS.premium.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              {subscription.plan === "premium" ? (
-                <Button 
-                  variant="outline" 
-                  onClick={subscription.openCustomerPortal}
-                  className="w-full"
-                >
-                  Gerenciar Assinatura
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => handleSelectPlan(PLANS.premium.priceId)}
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   disabled={subscription.loading}
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {subscription.loading ? "Carregando..." : "Assinar Premium"}
+                  {subscription.loading ? "Carregando..." : "Assinar Basic"}
+                </Button>
+              ) : subscription.plan === "basic" ? (
+                <Button variant="outline" onClick={subscription.openCustomerPortal} className="w-full">
+                  Gerenciar Assinatura
+                </Button>
+              ) : (
+                <Button variant="outline" className="w-full" disabled>
+                  Downgrade disponível em breve
                 </Button>
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+
+
+     {/* Premium Plan */}
+      <Card
+        className={`relative flex flex-col h-full transition-all duration-300 ${
+          subscription.plan === "premium"
+            ? "border-2 border-amber-500 bg-gradient-to-br from-amber-400/20 via-orange-400/10 to-transparent shadow-lg"
+            : "hover:border-amber-500/60 hover:bg-gradient-to-br hover:from-amber-400/10 hover:via-orange-400/5 hover:to-transparent"
+        }`}
+      >
+        {subscription.plan === "premium" ? (
+          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500">
+            <Crown className="w-3 h-3 mr-1" />
+            Plano Atual
+          </Badge>
+        ) : (
+          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500">
+            Recomendado
+          </Badge>
+        )}
+
+        <CardHeader>
+          <CardTitle className="text-2xl flex items-center gap-2">
+            Premium
+            <Crown className="w-5 h-5 text-amber-500" />
+          </CardTitle>
+          <CardDescription>{PLANS.premium.description}</CardDescription>
+          <div className="mt-4">
+            <span className="text-4xl font-bold">{PLANS.premium.price}</span>
+            <span className="text-muted-foreground">/mês</span>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col flex-grow space-y-4">
+          <ul className="space-y-3 flex-grow">
+            {PLANS.premium.features.map((feature, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-auto">
+            {subscription.plan === "premium" ? (
+              <Button variant="outline" onClick={subscription.openCustomerPortal} className="w-full">
+                Gerenciar Assinatura
+              </Button>
+            ) : (
+              <Button
+                onClick={() => handleSelectPlan(PLANS.premium.priceId)}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                disabled={subscription.loading}
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                {subscription.loading ? "Carregando..." : "Assinar Premium"}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+            </div>
+
 
         {/* FAQ ou informações adicionais */}
         <Card className="mt-12">

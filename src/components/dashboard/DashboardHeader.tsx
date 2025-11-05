@@ -110,16 +110,22 @@ export const DashboardHeader = ({
           Relatórios Avançados
         </Button>
 
-        {/* Planos */}
+        {/* Planos — Gradiente dourado + roxo */}
         <Button
           size="sm"
           onClick={() => navigate("/planos")}
-          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border border-muted-foreground/30 font-semibold shadow-sm rounded-xl
-                     hover:bg-muted/30 transition"
+          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 
+                    bg-gradient-to-r from-amber-400 via-pink-400 to-purple-500
+                    text-white font-semibold shadow-sm rounded-xl
+                    hover:from-amber-500 hover:via-pink-500 hover:to-purple-600
+                    transition-all duration-300"
         >
-          <Crown className="w-4 h-4 mr-2" />
-          Planos
+          <Crown className="w-4 h-4" />
         </Button>
+
+
+
+
 
         {/* Gerenciar Assinatura */}
         {subscription.subscribed && (

@@ -25,9 +25,10 @@ export const UpgradePremiumCard = ({ plan }: UpgradePremiumCardProps) => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
-              <div className="border-l-4 border-amber-500 pl-3">
+              {/* Basic agora em roxo */}
+              <div className="border-l-4 border-purple-500 pl-3">
                 <h4 className="font-semibold text-sm flex items-center gap-2">
-                  <Crown className="w-4 h-4 text-amber-500" />
+                  <Sparkles className="w-4 h-4 text-purple-500" />
                   Basic - R$ 29,90/mês
                 </h4>
                 <ul className="text-sm text-muted-foreground space-y-1 mt-2">
@@ -36,9 +37,11 @@ export const UpgradePremiumCard = ({ plan }: UpgradePremiumCardProps) => {
                   <li>• Relatórios básicos</li>
                 </ul>
               </div>
-              <div className="border-l-4 border-purple-500 pl-3">
+
+              {/* Premium agora em dourado */}
+              <div className="border-l-4 border-amber-500 pl-3">
                 <h4 className="font-semibold text-sm flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-500" />
+                  <Crown className="w-4 h-4 text-amber-500" />
                   Premium - R$ 49,90/mês
                 </h4>
                 <ul className="text-sm text-muted-foreground space-y-1 mt-2">
@@ -49,20 +52,23 @@ export const UpgradePremiumCard = ({ plan }: UpgradePremiumCardProps) => {
               </div>
             </div>
             <div className="space-y-2 flex flex-col justify-center">
-              <Button 
-                onClick={() => navigate("/planos")}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Ver Todos os Planos
-              </Button>
-              <Button 
-                onClick={() => navigate("/futuras-implementacoes")}
-                variant="outline"
-                className="w-full"
-              >
-                Ver Futuras Implementações
-              </Button>
+<Button 
+  onClick={() => navigate("/planos")}
+  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold"
+>
+  <Sparkles className="w-4 h-4 mr-2" />
+  Ver Todos os Planos
+</Button>
+
+<Button
+  onClick={() => navigate("/futuras-implementacoes")}
+  variant="outline"
+  className="w-full px-4 py-2 border text-coepay-primary bg-white font-semibold shadow-sm rounded-xl
+             hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+>
+  Ver Futuras Implementações
+</Button>
+
             </div>
           </div>
         </CardContent>
