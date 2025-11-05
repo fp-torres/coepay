@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Sparkles, Clock, CheckCircle2, AlertCircle, Lightbulb } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
+import { NovaSugestaoForm } from "@/components/sugestoes/NovaSugestaoForm";
+import { KanbanBoard } from "@/components/sugestoes/KanbanBoard";
 
 const FUTURE_FEATURES = [
   {
@@ -71,9 +75,14 @@ const STATUS_CONFIG = {
 const FuturasImplementacoes = () => {
   const navigate = useNavigate();
   const subscription = useSubscription();
+  const [recarregarSugestoes, setRecarregarSugestoes] = useState(0);
 
   const isFeatureAvailable = (availableFor: string[]) => {
     return availableFor.includes(subscription.plan);
+  };
+
+  const handleSugestaoAdicionada = () => {
+    setRecarregarSugestoes(prev => prev + 1);
   };
 
   return (
@@ -118,53 +127,72 @@ const FuturasImplementacoes = () => {
           )}
         </div>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-          {FUTURE_FEATURES.map((feature, idx) => {
-            const statusConfig = STATUS_CONFIG[feature.status];
-            const StatusIcon = statusConfig.icon;
-            const available = isFeatureAvailable(feature.availableFor);
+        {/* Tabs: Roadmap Oficial vs Sugestões da Comunidade */}
+        <Tabs defaultValue="roadmap" className="mt-8">
+          <TabsList className="grid w-full max-w-[400px] mx-auto grid-cols-2">
+            <TabsTrigger value="roadmap">Roadmap Oficial</TabsTrigger>
+            <TabsTrigger value="sugestoes">
+              <Lightbulb className="w-4 h-4 mr-2" />
+              Sugestões
+            </TabsTrigger>
+          </TabsList>
 
-            return (
-              <Card 
-                key={idx} 
-                className={`relative ${!available ? "opacity-60" : ""}`}
-              >
-                <Badge className={`absolute -top-3 right-4 ${statusConfig.color}`}>
-                  <StatusIcon className="w-3 h-3 mr-1" />
-                  {statusConfig.label}
-                </Badge>
-                <CardHeader>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Previsão:</span>
-                    <span className="font-semibold">{feature.eta}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {feature.availableFor.map((plan) => (
-                      <Badge key={plan} variant="outline" className="text-xs">
-                        {plan === "basic" ? "Basic" : "Premium"}
-                      </Badge>
-                    ))}
-                  </div>
-                  {!available && (
-                    <Button
-                      onClick={() => navigate("/planos")}
-                      className="w-full"
-                      variant="outline"
-                      size="sm"
-                    >
-                      Upgrade para acessar
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+          {/* Roadmap Oficial */}
+          <TabsContent value="roadmap" className="mt-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {FUTURE_FEATURES.map((feature, idx) => {
+                const statusConfig = STATUS_CONFIG[feature.status];
+                const StatusIcon = statusConfig.icon;
+                const available = isFeatureAvailable(feature.availableFor);
+
+                return (
+                  <Card 
+                    key={idx} 
+                    className={`relative ${!available ? "opacity-60" : ""}`}
+                  >
+                    <Badge className={`absolute -top-3 right-4 ${statusConfig.color}`}>
+                      <StatusIcon className="w-3 h-3 mr-1" />
+                      {statusConfig.label}
+                    </Badge>
+                    <CardHeader>
+                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      <CardDescription>{feature.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Previsão:</span>
+                        <span className="font-semibold">{feature.eta}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {feature.availableFor.map((plan) => (
+                          <Badge key={plan} variant="outline" className="text-xs">
+                            {plan === "basic" ? "Basic" : "Premium"}
+                          </Badge>
+                        ))}
+                      </div>
+                      {!available && (
+                        <Button
+                          onClick={() => navigate("/planos")}
+                          className="w-full"
+                          variant="outline"
+                          size="sm"
+                        >
+                          Upgrade para acessar
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* Sugestões da Comunidade */}
+          <TabsContent value="sugestoes" className="mt-8 space-y-8">
+            <NovaSugestaoForm onSugestaoAdicionada={handleSugestaoAdicionada} />
+            <KanbanBoard recarregar={recarregarSugestoes} />
+          </TabsContent>
+        </Tabs>
 
         {/* Roadmap Info */}
         <Card className="mt-12">

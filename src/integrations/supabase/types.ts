@@ -67,6 +67,39 @@ export type Database = {
           },
         ]
       }
+      sugestoes: {
+        Row: {
+          categoria: string | null
+          created_at: string
+          descricao: string
+          id: string
+          status: string
+          titulo: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string
+          descricao: string
+          id?: string
+          status?: string
+          titulo: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string
+          descricao?: string
+          id?: string
+          status?: string
+          titulo?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           created_at: string | null
