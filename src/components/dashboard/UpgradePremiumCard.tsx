@@ -52,13 +52,18 @@ export const UpgradePremiumCard = ({ plan }: UpgradePremiumCardProps) => {
               </div>
             </div>
             <div className="space-y-2 flex flex-col justify-center">
-<Button 
-  onClick={() => navigate("/planos")}
-  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold"
->
-  <Sparkles className="w-4 h-4 mr-2" />
-  Ver Todos os Planos
-</Button>
+            <Button 
+              onClick={() => navigate("/planos")}
+              className="w-full bg-gradient-to-r from-amber-400 via-rose-400 to-purple-500 
+                        hover:from-amber-500 hover:via-rose-500 hover:to-purple-600
+                        text-white font-semibold shadow-md rounded-xl
+                        flex items-center justify-center gap-2 px-4 py-2
+                        transition-all duration-300"
+            >
+              <Sparkles className="w-4 h-4" />
+              Ver Todos os Planos
+            </Button>
+
 
 <Button
   onClick={() => navigate("/futuras-implementacoes")}

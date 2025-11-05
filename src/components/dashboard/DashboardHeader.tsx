@@ -103,12 +103,16 @@ export const DashboardHeader = ({
         <Button
           size="sm"
           onClick={() => navigate("/relatorios")}
-          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white font-semibold shadow-sm rounded-xl
-                     hover:opacity-90 transition"
+          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 
+                    bg-gradient-to-r from-amber-400 via-rose-400 to-purple-500
+                    hover:from-amber-500 hover:via-rose-500 hover:to-purple-600
+                    text-white font-semibold shadow-sm rounded-xl
+                    transition-all duration-300"
         >
           <BarChart3 className="w-4 h-4 mr-2" />
           Relatórios Avançados
         </Button>
+
 
         {/* Planos — Gradiente dourado + roxo */}
         <Button
