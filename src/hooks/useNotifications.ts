@@ -8,6 +8,7 @@ export interface Notification {
   valor: number;
   timestamp: Date;
   read: boolean;
+  type: 'payment_confirmed' | 'due_soon' | 'overdue';
 }
 
 export const useNotifications = (userId: number | undefined) => {
@@ -16,26 +17,77 @@ export const useNotifications = (userId: number | undefined) => {
 
   const API_URL = "http://localhost:5000"; // ✅ usar porta certa
 
-  // 1️⃣ Buscar notificações iniciais do backend
+  // 1️⃣ Buscar notificações iniciais do backend e verificar vencimentos
 useEffect(() => {
   if (!userId) return;
 
   const fetchNotifications = async () => {
     try {
+      // Buscar cobranças pagas
       const resp = await fetch(`http://localhost:5000/notifications/${userId}`);
       const data = await resp.json();
 
-      // Cria notificações sem duplicar
-      const newNotifications: Notification[] = data
-        .map((c: any) => ({
-          id: `${c.id}-${Date.now()}`,
-          cobrancaId: c.id,
-          nomeDevedor: c.nome,
-          valor: Number(c.valor),
-          timestamp: new Date(c.pago_em || Date.now()),
-          read: false,
-        }))
-        .filter((n) => !notifications.some((prev) => prev.cobrancaId === n.cobrancaId));
+      // Buscar todas as cobranças ativas para verificar vencimentos
+      const cobrancasResp = await fetch(`http://localhost:5000/devedores?userId=${userId}`);
+      const cobrancasData = await cobrancasResp.json();
+
+      const hoje = new Date();
+      const newNotifications: Notification[] = [];
+
+      // Notificações de pagamento
+      data.forEach((c: any) => {
+        if (!notifications.some((prev) => prev.cobrancaId === c.id && prev.type === 'payment_confirmed')) {
+          newNotifications.push({
+            id: `payment-${c.id}-${Date.now()}`,
+            cobrancaId: c.id,
+            nomeDevedor: c.nome,
+            valor: Number(c.valor),
+            timestamp: new Date(c.pago_em || Date.now()),
+            read: false,
+            type: 'payment_confirmed',
+          });
+        }
+      });
+
+      // Notificações de vencimento
+      cobrancasData.forEach((c: any) => {
+        if (c.pago) return;
+
+        const vencimento = new Date(c.data_vencimento);
+        const diffDays = Math.ceil((vencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+
+        // Vencendo em 3 dias ou menos (mas ainda não vencido)
+        if (diffDays > 0 && diffDays <= 3) {
+          const notifId = `due_soon-${c.id}`;
+          if (!notifications.some((prev) => prev.id === notifId)) {
+            newNotifications.push({
+              id: notifId,
+              cobrancaId: c.id,
+              nomeDevedor: c.nome,
+              valor: Number(c.valor),
+              timestamp: new Date(),
+              read: false,
+              type: 'due_soon',
+            });
+          }
+        }
+
+        // Já vencido
+        if (diffDays < 0) {
+          const notifId = `overdue-${c.id}`;
+          if (!notifications.some((prev) => prev.id === notifId)) {
+            newNotifications.push({
+              id: notifId,
+              cobrancaId: c.id,
+              nomeDevedor: c.nome,
+              valor: Number(c.valor),
+              timestamp: new Date(),
+              read: false,
+              type: 'overdue',
+            });
+          }
+        }
+      });
 
       if (newNotifications.length > 0) {
         setNotifications((prev) => [...newNotifications, ...prev]);
@@ -46,14 +98,11 @@ useEffect(() => {
     }
   };
 
-  // Primeiro fetch imediato
   fetchNotifications();
-
-  // Intervalo de atualização
-  const interval = setInterval(fetchNotifications, 10000); // a cada 10s
+  const interval = setInterval(fetchNotifications, 60000); // a cada 1 minuto
 
   return () => clearInterval(interval);
-}, [userId, notifications]);
+}, [userId]);
 
   // 2️⃣ Realtime com Supabase
   useEffect(() => {
@@ -75,12 +124,13 @@ useEffect(() => {
 
           if (newData.status === "pago" && oldData.status !== "pago") {
             const newNotification: Notification = {
-              id: `${newData.id}-${Date.now()}`,
+              id: `payment-${newData.id}-${Date.now()}`,
               cobrancaId: newData.id,
               nomeDevedor: newData.nome_devedor,
               valor: Number(newData.valor),
               timestamp: new Date(),
               read: false,
+              type: 'payment_confirmed',
             };
 
             setNotifications((prev) => [newNotification, ...prev]);

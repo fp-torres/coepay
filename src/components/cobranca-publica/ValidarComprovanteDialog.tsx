@@ -46,7 +46,7 @@ export const ValidarComprovanteDialog = ({
         <DialogHeader>
           <DialogTitle>Confirmar pagamento</DialogTitle>
           <DialogDescription>
-            Faça upload de até 2 comprovantes de pagamento para validação automática.
+            Faça upload de até 2 comprovantes de pagamento. Os comprovantes serão verificados manualmente.
           </DialogDescription>
         </DialogHeader>
         
@@ -74,10 +74,11 @@ export const ValidarComprovanteDialog = ({
           </div>
 
           <div className="bg-muted/50 p-3 rounded-lg text-sm">
-            <p className="font-medium mb-1">O sistema validará automaticamente:</p>
+            <p className="font-medium mb-1">Importante:</p>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>Valor do pagamento (tolerância de R$ 0,50)</li>
-              <li>Chave PIX do destinatário</li>
+              <li>Envie comprovantes legíveis e completos</li>
+              <li>Aceitos: JPG, PNG ou PDF</li>
+              <li>Os comprovantes serão verificados manualmente</li>
             </ul>
           </div>
         </div>
@@ -98,12 +99,12 @@ export const ValidarComprovanteDialog = ({
             {validandoComprovante ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Validando...
+                Enviando...
               </>
             ) : (
               <>
                 <CheckCircle className="mr-2 h-4 w-4" />
-                Validar e Confirmar
+                Enviar Comprovante
               </>
             )}
           </Button>

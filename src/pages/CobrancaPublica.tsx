@@ -214,49 +214,9 @@ const validarEMarcarComoPago = async () => {
   setValidandoComprovante(true);
 
   try {
-    // Converter todos os arquivos para base64
-    const base64Promises = comprovanteFiles.map(file => {
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    });
-
-    const imagesBase64 = await Promise.all(base64Promises);
-
-    // Chamar edge function para validar comprovantes
-    const response = await fetch(
-      "https://mwspdahfoeurzbfekkap.supabase.co/functions/v1/validar-comprovante",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          imagesBase64,
-          valor: cobranca.valorAtual,
-          chavePix: cobranca.pixCobranca,
-        }),
-      }
-    );
-
-    const resultado = await response.json();
-
-    if (!resultado.valido) {
-      toast({
-        title: "Comprovante inválido",
-        description: resultado.motivo,
-        variant: "destructive",
-      });
-      setValidandoComprovante(false);
-      return;
-    }
-
     // Upload dos comprovantes para o backend
     const formData = new FormData();
-    comprovanteFiles.forEach((file, index) => {
+    comprovanteFiles.forEach((file) => {
       formData.append('comprovantes', file);
     });
 
@@ -268,9 +228,9 @@ const validarEMarcarComoPago = async () => {
     if (!uploadResponse.ok) throw new Error("Erro ao fazer upload dos comprovantes");
 
     const uploadData = await uploadResponse.json();
-    const comprovanteUrls = uploadData.urls.join(','); // salva como string separada por vírgula
+    const comprovanteUrls = uploadData.urls.join(',');
 
-    // Se válido, marca como pago com as URLs dos comprovantes
+    // Marca como pago com as URLs dos comprovantes
     const resp = await fetch(`http://localhost:5000/devedores/${cobranca.id}/pagar`, {
       method: "PUT",
       headers: {
@@ -296,14 +256,14 @@ const validarEMarcarComoPago = async () => {
       valor: Number(cobranca.valor),
       timestamp: new Date(),
       read: false,
+      type: 'payment_confirmed',
     };
 
     addNotification(novaNotificacao);
 
     toast({
-      title: "Pagamento confirmado ✅",
-      description: "Comprovante(s) validado(s) e pagamento confirmado!",
-      className: "bg-green-50 text-green-700 border-green-400",
+      title: "Pagamento enviado para verificação ✅",
+      description: "Comprovante(s) recebido(s)! Aguarde a validação manual.",
     });
 
     setDialogOpen(false);
@@ -313,7 +273,7 @@ const validarEMarcarComoPago = async () => {
     console.error(err);
     toast({
       title: "Erro",
-      description: "Não foi possível validar o comprovante",
+      description: "Não foi possível enviar o comprovante",
       variant: "destructive",
     });
   } finally {

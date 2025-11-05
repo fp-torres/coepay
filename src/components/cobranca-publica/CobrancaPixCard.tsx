@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, CheckCircle, FileText } from "lucide-react";
+import { Copy, CheckCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ComprovanteViewer } from "./ComprovanteViewer";
 
 interface CobrancaPixCardProps {
   pago: boolean;
@@ -44,33 +45,9 @@ export const CobrancaPixCard = ({
         {pago ? (
           <div className="flex flex-col items-center space-y-4 py-4">
             <CheckCircle className="w-20 h-20 text-green-500" />
-            
-            {comprovanteUrl && (
-              <div className="w-full max-w-md p-4 border rounded-lg bg-white shadow-sm space-y-3">
-                <p className="text-sm font-semibold text-left">Comprovante(s) de Pagamento:</p>
-                {comprovanteUrl.split(',').map((url, index) => (
-                  <div key={index}>
-                    {url.trim().endsWith('.pdf') ? (
-                      <a 
-                        href={`http://localhost:5000${url.trim()}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                      >
-                        <FileText className="h-8 w-8 text-blue-600" />
-                        <span className="text-blue-600 font-medium">Abrir Comprovante PDF {comprovanteUrl.split(',').length > 1 ? `#${index + 1}` : ''}</span>
-                      </a>
-                    ) : (
-                      <img 
-                        src={`http://localhost:5000${url.trim()}`} 
-                        alt={`Comprovante de Pagamento ${comprovanteUrl.split(',').length > 1 ? `#${index + 1}` : ''}`}
-                        className="w-full h-auto rounded-lg border shadow-sm"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="w-full max-w-md">
+              <ComprovanteViewer comprovanteUrls={comprovanteUrl} />
+            </div>
           </div>
         ) : (
           <div className="flex justify-center py-2">
