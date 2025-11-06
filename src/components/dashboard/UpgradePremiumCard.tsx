@@ -27,12 +27,15 @@ export const UpgradePremiumCard = ({ plan }: UpgradePremiumCardProps) => {
             <div className="space-y-3">
               {/* Basic agora em roxo */}
               <div className="border-l-4 border-purple-500 pl-3">
-                <h4 className="font-semibold text-sm flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-500" />
-                  Basic - R$ 29,90/mês
-                </h4>
+<h4 className="font-semibold text-sm flex items-center gap-2">
+  <Sparkles className="w-4 h-4 text-purple-500" />
+  Basic
+  {/* - R$ 29,90/mês */}
+   <span className="text-xs bg-purple-100 text-purple-600 font-semibold px-2 py-0.5 rounded-full">Em breve</span>
+</h4>
+
                 <ul className="text-sm text-muted-foreground space-y-1 mt-2">
-                  <li>• Até 50 cobranças/mês</li>
+                  <li>• Até 25 cobranças/mês</li>
                   <li>• Juros compostos</li>
                   <li>• Relatórios básicos</li>
                 </ul>
@@ -42,7 +45,9 @@ export const UpgradePremiumCard = ({ plan }: UpgradePremiumCardProps) => {
               <div className="border-l-4 border-amber-500 pl-3">
                 <h4 className="font-semibold text-sm flex items-center gap-2">
                   <Crown className="w-4 h-4 text-amber-500" />
-                  Premium - R$ 49,90/mês
+                  Premium 
+                    {/* - R$ 49,90/mês */}
+                  <span className="text-xs bg-amber-100 text-amber-600 font-semibold px-2 py-0.5 rounded-full">Em breve</span>
                 </h4>
                 <ul className="text-sm text-muted-foreground space-y-1 mt-2">
                   <li>• Cobranças ilimitadas</li>
@@ -66,13 +71,14 @@ export const UpgradePremiumCard = ({ plan }: UpgradePremiumCardProps) => {
 
 
 <Button
-  onClick={() => navigate("/futuras-implementacoes")}
+  disabled
   variant="outline"
-  className="w-full px-4 py-2 border text-coepay-primary bg-white font-semibold shadow-sm rounded-xl
-             hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+  className="w-full px-4 py-2 border text-gray-400 bg-gray-100 font-semibold shadow-sm rounded-xl 
+             cursor-not-allowed opacity-70"
 >
-  Ver Futuras Implementações
+  Ver Futuras Implementações (Em breve)
 </Button>
+
 
             </div>
           </div>

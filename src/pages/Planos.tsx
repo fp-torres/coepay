@@ -12,7 +12,7 @@ const PLANS = {
     price: "R$ 29,90",
     description: "Recursos essenciais para começar",
     features: [
-      "Até 50 cobranças por mês",
+      "Até 25 cobranças por mês",
       "Juros compostos automáticos",
       "Período de juros configurável (dia/mês)",
       "Relatórios básicos",
@@ -125,17 +125,20 @@ const Planos = () => {
               Plano Atual
             </Badge>
           )}
-          <CardHeader>
-            <CardTitle className="text-2xl flex items-center gap-2">
-              Basic
-              <Sparkles className="w-5 h-5 text-purple-500" />
-            </CardTitle>
-            <CardDescription>{PLANS.basic.description}</CardDescription>
-            <div className="mt-4">
-              <span className="text-4xl font-bold">{PLANS.basic.price}</span>
-              <span className="text-muted-foreground">/mês</span>
-            </div>
-          </CardHeader>
+<CardHeader>
+  <CardTitle className="text-2xl flex items-center gap-2">
+    Basic
+    <span className="text-xs bg-purple-100 text-purple-600 font-semibold px-2 py-0.5 rounded-full">
+      Em breve
+    </span>
+    <Sparkles className="w-5 h-5 text-purple-500" />
+  </CardTitle>
+  <CardDescription>{PLANS.basic.description}</CardDescription>
+  <div className="mt-4">
+    <span className="text-4xl font-bold text-muted-foreground">—</span>
+    <span className="text-muted-foreground">/mês</span>
+  </div>
+</CardHeader>
           <CardContent className="flex flex-col flex-grow space-y-4">
             <ul className="space-y-3 flex-grow">
               {PLANS.basic.features.map((feature, idx) => (
@@ -148,14 +151,15 @@ const Planos = () => {
 
             <div className="mt-auto">
               {subscription.plan === "free" ? (
-                <Button
-                  onClick={() => handleSelectPlan(PLANS.basic.priceId)}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                  disabled={subscription.loading}
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {subscription.loading ? "Carregando..." : "Assinar Basic"}
-                </Button>
+<Button
+  onClick={() => handleSelectPlan(PLANS.basic.priceId)}
+  disabled // 🔒 sempre desabilitado
+  className="w-full bg-gradient-to-r from-purple-300 to-pink-300 text-white font-semibold cursor-not-allowed opacity-70 border border-gray-300"
+>
+  <Sparkles className="w-4 h-4 mr-2" />
+  Disponível em breve
+</Button>
+
               ) : subscription.plan === "basic" ? (
                 <Button variant="outline" onClick={subscription.openCustomerPortal} className="w-full">
                   Gerenciar Assinatura
@@ -191,12 +195,14 @@ const Planos = () => {
 
         <CardHeader>
           <CardTitle className="text-2xl flex items-center gap-2">
-            Premium
+            Premium    <span className="text-xs bg-amber-100 text-amber-600 font-semibold px-2 py-0.5 rounded-full">
+      Em breve
+    </span>
             <Crown className="w-5 h-5 text-amber-500" />
           </CardTitle>
           <CardDescription>{PLANS.premium.description}</CardDescription>
           <div className="mt-4">
-            <span className="text-4xl font-bold">{PLANS.premium.price}</span>
+    <span className="text-4xl font-bold text-muted-foreground">—</span>
             <span className="text-muted-foreground">/mês</span>
           </div>
         </CardHeader>
@@ -216,14 +222,15 @@ const Planos = () => {
                 Gerenciar Assinatura
               </Button>
             ) : (
-              <Button
-                onClick={() => handleSelectPlan(PLANS.premium.priceId)}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-                disabled={subscription.loading}
-              >
-                <Crown className="w-4 h-4 mr-2" />
-                {subscription.loading ? "Carregando..." : "Assinar Premium"}
-              </Button>
+<Button
+  onClick={() => handleSelectPlan(PLANS.premium.priceId)}
+  disabled // 🔒 sempre desabilitado
+  className="w-full bg-gradient-to-r from-amber-300 to-orange-300 text-white font-semibold cursor-not-allowed opacity-70 border border-gray-300"
+>
+  <Crown className="w-4 h-4 mr-2" />
+  Disponível em breve
+</Button>
+
             )}
           </div>
         </CardContent>
