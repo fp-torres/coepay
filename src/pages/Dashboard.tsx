@@ -266,7 +266,7 @@ const Dashboard = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="bg-background p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <DashboardHeader 
           user={user} 
@@ -279,7 +279,7 @@ const Dashboard = () => {
           onLogout={handleLogout} 
         />
 
-        <DashboardCards 
+        <DashboardCards
           totalReceber={totalReceber}
           cobrancasAtivas={cobrancasAtivas}
           cobrancasVencidas={cobrancasVencidas}

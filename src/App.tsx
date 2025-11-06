@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AppLayout } from "./components/AppLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -24,12 +25,16 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/painel-de-controle" element={<Dashboard />} />
-          <Route path="/relatorios" element={<Relatorios />} />
-          <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/planos" element={<Planos />} />
-          <Route path="/futuras-implementacoes" element={<FuturasImplementacoes />} />
           <Route path="/cobranca/:hash" element={<CobrancaPublica />} />
+          
+          <Route element={<AppLayout />}>
+            <Route path="/painel-de-controle" element={<Dashboard />} />
+            <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/planos" element={<Planos />} />
+            <Route path="/futuras-implementacoes" element={<FuturasImplementacoes />} />
+          </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

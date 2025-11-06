@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, Crown, Sparkles } from "lucide-react";
+import { Check, Crown, Sparkles } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 
 const PLANS = {
@@ -45,23 +45,8 @@ const Planos = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background p-6">
+    <div className="bg-gradient-to-br from-background via-muted/20 to-background p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-        {/* Voltar */}
-        <Button
-          variant="outline"
-          onClick={() => navigate("/painel-de-controle")}
-          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border text-coepay-primary bg-white font-semibold shadow-sm rounded-xl
-                    hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
-        </Button>
-
-        </div>
-
         {/* Title */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Crown } from "lucide-react";
+import { Crown } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { RelatoriosOverview } from "@/components/dashboard/relatorios/RelatoriosOverview";
 import { RelatoriosPerformance } from "@/components/dashboard/relatorios/RelatoriosPerformance";
@@ -119,21 +119,10 @@ export default function Relatorios() {
   // }
 
 return (
-  <div className="min-h-screen bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/5">
+  <div className="bg-gradient-to-br from-coepay-primary/5 via-background to-coepay-secondary/5">
     <div className="container mx-auto px-4 py-6 sm:py-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/painel-de-controle")}
-          className="flex items-center border border-coepay-primary text-coepay-primary font-semibold shadow-sm
-                     hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition w-full sm:w-auto"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
-        </Button>
-
         <div className="flex items-center gap-3">
           <Crown className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500 drop-shadow-lg" />
           <div>

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { ArrowLeft, Save, Key } from "lucide-react";
+import { Save, Key } from "lucide-react";
 
 interface User {
   id: number;
@@ -72,19 +72,8 @@ const Configuracoes = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6 flex justify-center items-start">
+    <div className="bg-gradient-to-b from-gray-50 to-white p-6 flex justify-center items-start">
       <div className="w-full max-w-3xl space-y-6">
-        {/* Botão Voltar */}
-        <Button
-          variant="outline"
-          onClick={() => navigate("/painel-de-controle")}
-          className="flex items-center justify-center w-full sm:w-auto
-                     bg-gradient-to-r from-coepay-primary to-coepay-secondary
-                     text-white font-semibold shadow-lg rounded-lg hover:opacity-90 transition"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-
         {/* Card principal */}
         <Card className="shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-coepay-primary to-coepay-secondary text-white p-6">

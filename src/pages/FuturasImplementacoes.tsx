@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Sparkles, Clock, CheckCircle2, AlertCircle, Lightbulb } from "lucide-react";
+import { Sparkles, Clock, CheckCircle2, AlertCircle, Lightbulb } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { NovaSugestaoForm } from "@/components/sugestoes/NovaSugestaoForm";
 import { KanbanBoard } from "@/components/sugestoes/KanbanBoard";
@@ -86,20 +86,8 @@ const FuturasImplementacoes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background p-6">
+    <div className="bg-gradient-to-br from-background via-muted/20 to-background p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/painel-de-controle")}
-            className="bg-white"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
-        </div>
-
         {/* Title */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">

@@ -99,71 +99,21 @@ export const DashboardHeader = ({
           onClearAll={clearNotifications}
         />
 
-        {/* Relatórios */}
-        <Button
-          size="sm"
-          onClick={() => navigate("/relatorios")}
-          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 
-                    bg-gradient-to-r from-amber-400 via-rose-400 to-purple-500
-                    hover:from-amber-500 hover:via-rose-500 hover:to-purple-600
-                    text-white font-semibold shadow-sm rounded-xl
-                    transition-all duration-300"
-        >
-          <BarChart3 className="w-4 h-4 mr-2" />
-          Relatórios Avançados
-        </Button>
-
-
-        {/* Planos — Gradiente dourado + roxo */}
-        <Button
-          size="sm"
-          onClick={() => navigate("/planos")}
-          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 
-                    bg-gradient-to-r from-amber-400 via-pink-400 to-purple-500
-                    text-white font-semibold shadow-sm rounded-xl
-                    hover:from-amber-500 hover:via-pink-500 hover:to-purple-600
-                    transition-all duration-300"
-        >
-          <Crown className="w-4 h-4" />
-        </Button>
-
-
-
-
-
         {/* Gerenciar Assinatura */}
         {subscription.subscribed && (
           <Button
             size="sm"
             onClick={subscription.openCustomerPortal}
-            className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border border-muted-foreground/30 font-semibold shadow-sm rounded-xl
-                       hover:bg-muted/30 transition"
+            className="flex items-center justify-center w-full sm:w-auto px-4 py-2 
+                       bg-gradient-to-r from-amber-400 via-pink-400 to-purple-500
+                       text-white font-semibold shadow-sm rounded-xl
+                       hover:from-amber-500 hover:via-pink-500 hover:to-purple-600
+                       transition-all duration-300"
           >
             <CreditCard className="w-4 h-4 mr-2" />
-            Gerenciar
+            Gerenciar Assinatura
           </Button>
         )}
-
-        {/* Configurações — branco com gradiente no hover */}
-        <Button
-          size="sm"
-          onClick={() => navigate("/configuracoes")}
-          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border text-coepay-primary bg-white font-semibold shadow-sm rounded-xl
-                     hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
-        >
-          <Settings className="w-4 h-4" />
-        </Button>
-
-        {/* Sair — branco com gradiente no hover */}
-        <Button
-          size="sm"
-          onClick={onLogout}
-          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 border text-coepay-primary bg-white font-semibold shadow-sm rounded-xl
-                     hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
-        >
-          <LogOut className="w-4 h-4" />
-          Sair
-        </Button>
       </div>
     </div>
   );
