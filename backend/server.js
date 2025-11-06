@@ -149,6 +149,35 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+// Função para calcular juros compostos corretamente
+const calcularJurosCompostos = (valorInicial, taxa, tipo, dataVencimento) => {
+  const hoje = new Date();
+  const vencimento = new Date(dataVencimento);
+  
+  // Se não venceu, retorna valor original
+  if (hoje <= vencimento) return valorInicial;
+  
+  const diferencaMs = hoje.getTime() - vencimento.getTime();
+  const diasVencido = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
+  
+  if (diasVencido <= 0) return valorInicial;
+  
+  let periodos;
+  if (tipo === 'diario') {
+    // Diário: conta cada dia
+    periodos = diasVencido;
+  } else {
+    // Mensal: só conta meses completos (após 30 dias)
+    periodos = Math.floor(diasVencido / 30);
+  }
+  
+  // Se não completou nenhum período, retorna valor original
+  if (periodos === 0) return valorInicial;
+  
+  const taxaDecimal = parseFloat(taxa) / 100;
+  return valorInicial * Math.pow(1 + taxaDecimal, periodos);
+};
+
 // BUSCAR DEVEDORES POR USUÁRIO
 app.get("/devedores", async (req, res) => {
   const { user_id } = req.query;
@@ -157,7 +186,29 @@ app.get("/devedores", async (req, res) => {
       "SELECT * FROM devedores WHERE user_id = $1 ORDER BY created_at DESC",
       [user_id]
     );
-    res.json(result.rows);
+    
+    // Calcula valor atual com juros para cada cobrança
+    const devedoresComJuros = result.rows.map(devedor => {
+      const valorInicial = parseFloat(devedor.valor);
+      let valorAtual = valorInicial;
+      
+      // Calcula juros se existir taxa e tipo
+      if (devedor.taxa_juros && devedor.tipo_juros && devedor.status !== 'paga') {
+        valorAtual = calcularJurosCompostos(
+          valorInicial,
+          devedor.taxa_juros,
+          devedor.tipo_juros,
+          devedor.data_vencimento
+        );
+      }
+      
+      return {
+        ...devedor,
+        valor_atual: valorAtual
+      };
+    });
+    
+    res.json(devedoresComJuros);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao buscar devedores" });
@@ -205,20 +256,38 @@ app.post("/devedores", async (req, res) => {
   }
 });
 
-    // Rota pública usando hash
-    app.get("/cobranca/:hash", async (req, res) => {
-      const { hash } = req.params;
-      try {
-        const result = await pool.query("SELECT * FROM devedores WHERE hash = $1", [hash]);
-        if (result.rows.length === 0) {
-          return res.status(404).json({ message: "Cobrança não encontrada" });
-        }
-        res.json(result.rows[0]);
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Erro ao buscar cobrança" });
-      }
+// Rota pública usando hash
+app.get("/cobranca/:hash", async (req, res) => {
+  const { hash } = req.params;
+  try {
+    const result = await pool.query("SELECT * FROM devedores WHERE hash = $1", [hash]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Cobrança não encontrada" });
+    }
+    
+    const devedor = result.rows[0];
+    const valorInicial = parseFloat(devedor.valor);
+    let valorAtual = valorInicial;
+    
+    // Calcula juros se existir taxa e tipo e não estiver paga
+    if (devedor.taxa_juros && devedor.tipo_juros && devedor.status !== 'paga') {
+      valorAtual = calcularJurosCompostos(
+        valorInicial,
+        devedor.taxa_juros,
+        devedor.tipo_juros,
+        devedor.data_vencimento
+      );
+    }
+    
+    res.json({
+      ...devedor,
+      valor_atual: valorAtual
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao buscar cobrança" });
+  }
+});
 
 // COBRANÇA PÚBLICA
 app.get("/cobranca/:id", async (req, res) => {

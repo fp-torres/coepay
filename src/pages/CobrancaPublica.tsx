@@ -96,28 +96,6 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
     return () => clearInterval(intervalo);
   }, [cobranca]);
 
-  // Função precisa estar aqui, dentro do componente
-  const calcularJurosCompostos = (valorInicial: number, taxa: number, tipo: 'mensal' | 'diario', dataVencimento: string) => {
-    const hoje = new Date();
-    const vencimento = new Date(dataVencimento);
-    
-    if (hoje <= vencimento) return valorInicial;
-    
-    const diferencaMs = hoje.getTime() - vencimento.getTime();
-    const diasVencido = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
-    
-    if (diasVencido <= 0) return valorInicial;
-    
-    let periodos: number;
-    if (tipo === 'diario') {
-      periodos = diasVencido;
-    } else {
-      periodos = diasVencido / 30; // Usando 30 dias por mês para consistência
-    }
-    
-    const taxaDecimal = taxa / 100;
-    return valorInicial * Math.pow(1 + taxaDecimal, periodos);
-  };
 
   // Carrega cobrança
     const carregarCobranca = async () => {
@@ -128,15 +106,8 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
 
         const cobrancaData = await response.json();
 
-        let valorAtual = parseFloat(cobrancaData.valor);
-        if (cobrancaData.taxa_juros && cobrancaData.tipo_juros) {
-          valorAtual = calcularJurosCompostos(
-            parseFloat(cobrancaData.valor),
-            parseFloat(cobrancaData.taxa_juros),
-            cobrancaData.tipo_juros,
-            cobrancaData.data_vencimento
-          );
-        }
+        // Backend já retorna valor_atual calculado
+        const valorAtual = parseFloat(cobrancaData.valor_atual || cobrancaData.valor);
 
         // Calcula dias vencido e status
         const hoje = new Date();

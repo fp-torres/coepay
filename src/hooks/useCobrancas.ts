@@ -23,7 +23,13 @@ export const useCobrancas = (userId: number | undefined) => {
         const resp = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
         const data = await resp.json();
 
-        setCobrancas(data);
+        // Backend já retorna valor_atual calculado
+        const cobrancasComValorAtual = data.map((c: any) => ({
+          ...c,
+          valorAtual: c.valor_atual || c.valor
+        }));
+
+        setCobrancas(cobrancasComValorAtual);
       } catch (err) {
         console.error("Erro ao buscar cobranças:", err);
       }
