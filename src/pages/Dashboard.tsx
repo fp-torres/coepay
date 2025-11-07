@@ -55,28 +55,6 @@ const Dashboard = () => {
       return () => clearInterval(interval);
     }, [user]);
 
-  const calcularJurosCompostos = (valor: number, taxaJuros: number, tipoJuros: 'mensal' | 'diario', dataVencimento: string): number => {
-    const hoje = new Date();
-    const vencimento = new Date(dataVencimento);
-    
-    if (hoje <= vencimento) return valor;
-    
-    const diferencaMs = hoje.getTime() - vencimento.getTime();
-    const diasVencido = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
-    
-    if (diasVencido <= 0) return valor;
-    
-    let periodos: number;
-    if (tipoJuros === 'diario') {
-      periodos = diasVencido;
-    } else {
-      periodos = diasVencido / 30; // Usando 30 dias por mês para consistência
-    }
-    
-    const taxa = taxaJuros / 100;
-    return valor * Math.pow(1 + taxa, periodos);
-  };
-
   const carregarCobrancas = async (userId: number) => {
   try {
     const response = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
@@ -85,9 +63,8 @@ const Dashboard = () => {
       const cobrancasFormatadas = data.map((item: any) => {
         const valorNum = Number(item.valor);
         const taxaJurosNum = Number(item.taxa_juros);
-        const valorAtual = (taxaJurosNum && item.tipo_juros)
-          ? calcularJurosCompostos(valorNum, taxaJurosNum, item.tipo_juros, item.data_vencimento)
-          : valorNum;
+        // Backend já retorna valor_atual calculado corretamente
+        const valorAtual = Number(item.valor_atual || item.valor);
 
         const hoje = new Date();
         const vencimento = new Date(item.data_vencimento);
