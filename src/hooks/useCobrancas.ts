@@ -23,13 +23,20 @@ export const useCobrancas = (userId: number | undefined) => {
         const resp = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
         const data = await resp.json();
 
-        // Backend já retorna valor_atual calculado
-        const cobrancasComValorAtual = data.map((c: any) => ({
-          ...c,
-          valorAtual: c.valor_atual || c.valor
+        // Mapeia snake_case do backend para camelCase do frontend
+        const cobrancasFormatadas = data.map((c: any) => ({
+          id: c.id?.toString(),
+          nomeDevedor: c.nome,
+          valor: parseFloat(c.valor),
+          valorAtual: c.valor_atual ? parseFloat(c.valor_atual) : parseFloat(c.valor),
+          dataVencimento: c.data_vencimento,
+          status: c.status,
+          link: c.link,
+          taxaJuros: c.taxa_juros ? parseFloat(c.taxa_juros) : undefined,
+          tipoJuros: c.tipo_juros
         }));
 
-        setCobrancas(cobrancasComValorAtual);
+        setCobrancas(cobrancasFormatadas);
       } catch (err) {
         console.error("Erro ao buscar cobranças:", err);
       }
