@@ -12,6 +12,7 @@ import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import Planos from "./pages/Planos";
 import FuturasImplementacoes from "./pages/FuturasImplementacoes";
+import CobrancasPagas from "./pages/CobrancasPagas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route element={<AppLayout />}>
             <Route path="/painel-de-controle" element={<Dashboard />} />
             <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/cobrancas-pagas" element={<CobrancasPagas />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/futuras-implementacoes" element={<FuturasImplementacoes />} />

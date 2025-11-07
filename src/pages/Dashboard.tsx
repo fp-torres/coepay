@@ -8,7 +8,6 @@ import { DashboardCards } from "@/components/dashboard/DashboardCards";
 import { UpgradePremiumCard } from "@/components/dashboard/UpgradePremiumCard";
 import { NovaCobrancaForm } from "@/components/dashboard/NovaCobrancaForm";
 import { CobrancasList } from "@/components/dashboard/CobrancasList";
-import { CobrancasPagasList } from "@/components/dashboard/CobrancasPagasList";
 
 interface User {
   id: number;
@@ -306,10 +305,6 @@ const Dashboard = () => {
             onExcluirCobranca={excluirCobranca}
           />
         </div>
-
-        {cobrancasPagas > 0 && (
-          <CobrancasPagasList cobrancas={cobrancas} />
-        )}
       </div>
     </div>
   );
