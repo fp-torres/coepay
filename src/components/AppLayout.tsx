@@ -1,8 +1,29 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Separator } from "@/components/ui/separator";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
+
+function SidebarToggleButton() {
+  const { state, toggleSidebar } = useSidebar();
+
+  return (
+    <button
+      onClick={toggleSidebar}
+      className="absolute top-10 -right-1 z-50 flex items-center justify-center w-7 h-7 rounded-full border border-sidebar-border bg-background hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white shadow-sm transition-all"
+      style={{
+        transform: "translateX(50%)",
+      }}
+    >
+      {state === "collapsed" ? (
+        <ChevronRight className="w-4 h-4" />
+      ) : (
+        <ChevronLeft className="w-4 h-4" />
+      )}
+    </button>
+  );
+}
 
 export function AppLayout() {
   const navigate = useNavigate();
@@ -26,18 +47,16 @@ export function AppLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar onLogout={handleLogout} />
+      <div className="relative flex min-h-screen w-full">
+        {/* Sidebar principal */}
+        <div className="relative">
+          <AppSidebar onLogout={handleLogout} />
+          {/* Botão de seta sobre a linha divisória */}
+          <SidebarToggleButton />
+        </div>
+
+        {/* Conteúdo */}
         <SidebarInset className="flex-1">
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold bg-gradient-to-r from-coepay-primary to-coepay-secondary bg-clip-text text-transparent">
-                CoéPay
-              </h2>
-            </div>
-          </header>
           <main className="flex-1 overflow-y-auto">
             <Outlet />
           </main>
