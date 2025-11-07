@@ -366,14 +366,17 @@ app.post("/upload-comprovante", upload.array('comprovantes', 2), async (req, res
 // Atualizar status de pagamento
 app.put("/devedores/:id/pagar", async (req, res) => {
   const { id } = req.params;
-  const { comprovante_url } = req.body;
+  const { comprovante_url, valor_pago } = req.body;
 
   try {
+    // Se valor_pago for fornecido, salva como valor_atual (valor final com juros)
+    // Caso contrário, mantém o valor_atual existente
     const result = await pool.query(
       `UPDATE devedores 
-       SET pago = true, pago_em = NOW(), status = 'paga', comprovante_url = $2
+       SET pago = true, pago_em = NOW(), status = 'paga', comprovante_url = $2, 
+           valor_atual = COALESCE($3, valor_atual)
        WHERE id = $1 RETURNING *`,
-      [id, comprovante_url || null]
+      [id, comprovante_url || null, valor_pago || null]
     );
 
     if (result.rows.length === 0) {

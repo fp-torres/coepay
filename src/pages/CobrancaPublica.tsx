@@ -201,13 +201,16 @@ const validarEMarcarComoPago = async () => {
     const uploadData = await uploadResponse.json();
     const comprovanteUrls = uploadData.urls.join(',');
 
-    // Marca como pago com as URLs dos comprovantes
+    // Marca como pago com as URLs dos comprovantes e o valor final com juros
     const resp = await fetch(`http://localhost:5000/devedores/${cobranca.id}/pagar`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ comprovante_url: comprovanteUrls }),
+      body: JSON.stringify({ 
+        comprovante_url: comprovanteUrls,
+        valor_pago: cobranca.valorAtual // Envia o valor com juros inclusos
+      }),
     });
     
     if (!resp.ok) throw new Error("Erro ao atualizar cobrança");
