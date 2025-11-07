@@ -84,12 +84,15 @@ export const marcarComoPaga = async (req, res) => {
     devedor.pago = true;
     devedor.status = "paga";
     devedor.pago_em = new Date();
-    if (comprovante_url) devedor.comprovante_url = comprovante_url;
+    devedor.comprovante_url = comprovante_url || null; // ⚡ aqui garantimos null se não vier
 
     await devedor.save();
+
+    // Retorna a cobrança atualizada
     res.json(devedor);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao atualizar cobrança" });
   }
 };
+
