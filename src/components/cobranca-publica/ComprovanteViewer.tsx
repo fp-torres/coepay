@@ -14,8 +14,16 @@ export const ComprovanteViewer = ({ comprovanteUrls }: ComprovanteViewerProps) =
 
   const urls = comprovanteUrls.split(',').map(url => url.trim());
 
+  // URLs já vêm com o caminho completo do backend (/uploads/...)
+  const getFileUrl = (url: string) => {
+    // Se a URL já começa com http, retorna ela mesma
+    if (url.startsWith('http')) return url;
+    // Caso contrário, constrói a URL completa
+    return `${window.location.protocol}//${window.location.hostname}:5000${url}`;
+  };
+
   const handleDownload = (url: string) => {
-    window.open(`http://localhost:5000${url}`, '_blank');
+    window.open(getFileUrl(url), '_blank');
   };
 
   const isImage = (url: string) => {
@@ -37,7 +45,7 @@ export const ComprovanteViewer = ({ comprovanteUrls }: ComprovanteViewerProps) =
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setSelectedImage(`http://localhost:5000${url}`)}
+                  onClick={() => setSelectedImage(getFileUrl(url))}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
