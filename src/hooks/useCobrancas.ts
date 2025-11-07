@@ -20,7 +20,7 @@ export const useCobrancas = (userId: number | undefined) => {
 
     const fetchCobrancas = async () => {
       try {
-        const resp = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
+        const resp = await fetch(`http://localhost:3000/devedores?user_id=${userId}`);
         const data = await resp.json();
 
         // Backend já retorna valor_atual calculado

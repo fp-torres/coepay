@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import logoImage from "/logo1_modo_claro.png";
 
 const Login = () => {
@@ -19,7 +19,7 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
   try {
-    const res = await fetch("http://localhost:5000/login", {
+    const res = await fetch("http://localhost:3000/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loginData),
@@ -31,13 +31,14 @@ const Login = () => {
     navigate("/painel-de-controle");
   } catch (err: any) {
     toast({ title: "Erro", description: err.message });
+    console.error(err);
   }
 };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/signup", {
+      const res = await fetch("http://localhost:3000/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(signupData),

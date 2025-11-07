@@ -80,7 +80,7 @@ const Dashboard = () => {
 
   const carregarCobrancas = async (userId: number) => {
   try {
-    const response = await fetch(`http://localhost:5000/devedores?user_id=${userId}`);
+    const response = await fetch(`http://localhost:3000/devedores?user_id=${userId}`);
     if (response.ok) {
       const data = await response.json();
       const cobrancasFormatadas = data.map((item: any) => {
@@ -163,7 +163,7 @@ const Dashboard = () => {
     const taxaJuros = subscription.subscribed ? Number(novaCobranca.taxaJuros) || 0 : 0;
 
     try {
-      const response = await fetch('http://localhost:5000/devedores', {
+      const response = await fetch('http://localhost:3000/devedores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ const Dashboard = () => {
           variant="destructive"
           onClick={async () => {
             try {
-              const response = await fetch(`http://localhost:5000/devedores/${id}`, {
+              const response = await fetch(`http://localhost:3000/devedores/${id}`, {
                 method: "DELETE",
               });
 

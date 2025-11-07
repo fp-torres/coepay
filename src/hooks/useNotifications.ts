@@ -24,11 +24,11 @@ useEffect(() => {
   const fetchNotifications = async () => {
     try {
       // Buscar cobranças pagas
-      const resp = await fetch(`http://localhost:5000/notifications/${userId}`);
+      const resp = await fetch(`http://localhost:3000/notifications/${userId}`);
       const data = await resp.json();
 
       // Buscar todas as cobranças ativas para verificar vencimentos
-      const cobrancasResp = await fetch(`http://localhost:5000/devedores?userId=${userId}`);
+      const cobrancasResp = await fetch(`http://localhost:3000/devedores?userId=${userId}`);
       const cobrancasData = await cobrancasResp.json();
 
       const hoje = new Date();

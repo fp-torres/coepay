@@ -47,7 +47,7 @@ export default function Relatorios() {
         // }
 
         // Carregar cobranças - backend já retorna valor_atual calculado
-        const response = await fetch(`http://localhost:5000/devedores?user_id=${usuario.id}`);
+        const response = await fetch(`http://localhost:3000/devedores?user_id=${usuario.id}`);
         const data = await response.json();
         
         const cobrancasProcessadas = data.map((cobranca: any) => {

@@ -101,7 +101,7 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
     const carregarCobranca = async () => {
       if (!hash) return;
       try {
-        const response = await fetch(`http://localhost:5000/cobranca/${hash}`);
+        const response = await fetch(`http://localhost:3000/devedores/hash/${hash}`);
         if (!response.ok) return;
 
         const cobrancaData = await response.json();
@@ -117,7 +117,7 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
         const status = (hoje > vencimento ? 'vencida' : 'no prazo') as 'vencida' | 'no prazo';
 
         // Busca dados do usuário para pegar o PIX padrão
-        const userResponse = await fetch(`http://localhost:5000/users/${cobrancaData.user_id}`);
+        const userResponse = await fetch(`http://localhost:3000/auth/getUser/${cobrancaData.user_id}`);
         const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
 
         // Usa o PIX específico da cobrança, se existir, senão usa o PIX padrão do usuário
@@ -191,7 +191,7 @@ const validarEMarcarComoPago = async () => {
       formData.append('comprovantes', file);
     });
 
-    const uploadResponse = await fetch('http://localhost:5000/upload-comprovante', {
+    const uploadResponse = await fetch('http://localhost:3000/upload/comprovante', {
       method: 'POST',
       body: formData,
     });
@@ -202,7 +202,7 @@ const validarEMarcarComoPago = async () => {
     const comprovanteUrls = uploadData.urls.join(',');
 
     // Marca como pago com as URLs dos comprovantes
-    const resp = await fetch(`http://localhost:5000/devedores/${cobranca.id}/pagar`, {
+    const resp = await fetch(`http://localhost:3000/devedores/${cobranca.id}/pagar`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

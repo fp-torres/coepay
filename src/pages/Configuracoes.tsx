@@ -41,7 +41,7 @@ const Configuracoes = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/users/${user.id}`, {
+      const response = await fetch(`http://localhost:3000/auth/${user.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
