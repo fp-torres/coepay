@@ -39,7 +39,7 @@ export const ComprovanteViewer = ({ comprovanteUrls }: ComprovanteViewerProps) =
             <FileText className="h-5 w-5 text-primary" />
             <span className="text-sm flex-1 truncate text-foreground">
               Comprovante {index + 1}
-            </span>
+            </span> 
             <div className="flex gap-2">
               {isImage(url) && (
                 <Button

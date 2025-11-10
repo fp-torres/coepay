@@ -1,16 +1,27 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import { initModels } from "./models/initModels.js";
+
 import devedorRoutes from "./routes/devedor.routes.js";
 import authRoutes from "./routes/authRoutes.routes.js";
 import notificacaoRoutes from "./routes/notificacao.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import webhookRoutes from "./routes/webhook.routes.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Middlewares globais
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true }));
+
+// 🔥 Servir arquivos estáticos da pasta "src/uploads"
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Rotas
 app.use("/devedores", devedorRoutes);
@@ -19,7 +30,7 @@ app.use("/notifications", notificacaoRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/webhook", webhookRoutes);
 
-// Sincronizar DB e iniciar servidor
+// Inicializar DB e servidor
 await initModels();
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
