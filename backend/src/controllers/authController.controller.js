@@ -91,3 +91,30 @@ export const buscarUsuarioPorId = async (id) => {
   }
 };
 
+// Atualizar senha do usuário
+export const updatePassword = async (req, res) => {
+  const { id } = req.params;
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    // Buscar o usuário
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+
+    // Verificar se a senha antiga confere
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Senha atual incorreta" });
+    }
+
+    // Atualizar no banco — sem hashear manualmente
+    await user.update({ password: newPassword }); // 🔹 o hook fará o hash automático
+
+    res.json({ message: "Senha atualizada com sucesso!" });
+  } catch (err) {
+    console.error("Erro ao atualizar senha:", err);
+    res.status(500).json({ message: "Erro ao atualizar senha" });
+  }
+};

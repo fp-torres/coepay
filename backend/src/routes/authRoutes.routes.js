@@ -1,11 +1,12 @@
 import express from "express";
-import { login, signup, updateUser, buscarUsuarioPorId } from "../controllers/authController.controller.js";
+import { login, signup, updateUser, buscarUsuarioPorId, updatePassword } from "../controllers/authController.controller.js";
 
 const router = express.Router();
 
 router.post("/login", login);
 router.post("/signup", signup);
-router.put("/:id", updateUser); // 🔹 nova rota para atualizar dados
+router.put("/:id", updateUser); // nova rota para atualizar dados
+router.put("/:id/updatePassword", updatePassword); // nova rota para atualizar senha
 router.get("/getUser/:id", async (req, res) => {
   try {
     const usuario = await buscarUsuarioPorId(req.params.id);
