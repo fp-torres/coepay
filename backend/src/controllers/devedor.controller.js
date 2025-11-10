@@ -1,5 +1,42 @@
 import { Devedor } from "../models/initModels.js";
 import { calcularJurosCompostos } from "../utils/juros.js";
+import express from "express";
+
+
+export const listarTodosDevedores = async (req, res) => {
+  try {
+    // 🔹 Busca todos os registros na tabela Devedor
+    const devedores = await Devedor.findAll({
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (!devedores.length) {
+      return res.json([]); // retorna lista vazia, caso não tenha devedores
+    }
+
+    // 🔹 Adiciona cálculo de juros se aplicável
+    const devedoresComJuros = devedores.map((d) => {
+      const precisaDeJuros = d.status !== "paga" && d.taxa_juros && d.tipo_juros;
+
+      const valorAtual = precisaDeJuros
+        ? calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento)
+        : d.valor;
+
+      return {
+        ...d.toJSON(),
+        valor_atual: Number(valorAtual.toFixed(2)),
+      };
+    });
+
+    // 🔹 Retorna a lista completa
+    res.json(devedoresComJuros);
+  } catch (err) {
+    console.error("Erro ao buscar todos os devedores:", err);
+    res.status(500).json({ message: "Erro ao buscar devedores" });
+  }
+};
+
+
 export const listarDevedores = async (req, res) => {
   try {
     const userId = Number(req.query.user_id || req.query.userId); // pega query e garante número
