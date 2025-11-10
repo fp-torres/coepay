@@ -46,7 +46,7 @@ const CobrancasPagas = () => {
     if (ordenacao === "data") {
       return new Date(b.dataVencimento).getTime() - new Date(a.dataVencimento).getTime();
     } else if (ordenacao === "valor") {
-      return b.valor - a.valor;
+      return (b.valorAtual ?? b.valor) - (a.valorAtual ?? a.valor);
     } else {
       return a.nomeDevedor.localeCompare(b.nomeDevedor);
     }
@@ -58,7 +58,7 @@ const CobrancasPagas = () => {
   const fim = inicio + itensPorPagina;
   const cobrancasPaginadas = cobrancasOrdenadas.slice(inicio, fim);
 
-  const totalRecebido = cobrancasPagas.reduce((sum, c) => sum + c.valor, 0);
+  const totalRecebido = cobrancasPagas.reduce((sum, c) => sum + (c.valorAtual ?? c.valor), 0);
 
   if (!user) return null;
 
@@ -185,7 +185,7 @@ const CobrancasPagas = () => {
                       </div>
                       <div className="text-xl font-bold text-green-600">
                         R${" "}
-                        {cobranca.valor.toLocaleString("pt-BR", {
+                        {(cobranca.valorAtual ?? cobranca.valor).toLocaleString("pt-BR", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}

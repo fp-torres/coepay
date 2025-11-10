@@ -1,5 +1,5 @@
-export const calcularJurosCompostos = (valorInicial, taxa, tipo, dataVencimento) => {
-  const hoje = new Date();
+export const calcularJurosCompostos = (valorInicial, taxa, tipo, dataVencimento, dataReferencia = new Date()) => {
+  const hoje = new Date(dataReferencia);
   const vencimento = new Date(dataVencimento);
 
   if (hoje <= vencimento) return valorInicial;

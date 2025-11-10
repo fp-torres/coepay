@@ -16,11 +16,16 @@ export const listarTodosDevedores = async (req, res) => {
 
     // 🔹 Adiciona cálculo de juros se aplicável
     const devedoresComJuros = devedores.map((d) => {
-      const precisaDeJuros = d.status !== "paga" && d.taxa_juros && d.tipo_juros;
+      const temJuros = d.taxa_juros && d.tipo_juros;
 
-      const valorAtual = precisaDeJuros
-        ? calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento)
-        : d.valor;
+      let valorAtual = d.valor;
+      if (temJuros) {
+        if (d.status === "paga" && d.pago_em) {
+          valorAtual = calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento, d.pago_em);
+        } else if (d.status !== "paga") {
+          valorAtual = calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento);
+        }
+      }
 
       return {
         ...d.toJSON(),
@@ -52,20 +57,28 @@ export const buscarDevedorPorId = async (req, res) => {
       return res.status(404).json({ message: "Devedor não encontrado." });
     }
 
-    // 🔹 Calcula o valor atualizado com juros (se aplicável)
-    const precisaDeJuros =
-      devedor.status !== "paga" && devedor.taxa_juros && devedor.tipo_juros;
+    const temJuros = devedor.taxa_juros && devedor.tipo_juros;
 
-    const valorAtual = precisaDeJuros
-      ? calcularJurosCompostos(
+    let valorAtual = devedor.valor;
+    if (temJuros) {
+      if (devedor.status === "paga" && devedor.pago_em) {
+        valorAtual = calcularJurosCompostos(
+          devedor.valor,
+          devedor.taxa_juros,
+          devedor.tipo_juros,
+          devedor.data_vencimento,
+          devedor.pago_em
+        );
+      } else if (devedor.status !== "paga") {
+        valorAtual = calcularJurosCompostos(
           devedor.valor,
           devedor.taxa_juros,
           devedor.tipo_juros,
           devedor.data_vencimento
-        )
-      : devedor.valor;
+        );
+      }
+    }
 
-    // 🔹 Retorna o objeto com o campo `valor_atual`
     res.json({
       ...devedor.toJSON(),
       valor_atual: Number(valorAtual.toFixed(2)),
@@ -87,10 +100,17 @@ export const listarDevedores = async (req, res) => {
     });
 
     const devedoresComJuros = devedores.map((d) => {
-      const valorAtual = (d.status !== "paga" && d.taxa_juros && d.tipo_juros)
-        ? calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento)
-        : d.valor;
-      return { ...d.toJSON(), valor_atual: valorAtual };
+      const temJuros = d.taxa_juros && d.tipo_juros;
+
+      let valorAtual = d.valor;
+      if (temJuros) {
+        if (d.status === "paga" && d.pago_em) {
+          valorAtual = calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento, d.pago_em);
+        } else if (d.status !== "paga") {
+          valorAtual = calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento);
+        }
+      }
+      return { ...d.toJSON(), valor_atual: Number(valorAtual.toFixed(2)) };
     });
 
     res.json(devedoresComJuros);
@@ -126,11 +146,16 @@ export const buscarPorHash = async (req, res) => {
     const devedor = await Devedor.findOne({ where: { hash } });
     if (!devedor) return res.status(404).json({ message: "Cobrança não encontrada" });
 
-    const valorAtual = (devedor.status !== "paga" && devedor.taxa_juros)
-      ? calcularJurosCompostos(devedor.valor, devedor.taxa_juros, devedor.tipo_juros, devedor.data_vencimento)
-      : devedor.valor;
+    let valorAtual = devedor.valor;
+    if (devedor.taxa_juros && devedor.tipo_juros) {
+      if (devedor.status === "paga" && devedor.pago_em) {
+        valorAtual = calcularJurosCompostos(devedor.valor, devedor.taxa_juros, devedor.tipo_juros, devedor.data_vencimento, devedor.pago_em);
+      } else if (devedor.status !== "paga") {
+        valorAtual = calcularJurosCompostos(devedor.valor, devedor.taxa_juros, devedor.tipo_juros, devedor.data_vencimento);
+      }
+    }
 
-    res.json({ ...devedor.toJSON(), valor_atual: valorAtual });
+    res.json({ ...devedor.toJSON(), valor_atual: Number(valorAtual.toFixed(2)) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao buscar cobrança" });
