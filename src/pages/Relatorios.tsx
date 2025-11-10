@@ -19,7 +19,7 @@ interface Cobranca {
   status: 'ativa' | 'vencida' | 'paga';
   link: string;
   taxaJuros?: number;
-  tipoJuros?: 'mensal' | 'diario';
+  tipoJuros?: 'mensal' | 'diario' | 'anual';
 }
 
 export default function Relatorios() {

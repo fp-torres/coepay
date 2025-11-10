@@ -14,7 +14,7 @@ interface Cobranca {
   status: "ativa" | "vencida" | "paga";
   link: string;
   taxaJuros?: number;
-  tipoJuros?: "mensal" | "diario";
+  tipoJuros?: "mensal" | "diario" | "anual";
 }
 
 interface CobrancasListProps {
@@ -124,7 +124,11 @@ export const CobrancasList = ({
                 <p className="text-xs text-blue-600">
                   {cobranca.taxaJuros
                     ? `Juros: ${cobranca.taxaJuros}% ${
-                        cobranca.tipoJuros === "diario" ? "ao dia" : "ao mês"
+                        cobranca.tipoJuros === "diario" 
+                          ? "ao dia" 
+                          : cobranca.tipoJuros === "anual" 
+                          ? "ao ano" 
+                          : "ao mês"
                       }`
                     : "Sem juros"}
                 </p>

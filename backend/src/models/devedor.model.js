@@ -25,7 +25,8 @@ export default (sequelize, DataTypes) => {
       valor: { type: DataTypes.FLOAT, allowNull: false },
       data_vencimento: { type: DataTypes.DATE, allowNull: false },
       taxa_juros: { type: DataTypes.FLOAT, allowNull: true },
-      tipo_juros: { type: DataTypes.STRING, allowNull: true },
+      tipo_juros: { type: DataTypes.STRING, allowNull: true }, // diario, mensal, anual
+      metodo_calculo: { type: DataTypes.STRING, defaultValue: "composto" }, // simples ou composto
       descricao: { type: DataTypes.TEXT, allowNull: true },
       whatsapp_devedor: { type: DataTypes.STRING, allowNull: true },
       pix_cobranca: { type: DataTypes.STRING, allowNull: true },

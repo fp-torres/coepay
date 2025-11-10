@@ -9,7 +9,7 @@ export interface Cobranca {
   status: "ativa" | "vencida" | "paga";
   link: string;
   taxaJuros?: number;
-  tipoJuros?: "mensal" | "diario";
+  tipoJuros?: "mensal" | "diario" | "anual";
 }
 
 export const useCobrancas = (userId: number | undefined) => {

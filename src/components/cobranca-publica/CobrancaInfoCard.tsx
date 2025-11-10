@@ -89,7 +89,13 @@ export const CobrancaInfoCard = ({
                 <span className="text-muted-foreground">Taxa de juros:</span>
                 <span className="font-medium">
                   {taxaJuros
-                    ? `${taxaJuros}% ${tipoJuros === 'mensal' ? 'ao mês' : 'ao dia'}`
+                    ? `${taxaJuros}% ${
+                        tipoJuros === 'diario' 
+                          ? 'ao dia' 
+                          : tipoJuros === 'anual' 
+                          ? 'ao ano' 
+                          : 'ao mês'
+                      }`
                     : 'Sem juros'}
                 </span>
               </div>

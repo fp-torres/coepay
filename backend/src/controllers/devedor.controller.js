@@ -1,5 +1,5 @@
 import { Devedor } from "../models/initModels.js";
-import { calcularJurosCompostos } from "../utils/juros.js";
+import { calcularJuros } from "../utils/juros.js";
 import express from "express";
 
 
@@ -20,10 +20,11 @@ export const listarTodosDevedores = async (req, res) => {
 
       let valorAtual = d.valor;
       if (temJuros) {
+        const metodoCalculo = d.metodo_calculo || "composto";
         if (d.status === "paga" && d.pago_em) {
-          valorAtual = calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento, d.pago_em);
+          valorAtual = calcularJuros(d.valor, d.taxa_juros, d.tipo_juros, metodoCalculo, d.data_vencimento, d.pago_em);
         } else if (d.status !== "paga") {
-          valorAtual = calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento);
+          valorAtual = calcularJuros(d.valor, d.taxa_juros, d.tipo_juros, metodoCalculo, d.data_vencimento);
         }
       }
 
@@ -61,19 +62,22 @@ export const buscarDevedorPorId = async (req, res) => {
 
     let valorAtual = devedor.valor;
     if (temJuros) {
+      const metodoCalculo = devedor.metodo_calculo || "composto";
       if (devedor.status === "paga" && devedor.pago_em) {
-        valorAtual = calcularJurosCompostos(
+        valorAtual = calcularJuros(
           devedor.valor,
           devedor.taxa_juros,
           devedor.tipo_juros,
+          metodoCalculo,
           devedor.data_vencimento,
           devedor.pago_em
         );
       } else if (devedor.status !== "paga") {
-        valorAtual = calcularJurosCompostos(
+        valorAtual = calcularJuros(
           devedor.valor,
           devedor.taxa_juros,
           devedor.tipo_juros,
+          metodoCalculo,
           devedor.data_vencimento
         );
       }
@@ -104,10 +108,11 @@ export const listarDevedores = async (req, res) => {
 
       let valorAtual = d.valor;
       if (temJuros) {
+        const metodoCalculo = d.metodo_calculo || "composto";
         if (d.status === "paga" && d.pago_em) {
-          valorAtual = calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento, d.pago_em);
+          valorAtual = calcularJuros(d.valor, d.taxa_juros, d.tipo_juros, metodoCalculo, d.data_vencimento, d.pago_em);
         } else if (d.status !== "paga") {
-          valorAtual = calcularJurosCompostos(d.valor, d.taxa_juros, d.tipo_juros, d.data_vencimento);
+          valorAtual = calcularJuros(d.valor, d.taxa_juros, d.tipo_juros, metodoCalculo, d.data_vencimento);
         }
       }
       return { ...d.toJSON(), valor_atual: Number(valorAtual.toFixed(2)) };
@@ -148,10 +153,11 @@ export const buscarPorHash = async (req, res) => {
 
     let valorAtual = devedor.valor;
     if (devedor.taxa_juros && devedor.tipo_juros) {
+      const metodoCalculo = devedor.metodo_calculo || "composto";
       if (devedor.status === "paga" && devedor.pago_em) {
-        valorAtual = calcularJurosCompostos(devedor.valor, devedor.taxa_juros, devedor.tipo_juros, devedor.data_vencimento, devedor.pago_em);
+        valorAtual = calcularJuros(devedor.valor, devedor.taxa_juros, devedor.tipo_juros, metodoCalculo, devedor.data_vencimento, devedor.pago_em);
       } else if (devedor.status !== "paga") {
-        valorAtual = calcularJurosCompostos(devedor.valor, devedor.taxa_juros, devedor.tipo_juros, devedor.data_vencimento);
+        valorAtual = calcularJuros(devedor.valor, devedor.taxa_juros, devedor.tipo_juros, metodoCalculo, devedor.data_vencimento);
       }
     }
 

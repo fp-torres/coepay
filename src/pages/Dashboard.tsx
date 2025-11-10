@@ -26,7 +26,7 @@ interface Cobranca {
   status: 'ativa' | 'vencida' | 'paga';
   link: string;
   taxaJuros?: number;
-  tipoJuros?: 'mensal' | 'diario';
+  tipoJuros?: 'mensal' | 'diario' | 'anual';
 }
 
 const Dashboard = () => {
@@ -39,7 +39,8 @@ const Dashboard = () => {
     valor: "",
     dataVencimento: "",
     taxaJuros: "",
-    tipoJuros: "mensal" as "mensal" | "diario",
+    tipoJuros: "mensal" as "mensal" | "diario" | "anual",
+    metodoCalculo: "composto" as "simples" | "composto",
     descricao: "",
     whatsappDevedor: "",
     pixCobranca: "",
@@ -79,10 +80,13 @@ const Dashboard = () => {
           status,
           link: `${window.location.origin}/cobranca/${item.hash}`,
           taxaJuros: taxaJurosNum || undefined,
-          tipoJuros: item.tipo_juros as 'mensal' | 'diario' | undefined,
+          tipoJuros: item.tipo_juros as 'mensal' | 'diario' | 'anual' | undefined,
           // adiciona campo legível para exibir
           jurosLabel: taxaJurosNum 
-            ? `${taxaJurosNum}% ${item.tipo_juros === 'diario' ? 'ao dia' : 'ao mês'}`
+            ? `${taxaJurosNum}% ${
+                item.tipo_juros === 'diario' ? 'ao dia' : 
+                item.tipo_juros === 'anual' ? 'ao ano' : 'ao mês'
+              }`
             : "Sem juros",
         };
       });
@@ -153,6 +157,7 @@ const Dashboard = () => {
           data_vencimento: novaCobranca.dataVencimento || new Date().toISOString().split('T')[0],
           taxa_juros: novaCobranca.taxaJuros ? Number(novaCobranca.taxaJuros) : null,  
           tipo_juros: novaCobranca.taxaJuros ? novaCobranca.tipoJuros : null,
+          metodo_calculo: novaCobranca.taxaJuros ? novaCobranca.metodoCalculo : null,
           descricao: novaCobranca.descricao ? novaCobranca.descricao : null,
           whatsapp_devedor: novaCobranca.whatsappDevedor ? novaCobranca.whatsappDevedor : null,
           pix_cobranca: novaCobranca.pixCobranca ? novaCobranca.pixCobranca : null
@@ -165,7 +170,17 @@ const Dashboard = () => {
         // Recarregar cobranças do backend
         await carregarCobrancas(user.id);
 
-        setNovaCobranca({ nomeDevedor: "", valor: "", dataVencimento: "", taxaJuros: "", tipoJuros: "mensal", descricao: "", whatsappDevedor: "", pixCobranca: "" });
+        setNovaCobranca({ 
+          nomeDevedor: "", 
+          valor: "", 
+          dataVencimento: "", 
+          taxaJuros: "", 
+          tipoJuros: "mensal", 
+          metodoCalculo: "composto",
+          descricao: "", 
+          whatsappDevedor: "", 
+          pixCobranca: "" 
+        });
         toast({
           title: "Cobrança criada com sucesso!",
           description: `Cobrança para ${novaCobranca.nomeDevedor} foi criada.`,
