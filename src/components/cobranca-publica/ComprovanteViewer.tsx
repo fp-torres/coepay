@@ -19,7 +19,7 @@ export const ComprovanteViewer = ({ comprovanteUrls }: ComprovanteViewerProps) =
     // Se a URL já começa com http, retorna ela mesma
     if (url.startsWith('http')) return url;
     // Caso contrário, constrói a URL completa
-    return `${window.location.protocol}//${window.location.hostname}:5000${url}`;
+    return `${window.location.protocol}//${window.location.hostname}:3000${url}`;
   };
 
   const handleDownload = (url: string) => {

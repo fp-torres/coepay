@@ -15,7 +15,7 @@ export const useNotifications = (userId: number | undefined) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const API_URL = "http://localhost:5000"; // ✅ usar porta certa
+  const API_URL = "http://localhost:3000"; // ✅ usar porta certa
 
   // 1️⃣ Buscar notificações iniciais do backend e verificar vencimentos
 useEffect(() => {
