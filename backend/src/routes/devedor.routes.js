@@ -5,12 +5,14 @@ import {
   buscarPorHash,
   excluirDevedor,
   marcarComoPaga,
-  listarTodosDevedores
+  listarTodosDevedores,
+  buscarDevedorPorId
 } from "../controllers/devedor.controller.js";
 
 const router = express.Router();
 
 router.get("/", listarDevedores);
+router.get("/:id", buscarDevedorPorId); // busca 1 por ID
 router.post("/", criarDevedor);
 router.get("/all", listarTodosDevedores);
 router.get("/hash/:hash", buscarPorHash);

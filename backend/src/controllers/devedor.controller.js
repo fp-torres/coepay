@@ -37,6 +37,45 @@ export const listarTodosDevedores = async (req, res) => {
 };
 
 
+export const buscarDevedorPorId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+
+    // 🔹 Busca o devedor pelo ID
+    const devedor = await Devedor.findByPk(id);
+
+    if (!devedor) {
+      return res.status(404).json({ message: "Devedor não encontrado." });
+    }
+
+    // 🔹 Calcula o valor atualizado com juros (se aplicável)
+    const precisaDeJuros =
+      devedor.status !== "paga" && devedor.taxa_juros && devedor.tipo_juros;
+
+    const valorAtual = precisaDeJuros
+      ? calcularJurosCompostos(
+          devedor.valor,
+          devedor.taxa_juros,
+          devedor.tipo_juros,
+          devedor.data_vencimento
+        )
+      : devedor.valor;
+
+    // 🔹 Retorna o objeto com o campo `valor_atual`
+    res.json({
+      ...devedor.toJSON(),
+      valor_atual: Number(valorAtual.toFixed(2)),
+    });
+  } catch (err) {
+    console.error("Erro ao buscar devedor por ID:", err);
+    res.status(500).json({ message: "Erro ao buscar devedor." });
+  }
+};
+
 export const listarDevedores = async (req, res) => {
   try {
     const userId = Number(req.query.user_id || req.query.userId); // pega query e garante número
