@@ -25,6 +25,7 @@ interface CobrancaData {
   pagoEm?: string; // timestamp do pagamento
   taxaJuros?: number;
   tipoJuros?: string;
+  metodoCalculo?: string;
   descricao?: string;
   comprovanteUrl?: string;
 }
@@ -136,6 +137,7 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
         pagoEm: cobrancaData.pago_em,
         taxaJuros: cobrancaData.taxa_juros ? parseFloat(cobrancaData.taxa_juros) : undefined,
         tipoJuros: cobrancaData.tipo_juros,
+        metodoCalculo: cobrancaData.metodo_calculo,
         descricao: cobrancaData.descricao || '',
         comprovanteUrl: cobrancaData.comprovante_url
       };
@@ -298,6 +300,7 @@ const validarEMarcarComoPago = async () => {
           diasVencido={cobranca.diasVencido}
           taxaJuros={cobranca.taxaJuros}
           tipoJuros={cobranca.tipoJuros}
+          metodoCalculo={cobranca.metodoCalculo}
         />
 
         <CobrancaPixCard

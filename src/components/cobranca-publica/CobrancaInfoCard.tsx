@@ -12,6 +12,7 @@ interface CobrancaInfoCardProps {
   diasVencido: number;
   taxaJuros?: number;
   tipoJuros?: string;
+  metodoCalculo?: string;
 }
 
 export const CobrancaInfoCard = ({
@@ -24,6 +25,7 @@ export const CobrancaInfoCard = ({
   diasVencido,
   taxaJuros,
   tipoJuros,
+  metodoCalculo,
 }: CobrancaInfoCardProps) => {
   return (
     <Card className={`mb-6 shadow-lg overflow-hidden ${
@@ -99,6 +101,15 @@ export const CobrancaInfoCard = ({
                     : 'Sem juros'}
                 </span>
               </div>
+
+              {taxaJuros && metodoCalculo && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Método de cálculo:</span>
+                  <span className="font-medium capitalize">
+                    {metodoCalculo === 'simples' ? 'Juros Simples' : 'Juros Compostos'}
+                  </span>
+                </div>
+              )}
             </div>
           </>
         ) : (

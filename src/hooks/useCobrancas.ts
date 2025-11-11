@@ -10,6 +10,7 @@ export interface Cobranca {
   link: string;
   taxaJuros?: number;
   tipoJuros?: "mensal" | "diario" | "anual";
+  metodoCalculo?: "simples" | "composto";
 }
 
 export const useCobrancas = (userId: number | undefined) => {
@@ -33,7 +34,8 @@ export const useCobrancas = (userId: number | undefined) => {
           status: c.status,
           link: c.link,
           taxaJuros: c.taxa_juros ? parseFloat(c.taxa_juros) : undefined,
-          tipoJuros: c.tipo_juros
+          tipoJuros: c.tipo_juros,
+          metodoCalculo: c.metodo_calculo
         }));
 
         setCobrancas(cobrancasFormatadas);
