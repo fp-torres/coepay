@@ -28,6 +28,12 @@ interface NovaCobrancaData {
   contactPhone?: string;
   descricao?: string;
   pixCobranca?: string;
+  recorrenciaTipo?: "unica" | "semanal" | "mensal" | "anual" | "data_personalizada" | "intervalo_personalizado";
+  recorrenciaIntervalo?: string;
+  recorrenciaUnidade?: "dias" | "semanas" | "meses";
+  recorrenciaDataPersonalizada?: string;
+  recorrenciaAte?: string;
+  recorrenciaQuantidade?: string;
 }
 
 interface NovaCobrancaFormProps {
@@ -78,7 +84,7 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
               id="nome-devedor"
               value={novaCobranca.nomeDevedor}
               onChange={(e) => {
-                const apenasLetras = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
+                const apenasLetras = e.target.value.replace(/[^\p{L}\s'-]/gu, '');
                 setNovaCobranca({ ...novaCobranca, nomeDevedor: apenasLetras });
               }}
               required
@@ -146,6 +152,114 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
               A partir desta data os juros começam a contar
             </p>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="recorrencia-tipo">Repetição da cobrança</Label>
+            <select
+              id="recorrencia-tipo"
+              value={novaCobranca.recorrenciaTipo || "unica"}
+              onChange={(e) =>
+                setNovaCobranca({
+                  ...novaCobranca,
+                  recorrenciaTipo: e.target.value as NovaCobrancaData["recorrenciaTipo"],
+                })
+              }
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="unica">Única</option>
+              <option value="semanal">Semanal</option>
+              <option value="mensal">Mensal</option>
+              <option value="anual">Anual</option>
+              <option value="data_personalizada">Em uma data personalizada</option>
+              <option value="intervalo_personalizado">Intervalo personalizado</option>
+            </select>
+          </div>
+
+          {novaCobranca.recorrenciaTipo && novaCobranca.recorrenciaTipo !== "unica" && (
+            <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+              {novaCobranca.recorrenciaTipo === "intervalo_personalizado" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="recorrencia-intervalo">A cada</Label>
+                    <Input
+                      id="recorrencia-intervalo"
+                      type="number"
+                      min="1"
+                      value={novaCobranca.recorrenciaIntervalo || "1"}
+                      onChange={(e) =>
+                        setNovaCobranca({ ...novaCobranca, recorrenciaIntervalo: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="recorrencia-unidade">Unidade</Label>
+                    <select
+                      id="recorrencia-unidade"
+                      value={novaCobranca.recorrenciaUnidade || "dias"}
+                      onChange={(e) =>
+                        setNovaCobranca({
+                          ...novaCobranca,
+                          recorrenciaUnidade: e.target.value as NovaCobrancaData["recorrenciaUnidade"],
+                        })
+                      }
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="dias">Dias</option>
+                      <option value="semanas">Semanas</option>
+                      <option value="meses">Meses</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {novaCobranca.recorrenciaTipo === "data_personalizada" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="recorrencia-data">Próxima data</Label>
+                  <Input
+                    id="recorrencia-data"
+                    type="date"
+                    value={novaCobranca.recorrenciaDataPersonalizada || ""}
+                    onChange={(e) =>
+                      setNovaCobranca({ ...novaCobranca, recorrenciaDataPersonalizada: e.target.value })
+                    }
+                  />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="recorrencia-quantidade">Próximas cobranças</Label>
+                    <Input
+                      id="recorrencia-quantidade"
+                      type="number"
+                      min="1"
+                      max="24"
+                      value={novaCobranca.recorrenciaQuantidade || "6"}
+                      onChange={(e) =>
+                        setNovaCobranca({ ...novaCobranca, recorrenciaQuantidade: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="recorrencia-ate">Gerar até</Label>
+                    <Input
+                      id="recorrencia-ate"
+                      type="date"
+                      value={novaCobranca.recorrenciaAte || ""}
+                      onChange={(e) =>
+                        setNovaCobranca({ ...novaCobranca, recorrenciaAte: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                As próximas cobranças são geradas automaticamente com os mesmos dados e podem ser pausadas ou canceladas pelo grupo de recorrência.
+              </p>
+            </div>
+          )}
 
           {/* PIX para esta cobrança específica */}
           <div className="space-y-2">

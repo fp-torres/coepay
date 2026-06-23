@@ -10,6 +10,9 @@ import authRoutes from "./routes/authRoutes.routes.js";
 import notificacaoRoutes from "./routes/notificacao.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import webhookRoutes from "./routes/webhook.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
+import messagesRoutes from "./routes/messages.routes.js";
+import ordersRoutes from "./routes/orders.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +38,9 @@ app.use("/notifications", notificacaoRoutes);
 app.use("/api/notificacoes", notificacaoRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/webhook", webhookRoutes);
+app.use("/settings", settingsRoutes);
+app.use("/messages", messagesRoutes);
+app.use("/orders", ordersRoutes);
 
 // Inicializar DB e servidor
 await initModels();

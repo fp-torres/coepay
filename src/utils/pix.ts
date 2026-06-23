@@ -7,8 +7,16 @@ const emv = (id: string, value: string): string => {
   return `${id}${size}${value}`;
 };
 
-// Gera o QR Code PIX no padrão EMVCo manual
-export const gerarQRCodePIXManual = async (chave: string, valor: number, nome: string): Promise<string> => {
+const normalizarTextoPix = (valor: string): string =>
+  valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9\s]/g, "")
+    .trim()
+    .substring(0, 25)
+    .toUpperCase() || "COEPAY";
+
+export const gerarPayloadPIXManual = (chave: string, valor: number, nome: string): string => {
   const merchantAccountInfo = emv('00', 'BR.GOV.BCB.PIX') +
                               emv('01', chave);
 
@@ -18,7 +26,7 @@ export const gerarQRCodePIXManual = async (chave: string, valor: number, nome: s
                         emv('53', '986') +
                         emv('54', valor.toFixed(2)) +
                         emv('58', 'BR') +
-                        emv('59', nome.substring(0, 25).toUpperCase()) +
+                        emv('59', normalizarTextoPix(nome)) +
                         emv('60', 'SAO PAULO') +
                         emv('62', emv('05', '***')) +
                         '6304';
@@ -40,5 +48,10 @@ export const gerarQRCodePIXManual = async (chave: string, valor: number, nome: s
   };
 
   const fullPayload = payloadSemCRC + crc16(payloadSemCRC);
-  return await QRCode.toDataURL(fullPayload);
+  return fullPayload;
+};
+
+// Gera o QR Code PIX no padrão EMVCo manual
+export const gerarQRCodePIXManual = async (chave: string, valor: number, nome: string): Promise<string> => {
+  return await QRCode.toDataURL(gerarPayloadPIXManual(chave, valor, nome));
 };

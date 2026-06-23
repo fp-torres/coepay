@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
-import { gerarQRCodePIXManual } from '@/utils/pix';
+import { gerarPayloadPIXManual, gerarQRCodePIXManual } from '@/utils/pix';
 import { CobrancaHeader } from "@/components/cobranca-publica/CobrancaHeader";
 import { CobrancaSaudacao } from "@/components/cobranca-publica/CobrancaSaudacao";
 import { CobrancaInfoCard } from "@/components/cobranca-publica/CobrancaInfoCard";
 import { CobrancaPixCard } from "@/components/cobranca-publica/CobrancaPixCard";
 import { CobrancaFooter } from "@/components/cobranca-publica/CobrancaFooter";
 import { ValidarComprovanteDialog } from "@/components/cobranca-publica/ValidarComprovanteDialog";
+import { Badge } from "@/components/ui/badge";
 
 
 
@@ -20,6 +21,9 @@ interface CobrancaData {
   dataVencimento: string;
   diasVencido: number;
   pixCobranca: string;
+  pixCopiaECola: string;
+  recebedorNome?: string;
+  recebedorEmail?: string;
   status: 'no prazo' | 'vencida' | 'paga'; // adiciona "paga"
   pago?: boolean; // true se já foi pago
   pagoEm?: string; // timestamp do pagamento
@@ -119,10 +123,14 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
 
         // Busca dados do usuário para pegar o PIX padrão
         const userResponse = await fetch(`http://localhost:3000/auth/getUser/${cobrancaData.user_id}`);
-        const userData = userResponse.ok ? await userResponse.json() : { pix: '' };
+        const userData = userResponse.ok ? await userResponse.json() : { pix: '', name: '', email: '' };
 
         // Usa o PIX específico da cobrança, se existir, senão usa o PIX padrão do usuário
         const pixFinal = cobrancaData.pix_cobranca || userData.pix || '';
+
+      const pixCopiaECola = pixFinal
+        ? gerarPayloadPIXManual(pixFinal, valorAtual, userData.name || cobrancaData.nome)
+        : "";
 
       const cobrancaObj: CobrancaData = {
         id: cobrancaData.id.toString(),
@@ -132,6 +140,9 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
         dataVencimento: cobrancaData.data_vencimento,
         diasVencido,
         pixCobranca: pixFinal,
+        pixCopiaECola,
+        recebedorNome: userData.name || '',
+        recebedorEmail: userData.email || '',
         status: cobrancaData.pago ? 'paga' : status,
         pago: cobrancaData.pago,
         pagoEm: cobrancaData.pago_em,
@@ -150,7 +161,7 @@ const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification
           const qrCode = await gerarQRCodePIXManual(
             cobrancaObj.pixCobranca,
             cobrancaObj.valorAtual,
-            cobrancaObj.nomeDevedor
+            cobrancaObj.recebedorNome || cobrancaObj.nomeDevedor
           );
           setQrCodeURL(qrCode);
         }
@@ -257,12 +268,6 @@ const validarEMarcarComoPago = async () => {
 
 
 
-  const gerarQRCode = (pix: string, valor: number, nome: string) => {
-    // Em um caso real, aqui seria gerado um QR Code PIX válido
-    // Para o mock, vamos usar um placeholder
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX:${pix}:${valor}:${nome}`;
-  };
-
   if (!cobranca) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -275,8 +280,10 @@ const validarEMarcarComoPago = async () => {
     <div
       className={`min-h-screen ${
         cobranca?.pago
-          ? 'bg-gradient-to-br from-green-50 to-green-200'
-          : 'bg-gradient-to-br from-orange-50 to-red-50'
+          ? 'bg-gradient-to-br from-emerald-50 via-white to-green-100'
+          : cobranca.status === 'vencida'
+          ? 'bg-gradient-to-br from-red-50 via-white to-orange-100'
+          : 'bg-gradient-to-br from-orange-50 via-white to-amber-100'
       }`}
     >
       <CobrancaHeader
@@ -284,43 +291,67 @@ const validarEMarcarComoPago = async () => {
         mensagem={cobranca?.pago ? mensagemPositiva : mensagensMotivacionais[mensagemAtual]}
       />
 
-      <div className="container mx-auto p-4 py-8 max-w-md">
-        <CobrancaSaudacao
-          nomeDevedor={cobranca.nomeDevedor}
-          isPago={!!cobranca.pago}
-        />
-
-        <CobrancaInfoCard
-          pago={!!cobranca.pago}
-          status={cobranca.status}
-          valorAtual={cobranca.valorAtual}
-          valor={cobranca.valor}
-          descricao={cobranca.descricao}
-          dataVencimento={cobranca.dataVencimento}
-          diasVencido={cobranca.diasVencido}
-          taxaJuros={cobranca.taxaJuros}
-          tipoJuros={cobranca.tipoJuros}
-          metodoCalculo={cobranca.metodoCalculo}
-        />
-
-        <CobrancaPixCard
-          pago={!!cobranca.pago}
-          pagoEm={cobranca.pagoEm}
-          qrCodeURL={qrCodeURL}
-          pixCobranca={cobranca.pixCobranca}
-          comprovanteUrl={cobranca.comprovanteUrl}
-          onConfirmarPagamento={() => setDialogOpen(true)}
-          renderValidarDialog={() => (
-            <ValidarComprovanteDialog
-              open={dialogOpen}
-              onOpenChange={setDialogOpen}
-              comprovanteFiles={comprovanteFiles}
-              onComprovanteChange={setComprovanteFiles}
-              validandoComprovante={validandoComprovante}
-              onValidar={validarEMarcarComoPago}
+      <div className="container mx-auto p-4 py-8 max-w-6xl">
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <CobrancaSaudacao
+              nomeDevedor={cobranca.nomeDevedor}
+              isPago={!!cobranca.pago}
             />
-          )}
-        />
+          </div>
+          <Badge
+            className={`w-fit text-sm px-3 py-1 ${
+              cobranca.status === "paga"
+                ? "bg-green-600 hover:bg-green-600"
+                : cobranca.status === "vencida"
+                ? "bg-red-600 hover:bg-red-600"
+                : "bg-orange-600 hover:bg-orange-600"
+            }`}
+          >
+            {cobranca.status === "paga"
+              ? "Pagamento confirmado"
+              : cobranca.status === "vencida"
+              ? "Cobrança vencida"
+              : "Aguardando pagamento"}
+          </Badge>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+          <CobrancaInfoCard
+            pago={!!cobranca.pago}
+            status={cobranca.status}
+            valorAtual={cobranca.valorAtual}
+            valor={cobranca.valor}
+            descricao={cobranca.descricao}
+            dataVencimento={cobranca.dataVencimento}
+            diasVencido={cobranca.diasVencido}
+            taxaJuros={cobranca.taxaJuros}
+            tipoJuros={cobranca.tipoJuros}
+            metodoCalculo={cobranca.metodoCalculo}
+          />
+
+          <CobrancaPixCard
+            pago={!!cobranca.pago}
+            pagoEm={cobranca.pagoEm}
+            qrCodeURL={qrCodeURL}
+            pixCobranca={cobranca.pixCobranca}
+            pixCopiaECola={cobranca.pixCopiaECola}
+            recebedorNome={cobranca.recebedorNome}
+            recebedorEmail={cobranca.recebedorEmail}
+            comprovanteUrl={cobranca.comprovanteUrl}
+            onConfirmarPagamento={() => setDialogOpen(true)}
+            renderValidarDialog={() => (
+              <ValidarComprovanteDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                comprovanteFiles={comprovanteFiles}
+                onComprovanteChange={setComprovanteFiles}
+                validandoComprovante={validandoComprovante}
+                onValidar={validarEMarcarComoPago}
+              />
+            )}
+          />
+        </div>
 
         <CobrancaFooter />
       </div>

@@ -3,7 +3,7 @@ import { useCobrancas } from "@/hooks/useCobrancas";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Loader2, Mail } from "lucide-react";
+import { Copy, Loader2, Mail, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Cobranca {
@@ -17,6 +17,12 @@ interface Cobranca {
   taxaJuros?: number;
   tipoJuros?: "mensal" | "diario" | "anual";
   metodoCalculo?: "simples" | "composto";
+  emailUltimoEnvioEm?: string;
+  emailUltimoStatus?: string;
+  recorrenciaTipo?: string;
+  recorrenciaGrupoId?: string;
+  telefone?: string;
+  whatsappDevedor?: string;
 }
 
 interface CobrancasListProps {
@@ -50,7 +56,10 @@ export const CobrancasList = ({
 }: CobrancasListProps) => {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [sendingEmailChargeId, setSendingEmailChargeId] = useState<string | null>(null);
+  const [sendingWhatsappChargeId, setSendingWhatsappChargeId] = useState<string | null>(null);
   const itensPorPagina = 6;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
 
   const totalPaginas = Math.ceil(cobrancas.length / itensPorPagina);
   const inicio = (paginaAtual - 1) * itensPorPagina;
@@ -61,12 +70,12 @@ export const CobrancasList = ({
     setSendingEmailChargeId(chargeId);
 
     try {
-      const response = await fetch("http://localhost:3000/api/notificacoes/enviar-email", {
+      const response = await fetch(`${API_URL}/orders/${chargeId}/send-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-User-Id": String(currentUser?.id || ""),
         },
-        body: JSON.stringify({ chargeId }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -84,6 +93,44 @@ export const CobrancasList = ({
       });
     } finally {
       setSendingEmailChargeId(null);
+    }
+  };
+
+  const handleSendWhatsapp = async (chargeId: string) => {
+    setSendingWhatsappChargeId(chargeId);
+
+    try {
+      const response = await fetch(`${API_URL}/orders/${chargeId}/send-whatsapp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": String(currentUser?.id || ""),
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Não foi possível enviar o WhatsApp.");
+      }
+
+      if (data.whatsappUrl) {
+        window.open(data.whatsappUrl, "_blank", "noopener,noreferrer");
+      }
+
+      toast.success("Cobrança enviada por WhatsApp", {
+        description: data.fallback
+          ? "Link do WhatsApp Web gerado para envio manual."
+          : data.sentTo
+          ? `Enviado para ${data.sentTo}.`
+          : "Mensagem enviada.",
+      });
+    } catch (error) {
+      toast.error("Erro ao enviar WhatsApp", {
+        description: error instanceof Error ? error.message : "Conecte o WhatsApp e tente novamente.",
+      });
+    } finally {
+      setSendingWhatsappChargeId(null);
     }
   };
 
@@ -170,6 +217,18 @@ export const CobrancasList = ({
                     ? `Vencida em: ${dataFormatada}`
                     : `Vence em: ${dataFormatada}`}
                 </p>
+                {cobranca.recorrenciaTipo && cobranca.recorrenciaTipo !== "unica" && (
+                  <p className="text-xs text-purple-700">
+                    Recorrência: {cobranca.recorrenciaTipo.replace(/_/g, " ")}
+                  </p>
+                )}
+                {cobranca.emailUltimoEnvioEm && (
+                  <p className="text-xs text-muted-foreground">
+                    Último e-mail:{" "}
+                    {new Date(cobranca.emailUltimoEnvioEm).toLocaleString("pt-BR")} (
+                    {cobranca.emailUltimoStatus === "sent" ? "enviado" : "falhou"})
+                  </p>
+                )}
               </div>
 
               {/* Botões */}
@@ -209,6 +268,22 @@ export const CobrancasList = ({
                     <Mail className="w-4 h-4 mr-2" />
                   )}
                   Enviar por E-mail
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSendWhatsapp(cobranca.id)}
+                  disabled={sendingWhatsappChargeId === cobranca.id}
+                  className="flex items-center justify-center w-full md:w-auto border font-semibold shadow-sm
+                    hover:bg-gradient-to-r hover:from-green-600 hover:to-emerald-700 hover:text-white transition"
+                >
+                  {sendingWhatsappChargeId === cobranca.id ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Enviar WhatsApp
                 </Button>
 
                 <Button

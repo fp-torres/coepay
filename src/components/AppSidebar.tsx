@@ -1,4 +1,4 @@
-import { Home, BarChart3, Settings, Crown, Lightbulb, LogOut, CheckCircle2 } from "lucide-react";
+import { Home, BarChart3, Settings, Crown, Lightbulb, LogOut, CheckCircle2, MessagesSquare } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -18,6 +18,7 @@ const menuItems = [
   { title: "Painel de Controle", url: "/painel-de-controle", icon: Home },
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
   { title: "Cobranças Pagas", url: "/cobrancas-pagas", icon: CheckCircle2 },
+  { title: "Comunicações", url: "/comunicacoes", icon: MessagesSquare },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
   { title: "Planos", url: "/planos", icon: Crown },
   { title: "Futuras Implementações", url: "/futuras-implementacoes", icon: Lightbulb },

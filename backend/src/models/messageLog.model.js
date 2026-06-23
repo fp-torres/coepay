@@ -1,51 +1,49 @@
 export default (sequelize, DataTypes) => {
-  const EmailNotificationLog = sequelize.define(
-    "EmailNotificationLog",
+  const MessageLog = sequelize.define(
+    "MessageLog",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      charge_id: {
+      user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "devedores",
+          model: "users",
           key: "id",
         },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
-      trigger_key: {
-        type: DataTypes.STRING(80),
+      channel: {
+        type: DataTypes.STRING(30),
         allowNull: false,
       },
-      trigger_type: {
-        type: DataTypes.STRING(40),
+      recipient: {
+        type: DataTypes.STRING(180),
         allowNull: false,
       },
-      template_type: {
-        type: DataTypes.STRING(40),
+      charge_id: {
+        type: DataTypes.INTEGER,
         allowNull: true,
       },
-      sent_by: {
-        type: DataTypes.STRING(40),
-        allowNull: false,
-        defaultValue: "automatic",
-      },
-      recipient_email: {
+      customer_name: {
         type: DataTypes.STRING(150),
+        allowNull: true,
+      },
+      subject: {
+        type: DataTypes.STRING(180),
+        allowNull: true,
+      },
+      message: {
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       status: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(30),
         allowNull: false,
-        defaultValue: "pending",
-      },
-      provider_message_id: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
       },
       error_message: {
         type: DataTypes.TEXT,
@@ -57,16 +55,17 @@ export default (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: "email_notification_logs",
+      tableName: "message_logs",
       timestamps: true,
+      underscored: true,
       indexes: [
         {
-          unique: true,
-          fields: ["charge_id", "trigger_key"],
+          name: "message_logs_user_channel_idx",
+          fields: ["user_id", "channel"],
         },
       ],
     }
   );
 
-  return EmailNotificationLog;
+  return MessageLog;
 };

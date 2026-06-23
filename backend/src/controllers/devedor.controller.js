@@ -1,7 +1,96 @@
 import { Devedor } from "../models/initModels.js";
 import { calcularJuros } from "../utils/juros.js";
-import express from "express";
+import { Op } from "sequelize";
+import { v4 as uuidv4 } from "uuid";
 
+const maxRecurrenceOccurrences = 24;
+
+const addDays = (date, days) => {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate;
+};
+
+const addMonths = (date, months) => {
+  const nextDate = new Date(date);
+  const originalDay = nextDate.getDate();
+  nextDate.setMonth(nextDate.getMonth() + months);
+
+  if (nextDate.getDate() < originalDay) {
+    nextDate.setDate(0);
+  }
+
+  return nextDate;
+};
+
+const addRecurrenceInterval = ({ baseDate, type, interval = 1, unit = "dias", occurrence }) => {
+  if (type === "semanal") return addDays(baseDate, 7 * occurrence);
+  if (type === "mensal") return addMonths(baseDate, occurrence);
+  if (type === "anual") return addMonths(baseDate, 12 * occurrence);
+
+  const safeInterval = Math.max(Number(interval || 1), 1) * occurrence;
+
+  if (unit === "semanas") return addDays(baseDate, safeInterval * 7);
+  if (unit === "meses") return addMonths(baseDate, safeInterval);
+
+  return addDays(baseDate, safeInterval);
+};
+
+const buildRecurringCharges = (basePayload, firstCharge, recurrenceGroupId) => {
+  const type = basePayload.recorrencia_tipo || "unica";
+  if (type === "unica") return [];
+
+  const baseDueDate = new Date(basePayload.data_vencimento);
+  const requestedQuantity = Number(basePayload.recorrencia_quantidade || 6);
+  const quantity = Math.min(Math.max(requestedQuantity, 1), maxRecurrenceOccurrences);
+  const recurrenceUntil = basePayload.recorrencia_ate ? new Date(basePayload.recorrencia_ate) : null;
+  const charges = [];
+
+  if (type === "data_personalizada") {
+    if (!basePayload.recorrencia_data_personalizada) return [];
+
+    const customDate = new Date(basePayload.recorrencia_data_personalizada);
+    if (customDate <= baseDueDate) return [];
+
+    return [
+      {
+        ...basePayload,
+        data_vencimento: customDate,
+        recorrencia_grupo_id: recurrenceGroupId,
+        recorrencia_ordem: 2,
+        recorrencia_status: "ativa",
+      },
+    ];
+  }
+
+  for (let occurrence = 1; occurrence <= quantity; occurrence += 1) {
+    const nextDueDate = addRecurrenceInterval({
+      baseDate: baseDueDate,
+      type,
+      interval: basePayload.recorrencia_intervalo,
+      unit: basePayload.recorrencia_unidade,
+      occurrence,
+    });
+
+    if (recurrenceUntil && nextDueDate > recurrenceUntil) break;
+
+    charges.push({
+      ...basePayload,
+      data_vencimento: nextDueDate,
+      recorrencia_grupo_id: recurrenceGroupId,
+      recorrencia_ordem: firstCharge.recorrencia_ordem + occurrence,
+      recorrencia_status: "ativa",
+    });
+  }
+
+  return charges;
+};
+
+const sanitizeChargePayload = (payload) => {
+  const sanitized = { ...payload };
+  delete sanitized.recorrencia_quantidade;
+  return sanitized;
+};
 
 export const listarTodosDevedores = async (req, res) => {
   try {
@@ -127,19 +216,34 @@ export const listarDevedores = async (req, res) => {
 
 export const criarDevedor = async (req, res) => {
   try {
-    // console.log("req.body recebido:", req.body);
+    const recurrenceType = req.body.recorrencia_tipo || "unica";
+    const recurrenceGroupId = recurrenceType !== "unica" ? uuidv4() : null;
+    const basePayload = sanitizeChargePayload({
+      ...req.body,
+      recorrencia_tipo: recurrenceType,
+      recorrencia_grupo_id: recurrenceGroupId,
+      recorrencia_status: recurrenceType === "unica" ? "ativa" : "ativa",
+      recorrencia_ordem: 1,
+    });
 
-    // Criar instância manualmente para inspecionar hooks
-    const devedorInstance = Devedor.build(req.body);
-    // console.log("Antes do hook beforeCreate:", devedorInstance.toJSON());
+    const devedorInstance = await Devedor.create(basePayload);
+    const recurringCharges = buildRecurringCharges(req.body, devedorInstance, recurrenceGroupId).map((charge) =>
+      sanitizeChargePayload(charge)
+    );
 
-    // Forçar execução do hook antes de salvar
-    await devedorInstance.save();
-    // console.log("Depois de salvar:", devedorInstance.toJSON());
+    if (recurringCharges.length > 0) {
+      await Devedor.bulkCreate(recurringCharges, {
+        individualHooks: true,
+        validate: true,
+      });
+    }
 
-    res.json(devedorInstance);
+    res.json({
+      ...devedorInstance.toJSON(),
+      recorrencias_criadas: recurringCharges.length,
+    });
   } catch (err) {
-    // console.error("ERRO ao criar devedor:", err);
+    console.error("ERRO ao criar devedor:", err);
     res.status(500).json({ message: "Erro ao cadastrar devedor" });
   }
 };
@@ -203,3 +307,36 @@ export const marcarComoPaga = async (req, res) => {
   }
 };
 
+export const atualizarRecorrencia = async (req, res) => {
+  const { grupoId } = req.params;
+  const { status } = req.body;
+  const allowedStatuses = ["ativa", "pausada", "cancelada"];
+
+  if (!grupoId) {
+    return res.status(400).json({ message: "Grupo de recorrência inválido." });
+  }
+
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({ message: "Status de recorrência inválido." });
+  }
+
+  try {
+    const [updated] = await Devedor.update(
+      { recorrencia_status: status },
+      {
+        where: {
+          recorrencia_grupo_id: grupoId,
+          pago: { [Op.ne]: true },
+        },
+      }
+    );
+
+    res.json({
+      message: "Recorrência atualizada com sucesso.",
+      updated,
+    });
+  } catch (err) {
+    console.error("Erro ao atualizar recorrência:", err);
+    res.status(500).json({ message: "Erro ao atualizar recorrência." });
+  }
+};

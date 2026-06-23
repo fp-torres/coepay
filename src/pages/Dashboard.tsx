@@ -27,6 +27,12 @@ interface Cobranca {
   link: string;
   taxaJuros?: number;
   tipoJuros?: 'mensal' | 'diario' | 'anual';
+  emailUltimoEnvioEm?: string;
+  emailUltimoStatus?: string;
+  recorrenciaTipo?: string;
+  recorrenciaGrupoId?: string;
+  telefone?: string;
+  whatsappDevedor?: string;
 }
 
 const Dashboard = () => {
@@ -45,6 +51,12 @@ const Dashboard = () => {
     descricao: "",
     contactPhone: "",
     pixCobranca: "",
+    recorrenciaTipo: "unica" as "unica" | "semanal" | "mensal" | "anual" | "data_personalizada" | "intervalo_personalizado",
+    recorrenciaIntervalo: "1",
+    recorrenciaUnidade: "dias" as "dias" | "semanas" | "meses",
+    recorrenciaDataPersonalizada: "",
+    recorrenciaAte: "",
+    recorrenciaQuantidade: "6",
   });
     useEffect(() => {
       if (!user?.id) return;
@@ -82,6 +94,12 @@ const Dashboard = () => {
           link: `${window.location.origin}/cobranca/${item.hash}`,
           taxaJuros: taxaJurosNum || undefined,
           tipoJuros: item.tipo_juros as 'mensal' | 'diario' | 'anual' | undefined,
+          emailUltimoEnvioEm: item.email_ultimo_envio_em,
+          emailUltimoStatus: item.email_ultimo_status,
+          recorrenciaTipo: item.recorrencia_tipo,
+          recorrenciaGrupoId: item.recorrencia_grupo_id,
+          telefone: item.telefone,
+          whatsappDevedor: item.whatsapp_devedor,
           // adiciona campo legível para exibir
           jurosLabel: taxaJurosNum 
             ? `${taxaJurosNum}% ${
@@ -160,7 +178,13 @@ const Dashboard = () => {
           tipo_juros: novaCobranca.taxaJuros ? novaCobranca.tipoJuros : null,
           metodo_calculo: novaCobranca.taxaJuros ? novaCobranca.metodoCalculo : null,
           descricao: novaCobranca.descricao ? novaCobranca.descricao : null,
-          pix_cobranca: novaCobranca.pixCobranca ? novaCobranca.pixCobranca : null
+          pix_cobranca: novaCobranca.pixCobranca ? novaCobranca.pixCobranca : null,
+          recorrencia_tipo: novaCobranca.recorrenciaTipo || "unica",
+          recorrencia_intervalo: novaCobranca.recorrenciaIntervalo ? Number(novaCobranca.recorrenciaIntervalo) : null,
+          recorrencia_unidade: novaCobranca.recorrenciaUnidade || null,
+          recorrencia_data_personalizada: novaCobranca.recorrenciaDataPersonalizada || null,
+          recorrencia_ate: novaCobranca.recorrenciaAte || null,
+          recorrencia_quantidade: novaCobranca.recorrenciaQuantidade ? Number(novaCobranca.recorrenciaQuantidade) : 6,
         })
       });
 
@@ -180,7 +204,13 @@ const Dashboard = () => {
           metodoCalculo: "composto",
           descricao: "", 
           contactPhone: "", 
-          pixCobranca: "" 
+          pixCobranca: "",
+          recorrenciaTipo: "unica",
+          recorrenciaIntervalo: "1",
+          recorrenciaUnidade: "dias",
+          recorrenciaDataPersonalizada: "",
+          recorrenciaAte: "",
+          recorrenciaQuantidade: "6",
         });
         toast({
           title: "Cobrança criada com sucesso!",
