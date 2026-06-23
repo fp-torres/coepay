@@ -92,5 +92,6 @@ GOOGLE_CLIENT_SECRET="seu-client-secret"
 GOOGLE_CALLBACK_URL="http://localhost:3000/auth/google/callback"
 ```
 
-Depois disso e preciso implementar as rotas OAuth no backend e o botao "Entrar com
-Google" no frontend.
+Com essas variaveis configuradas, o botao "Entrar com Google" redireciona para
+`/auth/google`, cria ou vincula o usuario pelo e-mail verificado do Google e volta
+para o painel.

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoImage from "/logo1_modo_claro.png";
 
@@ -15,11 +15,48 @@ const Login = () => {
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "", pix: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+  const decodeBase64UrlJson = (value: string) => {
+    const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    return JSON.parse(atob(padded));
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const googleUser = params.get("google_user");
+    const googleError = params.get("google_error");
+
+    if (googleError) {
+      toast({ title: "Erro no Google", description: googleError });
+      window.history.replaceState({}, "", "/login");
+      return;
+    }
+
+    if (!googleUser) return;
+
+    try {
+      const user = decodeBase64UrlJson(googleUser);
+      localStorage.setItem("user", JSON.stringify(user));
+      toast({ title: "Login com Google realizado com sucesso!" });
+      window.history.replaceState({}, "", "/login");
+      navigate("/painel-de-controle");
+    } catch (err) {
+      console.error("Erro ao processar retorno do Google:", err);
+      toast({ title: "Erro", description: "Não foi possível concluir o login com Google." });
+      window.history.replaceState({}, "", "/login");
+    }
+  }, [navigate]);
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${API_URL}/auth/google`;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
   try {
-    const res = await fetch("http://localhost:3000/auth/login", {
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loginData),
@@ -38,7 +75,7 @@ const Login = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:3000/auth/signup", {
+      const res = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(signupData),
@@ -84,6 +121,24 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleLogin}
+              className="w-full mb-4 border-coepay-primary/20 hover:bg-coepay-primary/5"
+            >
+              Entrar com Google
+            </Button>
+
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">ou use e-mail</span>
+              </div>
+            </div>
+
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Entrar</TabsTrigger>

@@ -16,7 +16,6 @@ export default (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING(150),
         allowNull: false,
-        unique: true,
         validate: {
           isEmail: true,
         },
@@ -24,6 +23,19 @@ export default (sequelize, DataTypes) => {
       password: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      google_id: {
+        type: DataTypes.STRING(120),
+        allowNull: true,
+      },
+      avatar_url: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+      },
+      auth_provider: {
+        type: DataTypes.STRING(30),
+        allowNull: false,
+        defaultValue: "email",
       },
       pix: {
         type: DataTypes.STRING,
@@ -33,6 +45,18 @@ export default (sequelize, DataTypes) => {
     {
       tableName: "users",
       timestamps: false,
+      indexes: [
+        {
+          name: "users_email_unique",
+          unique: true,
+          fields: ["email"],
+        },
+        {
+          name: "users_google_id_unique",
+          unique: true,
+          fields: ["google_id"],
+        },
+      ],
       hooks: {
         beforeCreate: async (user) => {
           if (user.password) {
