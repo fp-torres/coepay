@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface SubscriptionStatus {
@@ -20,6 +20,11 @@ export const useSubscription = () => {
 
   const checkSubscription = async () => {
     try {
+      if (!isSupabaseConfigured || !supabase) {
+        setStatus({ subscribed: false, plan: "free", loading: false });
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setStatus({ subscribed: false, plan: "free", loading: false });
@@ -49,6 +54,15 @@ export const useSubscription = () => {
 
   const createCheckout = async (priceId: string) => {
     try {
+      if (!isSupabaseConfigured || !supabase) {
+        toast({
+          title: "Planos indisponíveis",
+          description: "Configure Supabase/Stripe para ativar checkout.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
@@ -83,6 +97,8 @@ export const useSubscription = () => {
 
   const openCustomerPortal = async () => {
     try {
+      if (!isSupabaseConfigured || !supabase) return;
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
@@ -109,6 +125,8 @@ export const useSubscription = () => {
 
   useEffect(() => {
     checkSubscription();
+
+    if (!isSupabaseConfigured || !supabase) return;
 
     // Listen for auth changes
     const {

@@ -24,6 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 // 🔥 Servir arquivos estáticos da pasta "src/uploads"
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
 // Rotas
 app.use("/devedores", devedorRoutes);
 app.use("/auth", authRoutes);

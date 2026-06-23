@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Lightbulb } from "lucide-react";
 
@@ -42,6 +42,15 @@ export const NovaSugestaoForm = ({ onSugestaoAdicionada }: { onSugestaoAdicionad
     setLoading(true);
 
     try {
+      if (!isSupabaseConfigured || !supabase) {
+        toast({
+          title: "Sugestões indisponíveis",
+          description: "Configure Supabase para ativar esta área.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
 
       const { error } = await supabase

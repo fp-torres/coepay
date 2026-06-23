@@ -33,9 +33,11 @@ EmailNotificationLog.belongsTo(Devedor, { foreignKey: "charge_id", onDelete: "CA
 // =====================
 export const initModels = async () => {
   try {
+    await sequelize.authenticate();
     await sequelize.sync({ alter: true });
-    console.log("✅ Tabelas sincronizadas com sucesso!");
+    console.log("✅ Banco conectado e tabelas sincronizadas com sucesso!");
   } catch (error) {
-    console.error("❌ Erro ao sincronizar tabelas:", error);
+    console.error("❌ Erro ao conectar/sincronizar banco:", error);
+    throw error;
   }
 };

@@ -8,7 +8,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SugestaoCard } from "./SugestaoCard";
 import { KanbanColumn } from "./KanbanColumn";
@@ -45,6 +45,11 @@ export const KanbanBoard = ({ recarregar }: { recarregar: number }) => {
 
   const carregarSugestoes = async () => {
     try {
+      if (!isSupabaseConfigured || !supabase) {
+        setSugestoes([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("sugestoes")
         .select("*")
@@ -94,6 +99,8 @@ export const KanbanBoard = ({ recarregar }: { recarregar: number }) => {
     );
 
     try {
+      if (!isSupabaseConfigured || !supabase) return;
+
       const { error } = await supabase
         .from("sugestoes")
         .update({ status: novoStatus })

@@ -1,8 +1,13 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
-dotenv.config({ path: "../.env" });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../../.env"), override: true });
 
 const databaseUrl = process.env.DATABASE_URL;
 const shouldUseSsl =
@@ -28,12 +33,12 @@ const baseOptions = {
 export const sequelize = databaseUrl
   ? new Sequelize(databaseUrl, baseOptions)
   : new Sequelize(
-      process.env.DB_NAME || "coepay_status_pgto_2.0",
-      process.env.DB_USER || "postgres",
-      process.env.DB_PASS || "crase",
+      process.env.DB_NAME || "coepay",
+      process.env.DB_USER || "coepay_user",
+      process.env.DB_PASS || "coepay_dev",
       {
         ...baseOptions,
-        host: process.env.DB_HOST || "1.0.90.90",
+        host: process.env.DB_HOST || "localhost",
         port: Number(process.env.DB_PORT || 5432),
       }
     );

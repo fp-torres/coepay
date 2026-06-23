@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 
 export interface Notification {
   id: string;
@@ -107,6 +107,7 @@ useEffect(() => {
   // 2️⃣ Realtime com Supabase
   useEffect(() => {
     if (!userId) return;
+    if (!isSupabaseConfigured || !supabase) return;
 
     const channel = supabase
       .channel("cobrancas-updates")
