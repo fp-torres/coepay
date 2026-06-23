@@ -19,12 +19,13 @@ interface User {
 
 interface NovaCobrancaData {
   nomeDevedor: string;
+  debtorEmail: string;
   valor: string;
   dataVencimento: string;
   taxaJuros: string;
   tipoJuros: "mensal" | "diario" | "anual";
   metodoCalculo: "simples" | "composto";
-  whatsappDevedor?: string;
+  contactPhone?: string;
   descricao?: string;
   pixCobranca?: string;
 }
@@ -82,6 +83,23 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
               }}
               required
             />
+          </div>
+
+          {/* E-mail do Devedor */}
+          <div className="space-y-2">
+            <Label htmlFor="email-devedor">E-mail do Devedor</Label>
+            <Input
+              id="email-devedor"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={novaCobranca.debtorEmail}
+              onChange={(e) => setNovaCobranca({ ...novaCobranca, debtorEmail: e.target.value })}
+              placeholder="nome@email.com"
+            />
+            <p className="text-xs text-muted-foreground">
+              Necessário para lembretes automáticos e envio manual da cobrança.
+            </p>
           </div>
 
           {/* Valor da Dívida */}
@@ -204,16 +222,17 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
             </select>
           </div>
 
-        {/* Novo: WhatsApp do Devedor - Premium */}
+        {/* Telefone de contato */}
           <div className="space-y-2">
-            <Label htmlFor="whatsapp-devedor" className="flex items-center gap-2">
-              WhatsApp do Devedor
-              {!user?.isPremium && <PremiumBadge />}
+            <Label htmlFor="telefone-contato" className="flex items-center gap-2">
+              Telefone de Contato
             </Label>
             <Input
-              id="whatsapp-devedor"
-              type="text"
-              value={novaCobranca.whatsappDevedor || ''}
+              id="telefone-contato"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              value={novaCobranca.contactPhone || ''}
               onChange={(e) => {
                 // Remove tudo que não é número
                 let numeros = e.target.value.replace(/\D/g, '');
@@ -223,13 +242,12 @@ const descricaoRef = useRef<HTMLTextAreaElement>(null);
                 let formatado = numeros;
                 if (numeros.length > 2) formatado = `(${numeros.slice(0,2)}) ${numeros.slice(2)}`;
                 if (numeros.length > 7) formatado = `(${numeros.slice(0,2)}) ${numeros.slice(2,7)}-${numeros.slice(7)}`;
-                setNovaCobranca({ ...novaCobranca, whatsappDevedor: formatado });
+                setNovaCobranca({ ...novaCobranca, contactPhone: formatado });
               }}
               placeholder="Ex: (99) 99999-9999"
-              //disabled={!user?.isPremium}
             />
             <p className="text-xs text-muted-foreground">
-              WhatsApp para envio automático do link da cobrança
+              Número salvo como contato de apoio, sem integração automática com WhatsApp/Meta.
             </p>
           </div>
 

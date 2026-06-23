@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initModels } from "./models/initModels.js";
+import { startChargeEmailReminderJob } from "./jobs/email-reminder.job.js";
 
 import devedorRoutes from "./routes/devedor.routes.js";
 import authRoutes from "./routes/authRoutes.routes.js";
@@ -27,10 +28,13 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/devedores", devedorRoutes);
 app.use("/auth", authRoutes);
 app.use("/notifications", notificacaoRoutes);
+app.use("/api/notificacoes", notificacaoRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/webhook", webhookRoutes);
 
 // Inicializar DB e servidor
 await initModels();
+startChargeEmailReminderJob();
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));

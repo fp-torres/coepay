@@ -5,10 +5,12 @@ import { DataTypes } from "sequelize"; // 👈 precisa disso!
 import UserModel from "./user.model.js";
 import DevedorModel from "./devedor.model.js";
 import NotificacaoLidaModel from "./notificacao.model.js";
+import EmailNotificationLogModel from "./emailNotificationLog.model.js";
 
 export const User = UserModel(sequelize, DataTypes);
 export const Devedor = DevedorModel(sequelize, DataTypes);
 export const NotificacaoLida = NotificacaoLidaModel(sequelize, DataTypes);
+export const EmailNotificationLog = EmailNotificationLogModel(sequelize, DataTypes);
 
 // =====================
 // 🔗 RELACIONAMENTOS
@@ -21,6 +23,10 @@ Devedor.belongsTo(User, { foreignKey: "user_id" });
 // Notificação lida relaciona usuários e devedores (muitos-para-muitos simplificado)
 NotificacaoLida.belongsTo(User, { foreignKey: "user_id", onDelete: "CASCADE" });
 NotificacaoLida.belongsTo(Devedor, { foreignKey: "cobranca_id", onDelete: "CASCADE" });
+
+// Log de lembretes de cobrança enviados por e-mail
+Devedor.hasMany(EmailNotificationLog, { foreignKey: "charge_id", onDelete: "CASCADE" });
+EmailNotificationLog.belongsTo(Devedor, { foreignKey: "charge_id", onDelete: "CASCADE" });
 
 // =====================
 // ⚙️ SINCRONIZAÇÃO

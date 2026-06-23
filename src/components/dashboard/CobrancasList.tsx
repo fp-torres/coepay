@@ -3,7 +3,8 @@ import { useCobrancas } from "@/hooks/useCobrancas";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy } from "lucide-react";
+import { Copy, Loader2, Mail } from "lucide-react";
+import { toast } from "sonner";
 
 interface Cobranca {
   id: string;
@@ -48,12 +49,43 @@ export const CobrancasList = ({
   onExcluirCobranca,
 }: CobrancasListProps) => {
   const [paginaAtual, setPaginaAtual] = useState(1);
+  const [sendingEmailChargeId, setSendingEmailChargeId] = useState<string | null>(null);
   const itensPorPagina = 6;
 
   const totalPaginas = Math.ceil(cobrancas.length / itensPorPagina);
   const inicio = (paginaAtual - 1) * itensPorPagina;
   const fim = inicio + itensPorPagina;
   const cobrancasPaginadas = cobrancas.slice(inicio, fim);
+
+  const handleSendEmail = async (chargeId: string) => {
+    setSendingEmailChargeId(chargeId);
+
+    try {
+      const response = await fetch("http://localhost:3000/api/notificacoes/enviar-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chargeId }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Não foi possível enviar o e-mail.");
+      }
+
+      toast.success("Cobrança enviada por e-mail", {
+        description: data.sentTo ? `Enviado para ${data.sentTo}.` : "O devedor recebeu o link da cobrança.",
+      });
+    } catch (error) {
+      toast.error("Erro ao enviar e-mail", {
+        description: error instanceof Error ? error.message : "Tente novamente em instantes.",
+      });
+    } finally {
+      setSendingEmailChargeId(null);
+    }
+  };
 
   return (
     <Card>
@@ -161,6 +193,22 @@ export const CobrancasList = ({
                 >
                   <Copy className="w-4 h-4 mr-2" />
                   Copiar Link
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSendEmail(cobranca.id)}
+                  disabled={sendingEmailChargeId === cobranca.id}
+                  className="flex items-center justify-center w-full md:w-auto border font-semibold shadow-sm
+                    hover:bg-gradient-to-r hover:from-coepay-primary hover:to-coepay-secondary hover:text-white transition"
+                >
+                  {sendingEmailChargeId === cobranca.id ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Mail className="w-4 h-4 mr-2" />
+                  )}
+                  Enviar por E-mail
                 </Button>
 
                 <Button

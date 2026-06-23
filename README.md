@@ -1,73 +1,176 @@
-# Welcome to your Lovable project
+# CoéPay
 
-## Project info
+CoéPay é um sistema de gestão de cobranças, controle de devedores, juros, links públicos de pagamento e validação de comprovantes.
 
-**URL**: https://lovable.dev/projects/68db1505-a37a-411f-b0d7-44f9b8a31ec3
+## Stack
 
-## How can I edit this code?
+- Frontend: React 18, TypeScript, Vite, Tailwind CSS, Shadcn UI, TanStack React Query, Lucide React e Sonner.
+- Backend: Node.js, Express, Sequelize, PostgreSQL, Multer, Nodemailer e Node Cron.
+- Banco e autenticação: PostgreSQL/Supabase, com conexão via `DATABASE_URL` ou variáveis `DB_*`.
+- Gerenciadores: Bun na raiz do projeto e npm dentro da pasta `backend`.
 
-There are several ways of editing your application.
+## Pré-requisitos
 
-**Use Lovable**
+- Node.js 20 ou superior.
+- npm.
+- Bun para o frontend.
+- Uma base PostgreSQL acessível.
+- Credenciais SMTP para envio de e-mails transacionais.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/68db1505-a37a-411f-b0d7-44f9b8a31ec3) and start prompting.
+## Variáveis de ambiente
 
-Changes made via Lovable will be committed automatically to this repo.
+Crie um arquivo `.env` na raiz:
 
-**Use your preferred IDE**
+```env
+VITE_SUPABASE_URL="https://seu-projeto.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="sua-chave-publica"
+DATABASE_URL="postgresql://usuario:senha@host:5432/banco"
+DATABASE_SSL=true
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Crie também um arquivo `backend/.env`:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```env
+PORT=3000
+FRONTEND_PUBLIC_URL="http://localhost:8080"
 
-Follow these steps:
+SMTP_HOST="smtp.seu-provedor.com"
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER="usuario-smtp"
+SMTP_PASS="senha-smtp"
+SMTP_FROM="CoéPay <cobrancas@seudominio.com>"
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+EMAIL_REMINDERS_ENABLED=false
+EMAIL_REMINDER_CRON="0 9 * * *"
+EMAIL_REMINDER_TIMEZONE="America/Sao_Paulo"
+EMAIL_REMINDERS_RUN_ON_START=false
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+O backend carrega `backend/.env` e também o `.env` da raiz. Isso permite usar `DATABASE_URL` na raiz e manter as configurações sensíveis de e-mail no backend.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Instalação
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Terminal da pasta raiz:
+
+```bash
+cd "/home/crase/Área de trabalho/coepay"
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc
+bun install
+```
+
+Terminal da pasta backend:
+
+```bash
+cd "/home/crase/Área de trabalho/coepay/backend"
+npm install
+```
+
+## Como rodar localmente
+
+Use dois terminais abertos ao mesmo tempo.
+
+Terminal da pasta backend:
+
+```bash
+cd "/home/crase/Área de trabalho/coepay/backend"
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Terminal da pasta raiz:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+cd "/home/crase/Área de trabalho/coepay"
+source ~/.bashrc
+bun run dev
+```
 
-**Use GitHub Codespaces**
+URLs locais:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- Frontend: `http://localhost:8080`
+- Backend: `http://localhost:3000`
 
-## What technologies are used for this project?
+Você só precisa rodar Supabase localmente se decidir usar uma stack local completa. Para testar o app apontando para banco/Supabase remoto, os dois terminais acima bastam.
 
-This project is built with:
+## Scripts úteis
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Terminal da pasta raiz:
 
-## How can I deploy this project?
+```bash
+bun run dev
+bun run build
+bun run lint
+```
 
-Simply open [Lovable](https://lovable.dev/projects/68db1505-a37a-411f-b0d7-44f9b8a31ec3) and click on Share -> Publish.
+Terminal da pasta backend:
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+npm run dev
+npm start
+```
 
-Yes, you can!
+## Envio de cobranças por e-mail
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+O backend possui um serviço SMTP com Nodemailer e uma rota manual:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```http
+POST /api/notificacoes/enviar-email
+Content-Type: application/json
+
+{
+  "chargeId": 123
+}
+```
+
+A rota busca a cobrança real no PostgreSQL, valida se ela possui e-mail cadastrado, ignora cobranças pagas e envia um template HTML com:
+
+- valor atualizado;
+- data de vencimento;
+- descrição da cobrança;
+- chave PIX;
+- link público da cobrança.
+
+O botão "Enviar por E-mail" fica na lista de cobranças pendentes e exibe feedback com Sonner.
+
+## Lembretes automáticos por e-mail
+
+Além do envio manual, o backend possui um agendador automático com Node Cron.
+
+Marcos atuais:
+
+- 10 dias antes do vencimento;
+- 7 dias antes do vencimento;
+- 3 dias antes do vencimento;
+- 1 dia antes do vencimento;
+- no dia do vencimento;
+- diariamente após vencida, até a cobrança ser paga.
+
+Quando a cobrança estiver com `pago=true` ou `status="paga"`, o envio automático é suspenso.
+
+Para ativar:
+
+```env
+EMAIL_REMINDERS_ENABLED=true
+EMAIL_REMINDER_CRON="0 9 * * *"
+EMAIL_REMINDER_TIMEZONE="America/Sao_Paulo"
+```
+
+Para processar uma vez ao iniciar o backend, útil em desenvolvimento:
+
+```env
+EMAIL_REMINDERS_RUN_ON_START=true
+```
+
+O sistema registra envios na tabela `email_notification_logs`, evitando repetir o mesmo lembrete de 10, 7, 3, 1 dia ou do dia do vencimento. Para cobranças vencidas, o envio é controlado por dia.
+
+## Telefone de contato
+
+O formulário de nova cobrança usa o campo "Telefone de Contato" apenas como dado de apoio/resguardo. Não há integração automática com WhatsApp/Meta neste fluxo. A cobrança automática foi concentrada no e-mail para reduzir dependência de aprovações e regras externas da Meta.
+
+## Observações
+
+- O frontend roda na porta `8080`.
+- O backend roda na porta `3000`.
+- A página pública da cobrança usa a rota `/cobranca/:hash`.
+- Configure `FRONTEND_PUBLIC_URL` corretamente em produção para que os links enviados por e-mail apontem para o domínio final do CoéPay.

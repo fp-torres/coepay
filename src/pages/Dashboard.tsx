@@ -36,13 +36,14 @@ const Dashboard = () => {
   const subscription = useSubscription();
   const [novaCobranca, setNovaCobranca] = useState({
     nomeDevedor: "",
+    debtorEmail: "",
     valor: "",
     dataVencimento: "",
     taxaJuros: "",
     tipoJuros: "mensal" as "mensal" | "diario" | "anual",
     metodoCalculo: "composto" as "simples" | "composto",
     descricao: "",
-    whatsappDevedor: "",
+    contactPhone: "",
     pixCobranca: "",
   });
     useEffect(() => {
@@ -151,15 +152,14 @@ const Dashboard = () => {
         body: JSON.stringify({
           user_id: user.id,
           nome: novaCobranca.nomeDevedor || "Sem Nome",
-          email: null,
-          telefone: null,
+          email: novaCobranca.debtorEmail || null,
+          telefone: novaCobranca.contactPhone || null,
           valor: isNaN(valorInicial) ? 0 : valorInicial,
           data_vencimento: novaCobranca.dataVencimento || new Date().toISOString().split('T')[0],
           taxa_juros: novaCobranca.taxaJuros ? Number(novaCobranca.taxaJuros) : null,  
           tipo_juros: novaCobranca.taxaJuros ? novaCobranca.tipoJuros : null,
           metodo_calculo: novaCobranca.taxaJuros ? novaCobranca.metodoCalculo : null,
           descricao: novaCobranca.descricao ? novaCobranca.descricao : null,
-          whatsapp_devedor: novaCobranca.whatsappDevedor ? novaCobranca.whatsappDevedor : null,
           pix_cobranca: novaCobranca.pixCobranca ? novaCobranca.pixCobranca : null
         })
       });
@@ -172,13 +172,14 @@ const Dashboard = () => {
 
         setNovaCobranca({ 
           nomeDevedor: "", 
+          debtorEmail: "",
           valor: "", 
           dataVencimento: "", 
           taxaJuros: "", 
           tipoJuros: "mensal", 
           metodoCalculo: "composto",
           descricao: "", 
-          whatsappDevedor: "", 
+          contactPhone: "", 
           pixCobranca: "" 
         });
         toast({
